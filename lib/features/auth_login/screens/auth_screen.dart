@@ -166,7 +166,6 @@ class _AuthScreenState extends State<AuthScreen> {
                               });
 
                               try {
-                                // Verificar si el correo existe en Firestore
                                 final snapshot = await _firestore
                                     .collection('users')
                                     .where('email', isEqualTo: email)
@@ -284,7 +283,6 @@ class _AuthScreenState extends State<AuthScreen> {
           return;
         }
 
-        // Verificación previa en Firestore para detectar cuentas ya existentes (Gmail o Correo)
         final existingCheck = await _firestore
             .collection('users')
             .where('email', isEqualTo: email)

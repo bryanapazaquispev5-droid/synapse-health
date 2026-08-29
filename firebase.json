@@ -1,1 +1,25 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"synapse-health","appId":"1:926565525814:android:64a58267486ca15f1f2b97","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"synapse-health","configurations":{"android":"1:926565525814:android:64a58267486ca15f1f2b97","ios":"1:926565525814:ios:8362c0568303a8781f2b97"}}}}}}
+{
+    "flutter":  {
+                    "platforms":  {
+                                      "android":  {
+                                                      "default":  {
+                                                                      "projectId":  "synapse-health",
+                                                                      "appId":  "1:926565525814:android:64a58267486ca15f1f2b97",
+                                                                      "fileOutput":  "android/app/google-services.json"
+                                                                  }
+                                                  },
+                                      "dart":  {
+                                                   "lib/firebase_options.dart":  {
+                                                                                     "projectId":  "synapse-health",
+                                                                                     "configurations":  {
+                                                                                                            "android":  "1:926565525814:android:64a58267486ca15f1f2b97",
+                                                                                                            "ios":  "1:926565525814:ios:8362c0568303a8781f2b97"
+                                                                                                        }
+                                                                                 }
+                                               }
+                                  }
+                },
+    "firestore":  {
+                      "rules":  "firestore.rules"
+                  }
+}
