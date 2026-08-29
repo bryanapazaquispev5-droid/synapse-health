@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/theme/app_theme.dart';
 import '../widgets/auth_text_field.dart';
 
@@ -10,8 +12,9 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  bool _isLogin = true; // Alterna entre Iniciar Sesion y Registrarse
+  bool _isLogin = true;
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   // Controladores para Login
   final TextEditingController _loginEmailController = TextEditingController();
@@ -23,35 +26,118 @@ class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController _registerCareerController = TextEditingController();
   final TextEditingController _registerPasswordController = TextEditingController();
 
-  void _submit() {
+  FirebaseAuth get _auth => FirebaseAuth.instance;
+
+  void _showFeedback(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: isError ? AppColors.primary : AppColors.accent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Future<void> _submitEmailAuth() async {
     FocusScope.of(context).unfocus();
-    if (_isLogin) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Iniciando sesión: ${_loginEmailController.text.trim()}'),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-        ),
+    setState(() => _isLoading = true);
+
+    try {
+      if (_isLogin) {
+        final email = _loginEmailController.text.trim();
+        final password = _loginPasswordController.text.trim();
+
+        if (email.isEmpty || password.isEmpty) {
+          _showFeedback('Por favor ingresa correo y contraseÃ±a', isError: true);
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        _showFeedback('Â¡Bienvenido de nuevo, ${userCredential.user?.email}!');
+      } else {
+        final name = _registerNameController.text.trim();
+        final email = _registerEmailController.text.trim();
+        final password = _registerPasswordController.text.trim();
+
+        if (email.isEmpty || password.isEmpty) {
+          _showFeedback('Por favor completa todos los campos', isError: true);
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        if (name.isNotEmpty) {
+          await userCredential.user?.updateDisplayName(name);
+        }
+
+        _showFeedback('Â¡Cuenta creada exitosamente en Firebase!');
+      }
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Error en autenticaciÃ³n';
+      if (e.code == 'user-not-found') {
+        msg = 'No existe una cuenta con este correo';
+      } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        msg = 'ContraseÃ±a o correo incorrecto';
+      } else if (e.code == 'email-already-in-use') {
+        msg = 'Este correo ya estÃ¡ registrado';
+      } else if (e.code == 'weak-password') {
+        msg = 'La contraseÃ±a debe tener al menos 6 caracteres';
+      } else if (e.code == 'invalid-email') {
+        msg = 'Formato de correo no vÃ¡lido';
+      }
+      _showFeedback(msg, isError: true);
+    } catch (e) {
+      _showFeedback('Error inesperado: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // El usuario cancelÃ³ la selecciÃ³n de cuenta
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Cuenta creada para: ${_registerNameController.text.trim()}'),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      _showFeedback('Â¡Conectado con Google: ${userCredential.user?.displayName}!');
+    } catch (e) {
+      _showFeedback('Error al acceder con Google: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _enterGuestMode() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Accediendo como Invitado...'),
-        backgroundColor: AppColors.accent,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    _showFeedback('Accediendo como Invitado temporal');
   }
 
   @override
@@ -106,7 +192,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
                   // Titulo y Subtitulo
                   Text(
-                    _isLogin ? 'Iniciar Sesión' : 'Crear Cuenta',
+                    _isLogin ? 'Iniciar SesiÃ³n' : 'Crear Cuenta',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 26,
@@ -118,8 +204,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 6),
                   Text(
                     _isLogin
-                        ? 'Accede a tus chuletas y quizzes médicos'
-                        : 'Únete para registrar tu racha y progreso',
+                        ? 'Accede a tus chuletas y quizzes mÃ©dicos'
+                        : 'Ãšnete para registrar tu racha y progreso',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 13,
@@ -166,7 +252,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _submit,
+                      onPressed: _isLoading ? null : _submitEmailAuth,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.surface,
@@ -175,40 +261,74 @@ class _AuthScreenState extends State<AuthScreen> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: AppColors.surface,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _isLogin ? 'Acceder al Sistema' : 'Completar Registro',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(Icons.arrow_forward_rounded, size: 18),
+                              ],
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Boton de Google en Pildora
+                  SizedBox(
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: _isLoading ? null : _signInWithGoogle,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.border, width: 1.2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        children: const [
+                          Icon(Icons.g_mobiledata_rounded, size: 28, color: AppColors.accent),
+                          SizedBox(width: 6),
                           Text(
-                            _isLogin ? 'Acceder al Sistema' : 'Completar Registro',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
+                            'Continuar con Google',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_rounded, size: 18),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-                  // Pildora inferior de Modo Invitado (Cero Friccion)
+                  // Pildora inferior de Modo Invitado
                   Center(
-                    child: OutlinedButton.icon(
+                    child: TextButton.icon(
                       onPressed: _enterGuestMode,
-                      icon: const Icon(Icons.person_outline_rounded, size: 18),
+                      icon: const Icon(Icons.person_outline_rounded, size: 16),
                       label: const Text(
                         'Continuar como Invitado (Probar)',
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                       ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.border, width: 1.2),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.textMuted,
                       ),
                     ),
                   ),
@@ -251,16 +371,16 @@ class _AuthScreenState extends State<AuthScreen> {
     return [
       AuthTextField(
         controller: _loginEmailController,
-        label: 'Correo Electrónico o Usuario',
-        hint: 'ej. estudiante@tecsup.edu.pe',
+        label: 'Correo ElectrÃ³nico',
+        hint: 'ej. estudiante@gmail.com',
         prefixIcon: Icons.alternate_email_rounded,
         keyboardType: TextInputType.emailAddress,
       ),
       const SizedBox(height: 14),
       AuthTextField(
         controller: _loginPasswordController,
-        label: 'Contraseña',
-        hint: '••••••••',
+        label: 'ContraseÃ±a',
+        hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
         prefixIcon: Icons.lock_outline_rounded,
         obscureText: _obscurePassword,
         suffixIcon: IconButton(
@@ -286,8 +406,8 @@ class _AuthScreenState extends State<AuthScreen> {
       const SizedBox(height: 14),
       AuthTextField(
         controller: _registerEmailController,
-        label: 'Correo Electrónico',
-        hint: 'ej. alumno@salud.pe',
+        label: 'Correo ElectrÃ³nico',
+        hint: 'ej. estudiante@gmail.com',
         prefixIcon: Icons.mail_outline_rounded,
         keyboardType: TextInputType.emailAddress,
       ),
@@ -295,14 +415,14 @@ class _AuthScreenState extends State<AuthScreen> {
       AuthTextField(
         controller: _registerCareerController,
         label: 'Carrera o Especialidad',
-        hint: 'ej. Medicina / Enfermería',
+        hint: 'ej. Medicina / EnfermerÃ­a',
         prefixIcon: Icons.school_outlined,
       ),
       const SizedBox(height: 14),
       AuthTextField(
         controller: _registerPasswordController,
-        label: 'Crear Contraseña',
-        hint: 'Mínimo 6 caracteres',
+        label: 'Crear ContraseÃ±a',
+        hint: 'MÃ­nimo 6 caracteres',
         prefixIcon: Icons.lock_outline_rounded,
         obscureText: _obscurePassword,
         suffixIcon: IconButton(
