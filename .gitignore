@@ -1,0 +1,49 @@
+# ==============================================================================
+# SEGURIDAD Y CREDENCIALES PRIVADAS (NUNCA SUBIR A GIT)
+# ==============================================================================
+*.env
+*.env.*
+.env
+.env.local
+.env.production
+keys.properties
+key.properties
+
+# Archivos de configuración y secretos de Firebase
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+
+# Certificados, llaves de firma y keystores de Android/iOS
+*.jks
+*.keystore
+*.p12
+*.cer
+*.mobileprovision
+
+# ==============================================================================
+# ARTEFACTOS DE COMPILACIÓN Y ARCHIVOS GENERADOS DE FLUTTER
+# ==============================================================================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.apk
+*.aab
+*.ipa
+
+# ==============================================================================
+# ENTORNOS DE DESARROLLO (IDE) Y SISTEMA OPERATIVO
+# ==============================================================================
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs y volcados de depuración
+*.log
