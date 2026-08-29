@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_theme.dart';
 import '../widgets/auth_text_field.dart';
@@ -43,6 +44,41 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     super.dispose();
   }
 
+  // Cancelar y retroceder: elimina la cuenta temporal de Firebase para que no quede registrada
+  Future<void> _cancelAndGoBack() async {
+    setState(() => _isLoading = true);
+
+    try {
+      // 1. Eliminar la cuenta no completada de Firebase Auth
+      await widget.user.delete();
+    } catch (_) {}
+
+    try {
+      // 2. Desconectar sesion de Google
+      await GoogleSignIn().signOut();
+    } catch (_) {}
+
+    try {
+      // 3. Cerrar sesion por seguridad
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Registro cancelado. No se guardó ningún dato en Firebase.',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: AppColors.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
+
+  // Guardar y confirmar registro definitivo en Firestore
   Future<void> _saveProfile() async {
     final name = _nameController.text.trim();
     final career = _careerController.text.trim();
@@ -69,20 +105,21 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         await widget.user.updateDisplayName(name);
       }
 
+      // Solo aqui se guarda el registro definitivo en Firebase
       await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).set({
         'uid': widget.user.uid,
         'name': name,
         'email': widget.user.email?.toLowerCase() ?? '',
         'career': career,
         'studyStreakDays': 0,
-        'updatedAt': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
         'authProvider': 'google.com',
       }, SetOptions(merge: true));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('¡Perfil completado con éxito!'),
+            content: Text('¡Cuenta médica registrada con éxito!'),
             backgroundColor: AppColors.accent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -92,7 +129,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar: $e'),
+            content: Text('Error al guardar en Firebase: $e'),
             backgroundColor: AppColors.primary,
             behavior: SnackBarBehavior.floating,
           ),
@@ -105,161 +142,198 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo de la aplicacion
-                  Center(
-                    child: Container(
-                      width: 76,
-                      height: 76,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.accent.withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'assets/images/app_logo.jpg',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Titulo y Subtitulo
-                  const Text(
-                    '¡Casi listo!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Cuéntanos sobre tus estudios para personalizar tus chuletas y evaluaciones.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // Campo de Nombre
-                  AuthTextField(
-                    controller: _nameController,
-                    label: 'Nombre y Apellidos',
-                    hint: 'ej. Bryan Apaza',
-                    prefixIcon: Icons.badge_outlined,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Campo de Carrera
-                  AuthTextField(
-                    controller: _careerController,
-                    label: 'Carrera o Especialidad',
-                    hint: 'ej. Medicina Humana',
-                    prefixIcon: Icons.school_outlined,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Pildoras de sugerencia de carreras
-                  const Text(
-                    'O selecciona una opción rápida:',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _suggestedCareers.map((c) {
-                      final bool isSelected = _careerController.text == c;
-                      return ActionChip(
-                        label: Text(c),
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected ? AppColors.surface : AppColors.primary,
-                        ),
-                        backgroundColor: isSelected ? AppColors.primary : AppColors.surface,
-                        side: BorderSide(
-                          color: isSelected ? AppColors.primary : AppColors.border,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _careerController.text = c;
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Boton Guardar y Continuar
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _saveProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.surface,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.2,
-                                color: AppColors.surface,
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Text(
-                                  'Guardar y Empezar',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward_rounded, size: 18),
-                              ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !_isLoading) {
+          _cancelAndGoBack();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.primary, size: 24),
+            tooltip: 'Cancelar y volver',
+            onPressed: _isLoading ? null : _cancelAndGoBack,
+          ),
+          title: const Text(
+            'Volver al inicio',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+          ),
+        ),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Logo de la aplicacion
+                    Center(
+                      child: Container(
+                        width: 76,
+                        height: 76,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accent.withValues(alpha: 0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
                             ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            'assets/images/app_logo.jpg',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+
+                    // Titulo y Subtitulo
+                    const Text(
+                      '¡Casi listo!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Cuéntanos sobre tus estudios para completar tu registro médico.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Campo de Nombre
+                    AuthTextField(
+                      controller: _nameController,
+                      label: 'Nombre y Apellidos',
+                      hint: 'ej. Bryan Apaza',
+                      prefixIcon: Icons.badge_outlined,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Campo de Carrera
+                    AuthTextField(
+                      controller: _careerController,
+                      label: 'Carrera o Especialidad',
+                      hint: 'ej. Medicina Humana',
+                      prefixIcon: Icons.school_outlined,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Pildoras de sugerencia de carreras
+                    const Text(
+                      'O selecciona una opción rápida:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _suggestedCareers.map((c) {
+                        final bool isSelected = _careerController.text == c;
+                        return ActionChip(
+                          label: Text(c),
+                          labelStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? AppColors.surface : AppColors.primary,
+                          ),
+                          backgroundColor: isSelected ? AppColors.primary : AppColors.surface,
+                          side: BorderSide(
+                            color: isSelected ? AppColors.primary : AppColors.border,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _careerController.text = c;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Boton Guardar y Continuar
+                    SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _saveProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.surface,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: AppColors.surface,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    'Guardar y Empezar',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_rounded, size: 18),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Boton inferior de cancelar y volver
+                    Center(
+                      child: TextButton.icon(
+                        onPressed: _isLoading ? null : _cancelAndGoBack,
+                        icon: const Icon(Icons.close_rounded, size: 16),
+                        label: const Text(
+                          'Cancelar y no registrarme',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFDC2626), // Rojo suave
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
