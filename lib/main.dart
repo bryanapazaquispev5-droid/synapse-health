@@ -45,7 +45,17 @@ class SynapseHealthApp extends StatelessWidget {
             return WelcomeScreen(user: user);
           }
 
-          // Verificar si el usuario ya tiene su carrera registrada en Firestore
+          // Solo los usuarios de Google necesitan el onboarding "Casi listo",
+          // porque quienes se registran con correo ya llenaron su carrera en el formulario.
+          final bool isGoogleUser = user.providerData.any(
+            (p) => p.providerId == 'google.com',
+          );
+
+          if (!isGoogleUser) {
+            return WelcomeScreen(user: user);
+          }
+
+          // Para usuarios de Google: verificar si ya completaron su carrera médica en Firestore
           return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
             builder: (context, userDocSnapshot) {
@@ -60,7 +70,7 @@ class SynapseHealthApp extends StatelessWidget {
               final data = userDocSnapshot.data?.data();
               final String? career = data?['career'];
 
-              // Si ingreso con Google por primera vez y aun no tiene carrera
+              // Si ingresó con Google por primera vez y aún no tiene carrera
               if (career == null || career.trim().isEmpty) {
                 return CompleteProfileScreen(user: user);
               }
