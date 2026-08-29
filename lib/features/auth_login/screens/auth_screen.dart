@@ -49,11 +49,13 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  // 1. Recuperar Contrasena por Correo
+  // 1. Recuperar Contraseña por Correo con validación de existencia en Firebase/Firestore
   void _openForgotPasswordDialog() {
     final TextEditingController resetEmailController = TextEditingController(
       text: _loginEmailController.text.trim(),
     );
+    String? localError;
+    bool isChecking = false;
 
     showModalBottomSheet(
       context: context,
@@ -63,93 +65,178 @@ class _AuthScreenState extends State<AuthScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(2),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'Recuperar Contraseña',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Ingresa tu correo y te enviaremos un enlace oficial de restablecimiento.',
-                style: TextStyle(fontSize: 13, color: AppColors.textMuted),
-              ),
-              const SizedBox(height: 18),
-              AuthTextField(
-                controller: resetEmailController,
-                label: 'Correo Electrónico',
-                hint: 'ej. estudiante@gmail.com',
-                prefixIcon: Icons.alternate_email_rounded,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final email = resetEmailController.text.trim();
-                    if (email.isEmpty) {
-                      _showFeedback('Ingresa un correo válido', isError: true);
-                      return;
-                    }
-                    Navigator.pop(context);
-                    try {
-                      await _auth.sendPasswordResetEmail(email: email);
-                      _showFeedback('¡Enlace enviado a $email! Revisa tu bandeja.');
-                    } on FirebaseAuthException catch (e) {
-                      _showFeedback('Error al enviar correo: ${e.message}', isError: true);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.surface,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Recuperar Contraseña',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
                   ),
-                  child: const Text(
-                    'Enviar Enlace de Recuperación',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Ingresa tu correo registrado y verificaremos tu cuenta antes de enviarte el enlace.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textMuted),
                   ),
-                ),
+                  const SizedBox(height: 18),
+                  AuthTextField(
+                    controller: resetEmailController,
+                    label: 'Correo Electrónico',
+                    hint: 'ej. estudiante@gmail.com',
+                    prefixIcon: Icons.alternate_email_rounded,
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: (_) {
+                      if (localError != null) {
+                        setModalState(() => localError = null);
+                      }
+                    },
+                  ),
+                  if (localError != null) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              localError!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF991B1B),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: isChecking
+                          ? null
+                          : () async {
+                              final email = resetEmailController.text.trim().toLowerCase();
+                              if (email.isEmpty) {
+                                setModalState(() => localError = 'Ingresa un correo electrónico.');
+                                return;
+                              }
+                              final bool validEmail = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+                              if (!validEmail) {
+                                setModalState(() => localError = 'Formato de correo no válido.');
+                                return;
+                              }
+
+                              setModalState(() {
+                                isChecking = true;
+                                localError = null;
+                              });
+
+                              try {
+                                // Verificar si el correo existe en Firestore
+                                final snapshot = await _firestore
+                                    .collection('users')
+                                    .where('email', isEqualTo: email)
+                                    .limit(1)
+                                    .get();
+
+                                if (snapshot.docs.isEmpty) {
+                                  setModalState(() {
+                                    isChecking = false;
+                                    localError = 'Este correo no está registrado en el sistema.';
+                                  });
+                                  return;
+                                }
+
+                                // Si existe, enviar el correo de recuperación
+                                await _auth.sendPasswordResetEmail(email: email);
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  _showFeedback('¡Enlace enviado a $email! Revisa tu bandeja o spam.');
+                                }
+                              } on FirebaseAuthException catch (e) {
+                                setModalState(() {
+                                  isChecking = false;
+                                  if (e.code == 'user-not-found') {
+                                    localError = 'Este correo no está registrado en Firebase.';
+                                  } else {
+                                    localError = 'Error: ${e.message}';
+                                  }
+                                });
+                              } catch (e) {
+                                setModalState(() {
+                                  isChecking = false;
+                                  localError = 'Ocurrió un error al verificar: $e';
+                                });
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.surface,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: isChecking
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
+                            )
+                          : const Text(
+                              'Enviar Enlace de Recuperación',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  // 2, 4 y 5. Registro con Verificacion, Confirmacion y Firestore
+  // 2, 4 y 5. Registro con Validación de Duplicados, Confirmación y Firestore
   Future<void> _submitEmailAuth() async {
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
     try {
       if (_isLogin) {
-        final email = _loginEmailController.text.trim();
+        final email = _loginEmailController.text.trim().toLowerCase();
         final password = _loginPasswordController.text.trim();
 
         if (email.isEmpty || password.isEmpty) {
@@ -166,18 +253,25 @@ class _AuthScreenState extends State<AuthScreen> {
         _showFeedback('¡Bienvenido de nuevo, ${userCredential.user?.email}!');
       } else {
         final name = _registerNameController.text.trim();
-        final email = _registerEmailController.text.trim();
+        final email = _registerEmailController.text.trim().toLowerCase();
         final career = _registerCareerController.text.trim();
         final password = _registerPasswordController.text.trim();
         final confirmPassword = _registerConfirmPasswordController.text.trim();
 
-        if (name.isEmpty || email.isEmpty || career.isEmpty || password.isEmpty) {
+        if (name.isEmpty || email.isEmpty || career.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
           _showFeedback('Por favor completa todos los campos', isError: true);
           setState(() => _isLoading = false);
           return;
         }
 
-        // Validacion de coincidencia de contrasenas
+        final bool validEmail = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+        if (!validEmail) {
+          _showFeedback('Por favor ingresa un correo electrónico válido', isError: true);
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        // Validación de coincidencia de contraseñas
         if (password != confirmPassword) {
           _showFeedback('Las contraseñas no coinciden', isError: true);
           setState(() => _isLoading = false);
@@ -190,6 +284,30 @@ class _AuthScreenState extends State<AuthScreen> {
           return;
         }
 
+        // Verificación previa en Firestore para detectar cuentas ya existentes (Gmail o Correo)
+        final existingCheck = await _firestore
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+
+        if (existingCheck.docs.isNotEmpty) {
+          final provider = existingCheck.docs.first.data()['authProvider'] ?? '';
+          if (provider == 'google.com') {
+            _showFeedback(
+              'Este correo ya está registrado con Google. Por favor ingresa con el botón "Continuar con Google".',
+              isError: true,
+            );
+          } else {
+            _showFeedback(
+              'Este correo ya está registrado en el sistema. Inicia sesión o recupera tu contraseña.',
+              isError: true,
+            );
+          }
+          setState(() => _isLoading = false);
+          return;
+        }
+
         // Crear usuario en Firebase Auth
         final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: email,
@@ -198,13 +316,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
         final user = userCredential.user;
         if (user != null) {
-          // Asignar nombre visible
           await user.updateDisplayName(name);
-
-          // 5. Enviar correo de verificacion
           await user.sendEmailVerification();
 
-          // 2. Guardar perfil completo en Cloud Firestore
           await _firestore.collection('users').doc(user.uid).set({
             'uid': user.uid,
             'name': name,
@@ -221,11 +335,13 @@ class _AuthScreenState extends State<AuthScreen> {
     } on FirebaseAuthException catch (e) {
       String msg = 'Error en autenticación';
       if (e.code == 'user-not-found') {
-        msg = 'No existe una cuenta con este correo';
+        msg = 'No existe ninguna cuenta registrada con este correo';
       } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
         msg = 'Contraseña o correo incorrecto';
       } else if (e.code == 'email-already-in-use') {
-        msg = 'Este correo ya está registrado';
+        msg = 'Este correo ya está registrado en el sistema. Inicia sesión o recupera tu clave.';
+      } else if (e.code == 'account-exists-with-different-credential') {
+        msg = 'Este correo ya está registrado con Google. Inicia sesión usando Google.';
       } else if (e.code == 'weak-password') {
         msg = 'La contraseña debe tener al menos 6 caracteres';
       } else if (e.code == 'invalid-email') {
@@ -239,12 +355,11 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  // Google Sign-In con sincronizacion a Firestore
+  // Google Sign-In con sincronización a Firestore
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
-      // Forzar que Google siempre muestre el selector de cuentas en pantalla
       await googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
@@ -264,11 +379,10 @@ class _AuthScreenState extends State<AuthScreen> {
       final user = userCredential.user;
 
       if (user != null) {
-        // Guardar o sincronizar en Cloud Firestore
         await _firestore.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'name': user.displayName ?? 'Estudiante de Salud',
-          'email': user.email ?? '',
+          'email': user.email?.toLowerCase() ?? '',
           'career': 'Ciencias de la Salud',
           'studyStreakDays': 0,
           'createdAt': FieldValue.serverTimestamp(),
@@ -345,7 +459,7 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo oficial de la aplicacion
+                  // Logo oficial de la aplicación
                   Center(
                     child: Container(
                       width: 78,
@@ -371,7 +485,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 18),
 
-                  // Titulo y Subtitulo
+                  // Título y Subtítulo
                   Text(
                     _isLogin ? 'Iniciar Sesión' : 'Crear Cuenta',
                     textAlign: TextAlign.center,
@@ -395,7 +509,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Selector de pestanas Login / Registro
+                  // Selector de pestañas Login / Registro
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -429,7 +543,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Boton Principal
+                  // Botón Principal
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
@@ -469,7 +583,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Boton de Google
+                  // Botón de Google
                   SizedBox(
                     height: 48,
                     child: OutlinedButton(
@@ -499,7 +613,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 3. Pildora inferior de Modo Invitado Real
+                  // Modo Invitado
                   Center(
                     child: TextButton.icon(
                       onPressed: _isLoading ? null : _signInAsGuest,
@@ -573,7 +687,7 @@ class _AuthScreenState extends State<AuthScreen> {
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
-      // 1. Enlace de Recuperar Contrasena
+      // Enlace de Recuperar Contraseña
       Align(
         alignment: Alignment.centerRight,
         child: TextButton(
@@ -634,10 +748,8 @@ class _AuthScreenState extends State<AuthScreen> {
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
-      // 4. Medidor de seguridad de contrasena
       PasswordStrengthBar(password: _registerPasswordController.text),
       const SizedBox(height: 14),
-      // 4. Confirmar contrasena
       AuthTextField(
         controller: _registerConfirmPasswordController,
         label: 'Confirmar Contraseña',
