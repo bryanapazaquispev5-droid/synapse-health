@@ -54,7 +54,7 @@ class _AuthScreenState extends State<AuthScreen> {
         final password = _loginPasswordController.text.trim();
 
         if (email.isEmpty || password.isEmpty) {
-          _showFeedback('Por favor ingresa correo y contraseÃ±a', isError: true);
+          _showFeedback('Por favor ingresa correo y contraseña', isError: true);
           setState(() => _isLoading = false);
           return;
         }
@@ -64,7 +64,7 @@ class _AuthScreenState extends State<AuthScreen> {
           password: password,
         );
 
-        _showFeedback('Â¡Bienvenido de nuevo, ${userCredential.user?.email}!');
+        _showFeedback('¡Bienvenido de nuevo, ${userCredential.user?.email}!');
       } else {
         final name = _registerNameController.text.trim();
         final email = _registerEmailController.text.trim();
@@ -85,20 +85,20 @@ class _AuthScreenState extends State<AuthScreen> {
           await userCredential.user?.updateDisplayName(name);
         }
 
-        _showFeedback('Â¡Cuenta creada exitosamente en Firebase!');
+        _showFeedback('¡Cuenta creada exitosamente en Firebase!');
       }
     } on FirebaseAuthException catch (e) {
-      String msg = 'Error en autenticaciÃ³n';
+      String msg = 'Error en autenticación';
       if (e.code == 'user-not-found') {
         msg = 'No existe una cuenta con este correo';
       } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        msg = 'ContraseÃ±a o correo incorrecto';
+        msg = 'Contraseña o correo incorrecto';
       } else if (e.code == 'email-already-in-use') {
-        msg = 'Este correo ya estÃ¡ registrado';
+        msg = 'Este correo ya está registrado';
       } else if (e.code == 'weak-password') {
-        msg = 'La contraseÃ±a debe tener al menos 6 caracteres';
+        msg = 'La contraseña debe tener al menos 6 caracteres';
       } else if (e.code == 'invalid-email') {
-        msg = 'Formato de correo no vÃ¡lido';
+        msg = 'Formato de correo no válido';
       }
       _showFeedback(msg, isError: true);
     } catch (e) {
@@ -115,7 +115,6 @@ class _AuthScreenState extends State<AuthScreen> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
-        // El usuario cancelÃ³ la selecciÃ³n de cuenta
         setState(() => _isLoading = false);
         return;
       }
@@ -128,7 +127,7 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      _showFeedback('Â¡Conectado con Google: ${userCredential.user?.displayName}!');
+      _showFeedback('¡Conectado con Google: ${userCredential.user?.displayName}!');
     } catch (e) {
       _showFeedback('Error al acceder con Google: $e', isError: true);
     } finally {
@@ -192,7 +191,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
                   // Titulo y Subtitulo
                   Text(
-                    _isLogin ? 'Iniciar SesiÃ³n' : 'Crear Cuenta',
+                    _isLogin ? 'Iniciar Sesión' : 'Crear Cuenta',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 26,
@@ -204,8 +203,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 6),
                   Text(
                     _isLogin
-                        ? 'Accede a tus chuletas y quizzes mÃ©dicos'
-                        : 'Ãšnete para registrar tu racha y progreso',
+                        ? 'Accede a tus chuletas y quizzes médicos'
+                        : 'Únete para registrar tu racha y progreso',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 13,
@@ -371,7 +370,7 @@ class _AuthScreenState extends State<AuthScreen> {
     return [
       AuthTextField(
         controller: _loginEmailController,
-        label: 'Correo ElectrÃ³nico',
+        label: 'Correo Electrónico',
         hint: 'ej. estudiante@gmail.com',
         prefixIcon: Icons.alternate_email_rounded,
         keyboardType: TextInputType.emailAddress,
@@ -379,8 +378,8 @@ class _AuthScreenState extends State<AuthScreen> {
       const SizedBox(height: 14),
       AuthTextField(
         controller: _loginPasswordController,
-        label: 'ContraseÃ±a',
-        hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+        label: 'Contraseña',
+        hint: '••••••••',
         prefixIcon: Icons.lock_outline_rounded,
         obscureText: _obscurePassword,
         suffixIcon: IconButton(
@@ -406,7 +405,7 @@ class _AuthScreenState extends State<AuthScreen> {
       const SizedBox(height: 14),
       AuthTextField(
         controller: _registerEmailController,
-        label: 'Correo ElectrÃ³nico',
+        label: 'Correo Electrónico',
         hint: 'ej. estudiante@gmail.com',
         prefixIcon: Icons.mail_outline_rounded,
         keyboardType: TextInputType.emailAddress,
@@ -415,14 +414,14 @@ class _AuthScreenState extends State<AuthScreen> {
       AuthTextField(
         controller: _registerCareerController,
         label: 'Carrera o Especialidad',
-        hint: 'ej. Medicina / EnfermerÃ­a',
+        hint: 'ej. Medicina / Enfermería',
         prefixIcon: Icons.school_outlined,
       ),
       const SizedBox(height: 14),
       AuthTextField(
         controller: _registerPasswordController,
-        label: 'Crear ContraseÃ±a',
-        hint: 'MÃ­nimo 6 caracteres',
+        label: 'Crear Contraseña',
+        hint: 'Mínimo 6 caracteres',
         prefixIcon: Icons.lock_outline_rounded,
         obscureText: _obscurePassword,
         suffixIcon: IconButton(
