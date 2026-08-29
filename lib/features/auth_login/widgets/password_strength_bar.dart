@@ -1,15 +1,40 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
-enum PasswordStrength { none, weak, medium, strong }
+enum PasswordStrength { none, forbidden, weak, medium, strong }
 
 class PasswordStrengthBar extends StatelessWidget {
   final String password;
+  final String? email;
 
-  const PasswordStrengthBar({super.key, required this.password});
+  const PasswordStrengthBar({
+    super.key,
+    required this.password,
+    this.email,
+  });
+
+  bool get _isSameAsEmail {
+    if (email == null || email!.trim().isEmpty || password.trim().isEmpty) {
+      return false;
+    }
+    final cleanEmail = email!.trim().toLowerCase();
+    final cleanPass = password.trim().toLowerCase();
+
+    if (cleanPass == cleanEmail) return true;
+
+    if (cleanEmail.contains('@')) {
+      final prefix = cleanEmail.split('@')[0];
+      if (prefix.length >= 3 && cleanPass == prefix) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   PasswordStrength get strength {
     if (password.isEmpty) return PasswordStrength.none;
+    if (_isSameAsEmail) return PasswordStrength.forbidden;
+
     int score = 0;
     if (password.length >= 6) score++;
     if (password.length >= 8) score++;
@@ -24,6 +49,7 @@ class PasswordStrengthBar extends StatelessWidget {
 
   Color _getColor(PasswordStrength s) {
     switch (s) {
+      case PasswordStrength.forbidden:
       case PasswordStrength.weak:
         return const Color(0xFFEF4444); // Rojo
       case PasswordStrength.medium:
@@ -37,6 +63,8 @@ class PasswordStrengthBar extends StatelessWidget {
 
   String _getLabel(PasswordStrength s) {
     switch (s) {
+      case PasswordStrength.forbidden:
+        return '¡Peligro! La contraseña no puede ser igual a tu correo';
       case PasswordStrength.weak:
         return 'Seguridad: Débil (Agrega números y mayúsculas)';
       case PasswordStrength.medium:
@@ -54,7 +82,7 @@ class PasswordStrengthBar extends StatelessWidget {
 
     final s = strength;
     final color = _getColor(s);
-    final activeSegments = s == PasswordStrength.weak
+    final activeSegments = (s == PasswordStrength.weak || s == PasswordStrength.forbidden)
         ? 1
         : s == PasswordStrength.medium
             ? 2
@@ -81,13 +109,23 @@ class PasswordStrengthBar extends StatelessWidget {
             }),
           ),
           const SizedBox(height: 6),
-          Text(
-            _getLabel(s),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+          Row(
+            children: [
+              if (s == PasswordStrength.forbidden) ...[
+                const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFEF4444)),
+                const SizedBox(width: 4),
+              ],
+              Expanded(
+                child: Text(
+                  _getLabel(s),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
