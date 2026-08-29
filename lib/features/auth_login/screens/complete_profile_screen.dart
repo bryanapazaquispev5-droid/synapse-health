@@ -151,23 +151,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.primary, size: 24),
-            tooltip: 'Cancelar y volver',
-            onPressed: _isLoading ? null : _cancelAndGoBack,
-          ),
-          title: const Text(
-            'Volver al inicio',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMuted),
-          ),
-        ),
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(
