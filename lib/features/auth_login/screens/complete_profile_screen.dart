@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -115,6 +116,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         'createdAt': FieldValue.serverTimestamp(),
         'authProvider': 'google.com',
       }, SetOptions(merge: true));
+
+      // Registrar cuenta creada en este dispositivo
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final current = prefs.getInt('created_accounts_on_device') ?? 0;
+        await prefs.setInt('created_accounts_on_device', current + 1);
+      } catch (_) {}
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
