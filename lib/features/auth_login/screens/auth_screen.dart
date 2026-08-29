@@ -283,28 +283,7 @@ class _AuthScreenState extends State<AuthScreen> {
           return;
         }
 
-        final existingCheck = await _firestore
-            .collection('users')
-            .where('email', isEqualTo: email)
-            .limit(1)
-            .get();
-
-        if (existingCheck.docs.isNotEmpty) {
-          final provider = existingCheck.docs.first.data()['authProvider'] ?? '';
-          if (provider == 'google.com') {
-            _showFeedback(
-              'Este correo ya está registrado con Google. Por favor ingresa con el botón "Continuar con Google".',
-              isError: true,
-            );
-          } else {
-            _showFeedback(
-              'Este correo ya está registrado en el sistema. Inicia sesión o recupera tu contraseña.',
-              isError: true,
-            );
-          }
-          setState(() => _isLoading = false);
-          return;
-        }
+        // Crear usuario en Firebase Auth directamente (fuente de verdad)
 
         // Crear usuario en Firebase Auth
         final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -326,6 +305,19 @@ class _AuthScreenState extends State<AuthScreen> {
             'createdAt': FieldValue.serverTimestamp(),
             'authProvider': 'password',
           }, SetOptions(merge: true));
+
+          // Limpiar documentos huérfanos de cuentas previamente eliminadas
+          try {
+            final oldDocs = await _firestore
+                .collection('users')
+                .where('email', isEqualTo: email)
+                .get();
+            for (final d in oldDocs.docs) {
+              if (d.id != user.uid) {
+                await d.reference.delete();
+              }
+            }
+          } catch (_) {}
         }
 
         _showFeedback('¡Cuenta médica creada! Te enviamos un correo de verificación.');
