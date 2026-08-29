@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/password_strength_bar.dart';
+import '../widgets/recaptcha_card.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -18,6 +21,95 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
+
+  // Control de seguridad: Rate Limiting & reCAPTCHA
+  int _createdAccountsOnDevice = 0;
+  bool _captchaVerified = false;
+  int _failedAttempts = 0;
+  int _lockoutSeconds = 0;
+  Timer? _lockoutTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSecurityState();
+  }
+
+  Future<void> _loadSecurityState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final created = prefs.getInt('created_accounts_on_device') ?? 0;
+      final failed = prefs.getInt('failed_login_attempts') ?? 0;
+      final lockoutUntil = prefs.getInt('login_lockout_until') ?? 0;
+      final nowMs = DateTime.now().millisecondsSinceEpoch;
+
+      if (mounted) {
+        setState(() {
+          _createdAccountsOnDevice = created;
+          _failedAttempts = failed;
+        });
+      }
+
+      if (lockoutUntil > nowMs) {
+        _startLockoutTimer((lockoutUntil - nowMs) ~/ 1000);
+      }
+    } catch (_) {}
+  }
+
+  void _startLockoutTimer(int seconds) {
+    _lockoutTimer?.cancel();
+    setState(() => _lockoutSeconds = seconds);
+
+    _lockoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_lockoutSeconds <= 1) {
+        timer.cancel();
+        setState(() => _lockoutSeconds = 0);
+      } else {
+        setState(() => _lockoutSeconds--);
+      }
+    });
+  }
+
+  Future<void> _recordFailedLogin() async {
+    _failedAttempts++;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('failed_login_attempts', _failedAttempts);
+
+      if (_failedAttempts >= 3) {
+        int duration = 30; // 3 intentos: 30s
+        if (_failedAttempts == 4) {
+          duration = 60; // 4 intentos: 60s
+        } else if (_failedAttempts >= 5) {
+          duration = 120; // 5+ intentos: 120s
+        }
+
+        final lockoutUntil = DateTime.now().millisecondsSinceEpoch + (duration * 1000);
+        await prefs.setInt('login_lockout_until', lockoutUntil);
+        _startLockoutTimer(duration);
+
+        _showFeedback(
+          'Demasiados intentos fallidos ($_failedAttempts). Por seguridad médica, espera $duration segundos.',
+          isError: true,
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _clearLoginLockout() async {
+    _failedAttempts = 0;
+    _lockoutSeconds = 0;
+    _lockoutTimer?.cancel();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('failed_login_attempts');
+      await prefs.remove('login_lockout_until');
+    } catch (_) {}
+  }
 
   // Controladores para Login
   final TextEditingController _loginEmailController = TextEditingController();
@@ -228,9 +320,19 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  // 2, 4 y 5. Registro con Validación de Duplicados, Confirmación y Firestore
+  // 2, 4 y 5. Registro con Anti-Bot Captcha y Login con Rate Limiting
   Future<void> _submitEmailAuth() async {
     FocusScope.of(context).unfocus();
+
+    // Validar si el inicio de sesión está bloqueado por intentos fallidos
+    if (_isLogin && _lockoutSeconds > 0) {
+      _showFeedback(
+        'Acceso temporalmente bloqueado. Espera $_lockoutSeconds s antes de reintentar.',
+        isError: true,
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -249,8 +351,21 @@ class _AuthScreenState extends State<AuthScreen> {
           password: password,
         );
 
+        // Login exitoso: limpiar bloqueos e intentos fallidos
+        await _clearLoginLockout();
+
         _showFeedback('¡Bienvenido de nuevo, ${userCredential.user?.email}!');
       } else {
+        // En Registro: Si ya se creó al menos 1 cuenta en este celular, requerir reCAPTCHA
+        if (_createdAccountsOnDevice >= 1 && !_captchaVerified) {
+          _showFeedback(
+            'Por seguridad anti-bots, marca la casilla "No soy un robot" para continuar.',
+            isError: true,
+          );
+          setState(() => _isLoading = false);
+          return;
+        }
+
         final name = _registerNameController.text.trim();
         final email = _registerEmailController.text.trim().toLowerCase();
         final career = _registerCareerController.text.trim();
@@ -329,11 +444,26 @@ class _AuthScreenState extends State<AuthScreen> {
               }
             }
           } catch (_) {}
+
+          // Registrar que se creó una cuenta en este celular
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            final current = prefs.getInt('created_accounts_on_device') ?? 0;
+            await prefs.setInt('created_accounts_on_device', current + 1);
+            if (mounted) {
+              setState(() => _createdAccountsOnDevice = current + 1);
+            }
+          } catch (_) {}
         }
 
         _showFeedback('¡Cuenta médica creada! Te enviamos un correo de verificación.');
       }
     } on FirebaseAuthException catch (e) {
+      if (_isLogin) {
+        // Registrar intento fallido para activar bloqueo progresivo
+        await _recordFailedLogin();
+      }
+
       String msg = 'Error en autenticación';
       if (e.code == 'user-not-found') {
         msg = 'No existe ninguna cuenta registrada con este correo';
@@ -347,6 +477,8 @@ class _AuthScreenState extends State<AuthScreen> {
         msg = 'La contraseña debe tener al menos 6 caracteres';
       } else if (e.code == 'invalid-email') {
         msg = 'Formato de correo no válido';
+      } else if (e.code == 'too-many-requests') {
+        msg = 'Demasiados intentos. Tu acceso ha sido pausado temporalmente.';
       }
       _showFeedback(msg, isError: true);
     } catch (e) {
@@ -377,6 +509,9 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
+
+      // Limpiar bloqueos de login
+      await _clearLoginLockout();
 
       // No creamos documento en Firestore todavía: solo se creará si el usuario completa su carrera en CompleteProfileScreen
 
@@ -426,6 +561,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   void dispose() {
+    _lockoutTimer?.cancel();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
     _registerNameController.dispose();
@@ -438,6 +574,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLockoutActive = _isLogin && _lockoutSeconds > 0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -528,6 +666,35 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 20),
 
+                  // Banner de Bloqueo por Intentos Fallidos
+                  if (isLockoutActive) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.timer_outlined, color: Color(0xFFDC2626), size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Demasiados intentos fallidos ($_failedAttempts). Por seguridad médica, espera $_lockoutSeconds segundos...',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF991B1B),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   // Formulario condicional
                   if (_isLogin) ..._buildLoginForm() else ..._buildRegisterForm(),
 
@@ -537,9 +704,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submitEmailAuth,
+                      onPressed: (_isLoading || isLockoutActive) ? null : _submitEmailAuth,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: isLockoutActive ? const Color(0xFF94A3B8) : AppColors.primary,
                         foregroundColor: AppColors.surface,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -555,20 +722,35 @@ class _AuthScreenState extends State<AuthScreen> {
                                 color: AppColors.surface,
                               ),
                             )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _isLogin ? 'Acceder al Sistema' : 'Completar Registro',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                          : isLockoutActive
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.lock_clock_rounded, size: 18),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Bloqueado ($_lockoutSeconds s)',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _isLogin ? 'Acceder al Sistema' : 'Completar Registro',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(Icons.arrow_forward_rounded, size: 18),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.arrow_forward_rounded, size: 18),
-                              ],
-                            ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -699,6 +881,8 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   List<Widget> _buildRegisterForm() {
+    final bool requireCaptcha = _createdAccountsOnDevice >= 1;
+
     return [
       AuthTextField(
         controller: _registerNameController,
@@ -759,6 +943,14 @@ class _AuthScreenState extends State<AuthScreen> {
           onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
         ),
       ),
+
+      // Casilla Google reCAPTCHA: solo si ya se creó 1 cuenta previa en este celular
+      if (requireCaptcha) ...[
+        RecaptchaCard(
+          isVerified: _captchaVerified,
+          onVerified: (verified) => setState(() => _captchaVerified = verified),
+        ),
+      ],
     ];
   }
 }
