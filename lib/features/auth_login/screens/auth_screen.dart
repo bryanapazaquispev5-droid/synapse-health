@@ -163,27 +163,27 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo minimalista
+                  // Logo oficial de la aplicacion
                   Center(
                     child: Container(
-                      width: 72,
-                      height: 72,
+                      width: 78,
+                      height: 78,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border, width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.accent.withValues(alpha: 0.15),
+                            color: AppColors.accent.withValues(alpha: 0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.medical_services_outlined,
-                        size: 34,
-                        color: AppColors.accent,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/images/app_logo.jpg',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
