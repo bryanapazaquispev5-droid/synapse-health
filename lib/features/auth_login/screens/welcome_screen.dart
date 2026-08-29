@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -277,6 +278,9 @@ class WelcomeScreen extends StatelessWidget {
                     height: 52,
                     child: OutlinedButton.icon(
                       onPressed: () async {
+                        try {
+                          await GoogleSignIn().signOut();
+                        } catch (_) {}
                         await FirebaseAuth.instance.signOut();
                       },
                       icon: const Icon(Icons.logout_rounded, size: 18),
