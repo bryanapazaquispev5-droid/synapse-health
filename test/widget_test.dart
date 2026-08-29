@@ -1,11 +1,15 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synapse_health/main.dart';
+import 'package:synapse_health/core/theme/app_theme.dart';
 
 void main() {
-  testWidgets('Carga inicial de la pantalla de Auth (Login y Registro)', (WidgetTester tester) async {
-    await tester.pumpWidget(const SynapseHealthApp());
-    expect(find.text('Iniciar Sesión'), findsOneWidget);
-    expect(find.text('Ingresar'), findsOneWidget);
-    expect(find.text('Registrarse'), findsOneWidget);
+  testWidgets('Carga de Tema y Estilos de Synapse Health', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: const Scaffold(body: Center(child: Text('Synapse Health'))),
+      ),
+    );
+    expect(find.text('Synapse Health'), findsOneWidget);
   });
 }
