@@ -377,15 +377,19 @@ class _AuthScreenState extends State<AuthScreen> {
       final user = userCredential.user;
 
       if (user != null) {
-        await _firestore.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'name': user.displayName ?? 'Estudiante de Salud',
-          'email': user.email?.toLowerCase() ?? '',
-          'career': 'Ciencias de la Salud',
-          'studyStreakDays': 0,
-          'createdAt': FieldValue.serverTimestamp(),
-          'authProvider': 'google.com',
-        }, SetOptions(merge: true));
+        final doc = await _firestore.collection('users').doc(user.uid).get();
+        if (!doc.exists) {
+          // Usuario nuevo con Google: se crea el documento y luego CompleteProfileScreen pedirá su carrera
+          await _firestore.collection('users').doc(user.uid).set({
+            'uid': user.uid,
+            'name': user.displayName ?? '',
+            'email': user.email?.toLowerCase() ?? '',
+            'career': null,
+            'studyStreakDays': 0,
+            'createdAt': FieldValue.serverTimestamp(),
+            'authProvider': 'google.com',
+          });
+        }
       }
 
       _showFeedback('¡Conectado con Google: ${userCredential.user?.displayName}!');
