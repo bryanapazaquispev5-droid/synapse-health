@@ -283,6 +283,17 @@ class _AuthScreenState extends State<AuthScreen> {
           return;
         }
 
+        // Validación de seguridad: La contraseña no puede ser igual al correo
+        final String emailLower = email.toLowerCase().trim();
+        final String passwordLower = password.toLowerCase().trim();
+        final String emailPrefix = emailLower.contains('@') ? emailLower.split('@')[0] : '';
+
+        if (passwordLower == emailLower || (emailPrefix.length >= 3 && passwordLower == emailPrefix)) {
+          _showFeedback('Por seguridad, la contraseña no puede ser igual a tu correo.', isError: true);
+          setState(() => _isLoading = false);
+          return;
+        }
+
         // Crear usuario en Firebase Auth directamente (fuente de verdad)
 
         // Crear usuario en Firebase Auth
@@ -702,6 +713,7 @@ class _AuthScreenState extends State<AuthScreen> {
         hint: 'ej. estudiante@gmail.com',
         prefixIcon: Icons.mail_outline_rounded,
         keyboardType: TextInputType.emailAddress,
+        onChanged: (_) => setState(() {}),
       ),
       const SizedBox(height: 14),
       AuthTextField(
@@ -727,7 +739,10 @@ class _AuthScreenState extends State<AuthScreen> {
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
-      PasswordStrengthBar(password: _registerPasswordController.text),
+      PasswordStrengthBar(
+        password: _registerPasswordController.text,
+        email: _registerEmailController.text,
+      ),
       const SizedBox(height: 14),
       AuthTextField(
         controller: _registerConfirmPasswordController,
