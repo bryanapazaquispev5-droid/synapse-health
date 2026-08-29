@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
+import 'core/theme/app_theme.dart';
+import 'features/auth_login/screens/auth_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const SynapseHealthApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SynapseHealthApp extends StatelessWidget {
+  const SynapseHealthApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      title: 'Synapse Health',
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Text(
-            'Hello World',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
+      home: const AuthScreen(),
     );
   }
 }
