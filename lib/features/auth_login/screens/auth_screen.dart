@@ -374,23 +374,8 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      final user = userCredential.user;
 
-      if (user != null) {
-        final doc = await _firestore.collection('users').doc(user.uid).get();
-        if (!doc.exists) {
-          // Usuario nuevo con Google: se crea el documento y luego CompleteProfileScreen pedirá su carrera
-          await _firestore.collection('users').doc(user.uid).set({
-            'uid': user.uid,
-            'name': user.displayName ?? '',
-            'email': user.email?.toLowerCase() ?? '',
-            'career': null,
-            'studyStreakDays': 0,
-            'createdAt': FieldValue.serverTimestamp(),
-            'authProvider': 'google.com',
-          });
-        }
-      }
+      // No creamos documento en Firestore todavía: solo se creará si el usuario completa su carrera en CompleteProfileScreen
 
       _showFeedback('¡Conectado con Google: ${userCredential.user?.displayName}!');
     } catch (e) {
