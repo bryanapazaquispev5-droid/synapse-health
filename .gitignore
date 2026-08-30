@@ -47,3 +47,4 @@ desktop.ini
 
 # Logs y volcados de depuración
 *.log
+node_modules/

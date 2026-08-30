@@ -3,10 +3,15 @@ import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
 class BottomPillItem {
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
   final String label;
 
-  const BottomPillItem({required this.icon, required this.label});
+  const BottomPillItem({
+    this.icon,
+    this.assetPath,
+    required this.label,
+  });
 }
 
 class BottomFloatingPill extends StatefulWidget {
@@ -37,7 +42,6 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
     _previousIndex = widget.currentIndex;
     _targetIndex = widget.currentIndex;
 
-    // Duración optimizada ~20% más rápida (300 ms en lugar de 380 ms)
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -82,13 +86,13 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
             border: Border.all(color: AppColors.border, width: 1.2),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.10),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
               BoxShadow(
-                color: AppColors.accent.withValues(alpha: 0.06),
-                blurRadius: 10,
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
+                blurRadius: 12,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -111,26 +115,21 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                 left = endLeft;
                 right = endRight;
               } else if (_targetIndex > _previousIndex) {
-                // Movimiento a la derecha: La cabeza (derecha) se dispara primero, la cola (izquierda) la sigue
                 final double headT = const Interval(0.0, 0.70, curve: Curves.easeOutCubic).transform(t);
                 final double tailT = const Interval(0.20, 1.0, curve: Curves.easeInOutCubic).transform(t);
                 left = startLeft + (endLeft - startLeft) * tailT;
                 right = startRight + (endRight - startRight) * headT;
               } else {
-                // Movimiento a la izquierda: La cabeza (izquierda) se dispara primero, la cola (derecha) la sigue
                 final double headT = const Interval(0.0, 0.70, curve: Curves.easeOutCubic).transform(t);
                 final double tailT = const Interval(0.20, 1.0, curve: Curves.easeInOutCubic).transform(t);
                 left = startLeft + (endLeft - startLeft) * headT;
                 right = startRight + (endRight - startRight) * tailT;
               }
 
-              // Efecto Físico de Gota Líquida:
-              // Al estirarse horizontalmente, la altura se contrae ligeramente (conservación de masa líquida)
               final double currentWidth = (right - left).abs();
               final double stretchRatio = (currentWidth / slotWidth).clamp(1.0, 2.2);
               final double verticalSquash = (1.0 - (stretchRatio - 1.0) * 0.18).clamp(0.82, 1.0);
 
-              // Rebote elástico final al aterrizar en el botón
               double bounceScale = 1.0;
               if (t > 0.75) {
                 final double bounceT = (t - 0.75) / 0.25;
@@ -139,7 +138,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
 
               return Stack(
                 children: [
-                  // GOTA DESLIZANTE QUE SE ESTIRA (Indicador líquido)
+                  // CAPA 1 (FONDO): BURBUJA BLANCA CON BORDE LED CELESTE DELGADO Y SUTIL
                   Positioned(
                     left: left + 3,
                     width: (right - left - 6).clamp(slotWidth * 0.6, totalWidth),
@@ -150,27 +149,19 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                         scaleY: verticalSquash * bounceScale,
                         scaleX: bounceScale,
                         child: Container(
-                          height: 52,
+                          height: 53.5,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF0F172A),
-                                Color(0xFF1E293B),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                            color: Colors.white, // Fondo blanco clarito
+                            borderRadius: BorderRadius.circular(27),
+                            border: Border.all(
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.90), // Borde LED celestito ultradelgado
+                              width: 0.75,
                             ),
-                            borderRadius: BorderRadius.circular(26),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF0F172A).withValues(alpha: 0.28),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                              BoxShadow(
-                                color: AppColors.accent.withValues(alpha: 0.20),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.28), // Resplandor LED fino
+                                blurRadius: 3,
+                                spreadRadius: 0.2,
                               ),
                             ],
                           ),
@@ -179,7 +170,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                     ),
                   ),
 
-                  // BOTONES INTERACTIVOS PERFECTAMENTE CENTRADOS VERTICAL Y HORIZONTALMENTE
+                  // CAPA 2 (FRENTE): LOGOS GIFS Y TEXTOS DELANTE DE LA BURBUJA
                   Positioned.fill(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -192,35 +183,40 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                             onTap: () => _onItemTapped(index),
                             behavior: HitTestBehavior.opaque,
                             child: AnimatedScale(
-                              scale: isSelected ? 1.06 : 1.0,
-                              duration: const Duration(milliseconds: 220),
+                              scale: isSelected ? 1.35 : 1.0,
+                              duration: const Duration(milliseconds: 240),
                               curve: Curves.easeOutBack,
                               child: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const SizedBox(height: 2), // Corrección óptica para centrado vertical exacto
-                                    AnimatedSwitcher(
-                                      duration: const Duration(milliseconds: 180),
-                                      transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
-                                      child: Icon(
-                                        item.icon,
-                                        key: ValueKey('${item.label}_$isSelected'),
-                                        size: 21,
-                                        color: isSelected ? AppColors.surface : AppColors.textMuted,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 3),
+                                    item.assetPath != null
+                                        ? Image.asset(
+                                            item.assetPath!,
+                                            width: 23.5,
+                                            height: 23.5,
+                                            fit: BoxFit.contain,
+                                          )
+                                        : Icon(
+                                            item.icon ?? Icons.circle,
+                                            size: 20,
+                                            color: isSelected
+                                                ? const Color(0xFF0284C7)
+                                                : AppColors.textMuted,
+                                          ),
+                                    const SizedBox(height: 1.5),
                                     AnimatedDefaultTextStyle(
                                       duration: const Duration(milliseconds: 180),
                                       style: TextStyle(
                                         fontFamily: 'Roboto',
-                                        fontSize: 11,
+                                        fontSize: 10.2, // Reducido para margen inferior perfecto
                                         fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                        color: isSelected ? AppColors.surface : AppColors.textMuted,
-                                        letterSpacing: -0.2,
-                                        height: 1.1,
+                                        color: isSelected
+                                            ? const Color(0xFF0284C7)
+                                            : AppColors.textMuted,
+                                        letterSpacing: -0.3,
+                                        height: 1.05,
                                       ),
                                       child: Text(
                                         item.label,

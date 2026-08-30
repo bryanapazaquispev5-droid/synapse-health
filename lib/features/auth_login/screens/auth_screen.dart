@@ -121,6 +121,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController _registerCareerController = TextEditingController();
   final TextEditingController _registerPasswordController = TextEditingController();
   final TextEditingController _registerConfirmPasswordController = TextEditingController();
+  String _registerGender = 'Hombre';
 
   FirebaseAuth get _auth => FirebaseAuth.instance;
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
@@ -427,6 +428,7 @@ class _AuthScreenState extends State<AuthScreen> {
             'name': name,
             'email': email,
             'career': career,
+            'gender': _registerGender,
             'studyStreakDays': 0,
             'createdAt': FieldValue.serverTimestamp(),
             'authProvider': 'password',
@@ -834,6 +836,48 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
+  Widget _genderOption({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.surface : AppColors.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? AppColors.surface : AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   List<Widget> _buildLoginForm() {
     return [
       AuthTextField(
@@ -905,6 +949,51 @@ class _AuthScreenState extends State<AuthScreen> {
         label: 'Carrera o Especialidad',
         hint: 'ej. Medicina Humana / Enfermería',
         prefixIcon: Icons.school_outlined,
+      ),
+      const SizedBox(height: 14),
+      // Selector de Género (Hombre / Mujer)
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Género del Estudiante',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _genderOption(
+                    label: 'Hombre',
+                    icon: Icons.male_rounded,
+                    isSelected: _registerGender == 'Hombre',
+                    onTap: () => setState(() => _registerGender = 'Hombre'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _genderOption(
+                    label: 'Mujer',
+                    icon: Icons.female_rounded,
+                    isSelected: _registerGender == 'Mujer',
+                    onTap: () => setState(() => _registerGender = 'Mujer'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       const SizedBox(height: 14),
       AuthTextField(

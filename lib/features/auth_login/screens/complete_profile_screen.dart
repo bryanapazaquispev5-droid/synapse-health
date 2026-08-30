@@ -19,6 +19,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   late final TextEditingController _nameController;
   final TextEditingController _careerController = TextEditingController();
   bool _isLoading = false;
+  String _selectedGender = 'Hombre';
 
   final List<String> _suggestedCareers = [
     'Medicina Humana',
@@ -112,6 +113,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         'name': name,
         'email': widget.user.email?.toLowerCase() ?? '',
         'career': career,
+        'gender': _selectedGender,
         'studyStreakDays': 0,
         'createdAt': FieldValue.serverTimestamp(),
         'authProvider': 'google.com',
@@ -271,7 +273,53 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
+
+                    // Selector de Género (Hombre / Mujer)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Género del Estudiante',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _genderButton(
+                                  label: 'Hombre',
+                                  icon: Icons.male_rounded,
+                                  isSelected: _selectedGender == 'Hombre',
+                                  onTap: () => setState(() => _selectedGender = 'Hombre'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _genderButton(
+                                  label: 'Mujer',
+                                  icon: Icons.female_rounded,
+                                  isSelected: _selectedGender == 'Mujer',
+                                  onTap: () => setState(() => _selectedGender = 'Mujer'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
 
                     // Boton Guardar y Continuar
                     SizedBox(
@@ -332,6 +380,48 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _genderButton({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.surface : AppColors.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? AppColors.surface : AppColors.primary,
+              ),
+            ),
+          ],
         ),
       ),
     );
