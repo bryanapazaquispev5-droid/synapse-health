@@ -6,7 +6,7 @@ import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth_login/screens/auth_screen.dart';
 import 'features/auth_login/screens/complete_profile_screen.dart';
-import 'features/auth_login/screens/welcome_screen.dart';
+import 'features/navigation/screens/main_navigation_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +42,7 @@ class SynapseHealthApp extends StatelessWidget {
 
           // Los invitados no requieren perfil formal
           if (user.isAnonymous) {
-            return WelcomeScreen(user: user);
+            return MainNavigationWrapper(user: user);
           }
 
           // Solo los usuarios de Google necesitan el onboarding "Casi listo",
@@ -52,7 +52,7 @@ class SynapseHealthApp extends StatelessWidget {
           );
 
           if (!isGoogleUser) {
-            return WelcomeScreen(user: user);
+            return MainNavigationWrapper(user: user);
           }
 
           // Para usuarios de Google: verificar si ya completaron su carrera médica en Firestore
@@ -75,7 +75,7 @@ class SynapseHealthApp extends StatelessWidget {
                 return CompleteProfileScreen(user: user);
               }
 
-              return WelcomeScreen(user: user);
+              return MainNavigationWrapper(user: user);
             },
           );
         },
