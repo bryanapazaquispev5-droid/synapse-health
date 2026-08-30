@@ -270,6 +270,131 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _openEditGenderDialog(String currentGender) {
+    String selected = currentGender;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Cambiar Género',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _genderDialogOption(
+                          label: 'Hombre',
+                          icon: Icons.male_rounded,
+                          isSelected: selected == 'Hombre',
+                          onTap: () => setModalState(() => selected = 'Hombre'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _genderDialogOption(
+                          label: 'Mujer',
+                          icon: Icons.female_rounded,
+                          isSelected: selected == 'Mujer',
+                          onTap: () => setModalState(() => selected = 'Mujer'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        try {
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(widget.user.uid)
+                              .set({'gender': selected}, SetOptions(merge: true));
+                          _showFeedback('¡Género actualizado a $selected!');
+                        } catch (e) {
+                          _showFeedback('Error al actualizar género: $e', isError: true);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.surface,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _genderDialogOption({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20, color: isSelected ? AppColors.surface : AppColors.textMuted),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? AppColors.surface : AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -279,6 +404,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final String name = data?['name'] ?? widget.user.displayName ?? 'Estudiante de Salud';
         final String email = data?['email'] ?? widget.user.email ?? 'invitado@synapse.app';
         final String career = data?['career'] ?? 'Ciencias de la Salud';
+        final String gender = data?['gender'] ?? 'Hombre';
+        final String userGif = (gender.toLowerCase() == 'mujer')
+            ? 'assets/images/user_girl.gif'
+            : 'assets/images/user_boy.gif';
         final int streakDays = data?['studyStreakDays'] ?? 0;
         final bool isGoogle = widget.user.providerData.any((p) => p.providerId == 'google.com');
         final bool isAnonymous = widget.user.isAnonymous;
@@ -327,8 +456,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🔥', style: TextStyle(fontSize: 14)),
-                              const SizedBox(width: 4),
+                              Image.asset(
+                                'assets/images/fire.gif',
+                                width: 22,
+                                height: 22,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 6),
                               Text(
                                 '$streakDays días',
                                 style: const TextStyle(
@@ -368,19 +502,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               CircleAvatar(
                                 radius: 44,
                                 backgroundColor: AppColors.accent.withValues(alpha: 0.15),
-                                backgroundImage: (widget.user.photoURL != null && widget.user.photoURL!.isNotEmpty)
-                                    ? NetworkImage(widget.user.photoURL!)
-                                    : null,
-                                child: (widget.user.photoURL == null || widget.user.photoURL!.isEmpty)
-                                    ? Text(
-                                        name.isNotEmpty ? name[0].toUpperCase() : 'E',
-                                        style: const TextStyle(
-                                          fontSize: 34,
-                                          fontWeight: FontWeight.w900,
-                                          color: AppColors.accent,
+                                child: ClipOval(
+                                  child: (widget.user.photoURL != null && widget.user.photoURL!.isNotEmpty)
+                                      ? Image.network(
+                                          widget.user.photoURL!,
+                                          width: 88,
+                                          height: 88,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.asset(
+                                          userGif,
+                                          width: 88,
+                                          height: 88,
+                                          fit: BoxFit.cover,
                                         ),
-                                      )
-                                    : null,
+                                ),
                               ),
                               Container(
                                 padding: const EdgeInsets.all(4),
@@ -441,34 +577,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           const SizedBox(height: 14),
 
-                          // Chip de Carrera editable
-                          GestureDetector(
-                            onTap: () => _openEditCareerDialog(career),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: AppColors.accent.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.school_rounded, size: 16, color: AppColors.accent),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    career,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.accent,
-                                    ),
+                          // Chips de Carrera y Género editables
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _openEditCareerDialog(career),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
                                   ),
-                                  const SizedBox(width: 6),
-                                  const Icon(Icons.mode_edit_outline_rounded, size: 14, color: AppColors.accent),
-                                ],
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.school_rounded, size: 15, color: AppColors.accent),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        career,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.accent,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(Icons.edit_rounded, size: 12, color: AppColors.accent),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
+                              GestureDetector(
+                                onTap: () => _openEditGenderDialog(gender),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: AppColors.border),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        gender == 'Mujer' ? Icons.female_rounded : Icons.male_rounded,
+                                        size: 15,
+                                        color: AppColors.primary,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        gender,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(Icons.swap_horiz_rounded, size: 14, color: AppColors.textMuted),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

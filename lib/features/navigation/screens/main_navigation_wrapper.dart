@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../user_profile/screens/profile_screen.dart';
@@ -29,62 +30,72 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Pantallas de cada pestaña
-          IndexedStack(
-            index: _currentIndex,
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('users').doc(widget.user.uid).snapshots(),
+      builder: (context, snapshot) {
+        final String gender = snapshot.data?.data()?['gender'] ?? 'Hombre';
+        final String userGif = (gender.toLowerCase() == 'mujer')
+            ? 'assets/images/user_girl.gif'
+            : 'assets/images/user_boy.gif';
+
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: Stack(
             children: [
-              _buildPlaceholder(
-                title: 'Chuletas Médicas',
-                subtitle: 'Resúmenes rápidos y directos de Farmacología, Anatomía y Fisiología.',
-                icon: Icons.menu_book_rounded,
-                color: AppColors.accent,
-                tag: 'Fase 2 del Plan',
+              // Pantallas de cada pestaña
+              IndexedStack(
+                index: _currentIndex,
+                children: [
+                  _buildPlaceholder(
+                    title: 'Chuletas Médicas',
+                    subtitle: 'Resúmenes rápidos y directos de Farmacología, Anatomía y Fisiología.',
+                    gifPath: 'assets/images/book.gif',
+                    color: AppColors.accent,
+                    tag: 'Fase 2 del Plan',
+                  ),
+                  _buildPlaceholder(
+                    title: 'Quizzes y Casos Clínicos',
+                    subtitle: 'Evaluación rápida con retroalimentación médica inmediata.',
+                    gifPath: 'assets/images/quiz.gif',
+                    color: const Color(0xFFF59E0B),
+                    tag: 'Fase 3 del Plan',
+                  ),
+                  _buildPlaceholder(
+                    title: 'Métricas y Rachas',
+                    subtitle: 'Análisis mensual de rendimiento y detector de materias débiles.',
+                    gifPath: 'assets/images/progreso.gif',
+                    color: const Color(0xFF10B981),
+                    tag: 'Fase 4 del Plan',
+                  ),
+                  ProfileScreen(user: widget.user),
+                ],
               ),
-              _buildPlaceholder(
-                title: 'Quizzes y Casos Clínicos',
-                subtitle: 'Evaluación rápida con retroalimentación médica inmediata.',
-                icon: Icons.bolt_rounded,
-                color: const Color(0xFFF59E0B),
-                tag: 'Fase 3 del Plan',
+
+              // Píldora Flotante Ergonómica One UI (Alcance del pulgar)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: BottomFloatingPill(
+                  currentIndex: _currentIndex,
+                  onTap: (index) => setState(() => _currentIndex = index),
+                  items: [
+                    const BottomPillItem(assetPath: 'assets/images/book.gif', label: 'Chuletas'),
+                    const BottomPillItem(assetPath: 'assets/images/quiz.gif', label: 'Quizzes'),
+                    const BottomPillItem(assetPath: 'assets/images/progreso.gif', label: 'Progreso'),
+                    BottomPillItem(assetPath: userGif, label: 'Perfil'),
+                  ],
+                ),
               ),
-              _buildPlaceholder(
-                title: 'Métricas y Rachas',
-                subtitle: 'Análisis mensual de rendimiento y detector de materias débiles.',
-                icon: Icons.insights_rounded,
-                color: const Color(0xFF10B981),
-                tag: 'Fase 4 del Plan',
-              ),
-              ProfileScreen(user: widget.user),
             ],
           ),
-
-          // Píldora Flotante Ergonómica One UI (Alcance del pulgar)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: BottomFloatingPill(
-              currentIndex: _currentIndex,
-              onTap: (index) => setState(() => _currentIndex = index),
-              items: const [
-                BottomPillItem(icon: Icons.menu_book_rounded, label: 'Chuletas'),
-                BottomPillItem(icon: Icons.bolt_rounded, label: 'Quizzes'),
-                BottomPillItem(icon: Icons.insights_rounded, label: 'Progreso'),
-                BottomPillItem(icon: Icons.person_rounded, label: 'Perfil'),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildPlaceholder({
     required String title,
     required String subtitle,
-    required IconData icon,
+    required String gifPath,
     required Color color,
     required String tag,
   }) {
@@ -103,7 +114,14 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(color: color.withValues(alpha: 0.25), width: 1.5),
                 ),
-                child: Icon(icon, size: 44, color: color),
+                child: Center(
+                  child: Image.asset(
+                    gifPath,
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               Container(
