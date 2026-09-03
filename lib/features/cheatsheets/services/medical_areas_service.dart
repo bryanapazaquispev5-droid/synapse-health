@@ -124,10 +124,11 @@ class MedicalAreasService {
     ),
   ];
 
-  // Sube las 16 áreas maestras y sus logos en Base64 sin el campo iconKey
+  // Inserta las áreas iniciales SOLAMENTE si la colección en Firestore está 100% vacía.
+  // NUNCA sobreescribe ni restaura un campo imageBase64 que el usuario haya borrado.
   Future<void> ensureInitialSeedIfEmpty() async {
     try {
-      final snapshot = await _firestore.collection(areasCollection).get();
+      final snapshot = await _firestore.collection(areasCollection).limit(1).get();
       if (snapshot.docs.isEmpty) {
         final batch = _firestore.batch();
         for (final area in defaultAreas) {
@@ -135,24 +136,6 @@ class MedicalAreasService {
           batch.set(docRef, area.toMap());
         }
         await batch.commit();
-      } else {
-        // Asigna imageBase64 si algún documento no lo tiene aún
-        final batch = _firestore.batch();
-        bool hasChanges = false;
-        for (final doc in snapshot.docs) {
-          final data = doc.data();
-          final String? existingImg = data['imageBase64'] ?? data['logoBase64'];
-          if (existingImg == null || existingImg.trim().isEmpty) {
-            final String? defaultLogo = MedicalAreaDefaultLogos.getLogo(doc.id);
-            if (defaultLogo != null) {
-              batch.set(doc.reference, {'imageBase64': defaultLogo}, SetOptions(merge: true));
-              hasChanges = true;
-            }
-          }
-        }
-        if (hasChanges) {
-          await batch.commit();
-        }
       }
     } catch (_) {}
   }
