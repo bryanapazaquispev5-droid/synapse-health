@@ -19,8 +19,8 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen> {
   @override
   void initState() {
     super.initState();
-    // Aseguramos que las 16 áreas maestras queden estructuradas en Firestore
-    _service.syncDefaultAreasToFirestore();
+    // Inserta la plantilla solo si la BD en Firebase está 100% vacía
+    _service.ensureInitialSeedIfEmpty();
   }
 
   @override
@@ -34,149 +34,134 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Cabecera One UI
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Chuletas Médicas',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.primary,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        '16 Especialidades y Ciencias de la Salud',
-                        style: TextStyle(fontSize: 13, color: AppColors.textMuted),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.layers_outlined, size: 16, color: AppColors.accent),
-                        SizedBox(width: 4),
-                        Text(
-                          '16 Áreas',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        child: StreamBuilder<List<MedicalAreaModel>>(
+          stream: _service.getAreasStream(),
+          builder: (context, snapshot) {
+            final bool isLoading = snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData;
+            final allAreas = snapshot.data ?? [];
+            final filtered = allAreas.where((a) {
+              return a.name.toLowerCase().contains(_searchQuery) ||
+                  a.code.toLowerCase().contains(_searchQuery);
+            }).toList();
 
-            // Barra de búsqueda rápida
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                  decoration: InputDecoration(
-                    hintText: 'Buscar área médica (ej. Farmacología)...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                            },
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Cuadrícula / Lista en tiempo real de las 16 Áreas Médicas
-            Expanded(
-              child: StreamBuilder<List<MedicalAreaModel>>(
-                stream: _service.getAreasStream(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: AppColors.accent),
-                    );
-                  }
-
-                  final allAreas = snapshot.data ?? MedicalAreasService.defaultAreas;
-                  final filtered = allAreas.where((a) {
-                    return a.name.toLowerCase().contains(_searchQuery) ||
-                        a.code.toLowerCase().contains(_searchQuery);
-                  }).toList();
-
-                  if (filtered.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Cabecera One UI Dinámica (Refleja el conteo exacto de Firebase)
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.search_off_rounded, size: 48, color: AppColors.textMuted),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No se encontró "$_searchQuery"',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
+                          const Text(
+                            'Chuletas Médicas',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
                               color: AppColors.primary,
+                              letterSpacing: -0.5,
                             ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            allAreas.isNotEmpty
+                                ? '${allAreas.length} Especialidades Clínicas'
+                                : 'Ciencias de la Salud',
+                            style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                           ),
                         ],
                       ),
-                    );
-                  }
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.cloud_done_rounded, size: 16, color: AppColors.accent),
+                            const SizedBox(width: 5),
+                            Text(
+                              '${allAreas.length} ${allAreas.length == 1 ? "Área" : "Áreas"}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 100),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.15,
+                // Barra de búsqueda en tiempo real
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final area = filtered[index];
-                      return _buildAreaCard(context, area);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar área médica...',
+                        hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.close_rounded, size: 18),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _searchQuery = '');
+                                },
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Contenido reactivo desde Firestore
+                Expanded(
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(color: AppColors.accent),
+                        )
+                      : allAreas.isEmpty
+                          ? _buildNoAreasInFirestore()
+                          : filtered.isEmpty
+                              ? _buildNoSearchResults()
+                              : GridView.builder(
+                                  padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 100),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: 1.15,
+                                  ),
+                                  itemCount: filtered.length,
+                                  itemBuilder: (context, index) {
+                                    final area = filtered[index];
+                                    return _buildAreaCard(context, area);
+                                  },
+                                ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -280,6 +265,63 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen> {
                   ],
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoSearchResults() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.search_off_rounded, size: 48, color: AppColors.textMuted),
+          const SizedBox(height: 12),
+          Text(
+            'No se encontró "$_searchQuery"',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoAreasInFirestore() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: const Icon(Icons.cloud_off_rounded, size: 36, color: AppColors.accent),
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'No hay áreas en Firestore',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Agrega documentos en la colección "medical_areas" desde tu consola de Firebase y aparecerán aquí automáticamente.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
             ),
           ],
         ),
