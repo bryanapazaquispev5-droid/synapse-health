@@ -138,35 +138,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
 
               return Stack(
                 children: [
-                  // CAPA 1 (FONDO): BURBUJA BLANCA DETRÁS DE LOS ICONOS Y TEXTOS
-                  Positioned(
-                    left: left + 3,
-                    width: (right - left - 6).clamp(slotWidth * 0.6, totalWidth),
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: Transform.scale(
-                        scaleY: verticalSquash * bounceScale,
-                        scaleX: bounceScale,
-                        child: Container(
-                          height: 53.5,
-                          decoration: BoxDecoration(
-                            color: Colors.white, // Fondo blanco clarito
-                            borderRadius: BorderRadius.circular(27),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                                blurRadius: 6,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // CAPA 2 (INTERMEDIO): LOGOS GIFS, ICONOS Y TEXTOS
+                  // CAPA 1 (BASE): LOGOS GIFS, ICONOS Y TEXTOS
                   Positioned.fill(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -206,7 +178,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                                       duration: const Duration(milliseconds: 180),
                                       style: TextStyle(
                                         fontFamily: 'Roboto',
-                                        fontSize: 10.2, // Reducido para margen inferior perfecto
+                                        fontSize: 10.2,
                                         fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                                         color: isSelected
                                             ? const Color(0xFF0284C7)
@@ -230,7 +202,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                     ),
                   ),
 
-                  // CAPA 3 (FRENTE / SUPERIOR): BORDE LED CELESTE QUE FLOTA SIEMPRE POR ENCIMA DE LAS IMÁGENES
+                  // CAPA 2 (FRENTE): BORDE LED CELESTE SIN FONDO QUE FLOTA POR ENCIMA
                   Positioned(
                     left: left + 3,
                     width: (right - left - 6).clamp(slotWidth * 0.6, totalWidth),
@@ -244,10 +216,10 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                           child: Container(
                             height: 53.5,
                             decoration: BoxDecoration(
-                              color: Colors.transparent,
+                              color: Colors.transparent, // Sin fondo alguno
                               borderRadius: BorderRadius.circular(27),
                               border: Border.all(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.95), // Borde LED celeste por encima
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.95), // Borde LED celeste puro
                                 width: 1.2,
                               ),
                               boxShadow: [
