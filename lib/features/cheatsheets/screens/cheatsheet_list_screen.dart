@@ -198,20 +198,22 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: area.buildLogoWidget(
-                      size: 26,
-                      iconColor: AppColors.accent,
+                if (area.hasImage)
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ),
-                ),
+                    child: Center(
+                      child: area.buildLogoWidget(
+                        size: 26,
+                      ),
+                    ),
+                  )
+                else
+                  const SizedBox(width: 44, height: 44),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(

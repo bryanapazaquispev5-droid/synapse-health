@@ -60,21 +60,21 @@ class AreaTopicsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
-                    ),
-                    child: Center(
-                      child: area.buildLogoWidget(
-                        size: 24,
-                        iconColor: AppColors.accent,
+                  if (area.hasImage)
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
+                      ),
+                      child: Center(
+                        child: area.buildLogoWidget(
+                          size: 24,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -190,21 +190,34 @@ class AreaTopicsScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
-              ),
-              child: Center(
-                child: area.buildLogoWidget(
-                  size: 42,
-                  iconColor: AppColors.accent,
+            if (area.hasImage)
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+                ),
+                child: Center(
+                  child: area.buildLogoWidget(
+                    size: 42,
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Center(
+                  child: Icon(Icons.topic_outlined, color: AppColors.textMuted, size: 36),
                 ),
               ),
-            ),
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
