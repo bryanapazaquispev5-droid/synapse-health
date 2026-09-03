@@ -5,6 +5,7 @@ class MedicalAreaModel {
   final String name;
   final String code;
   final String iconKey;
+  final String? imageUrl;
   final int order;
   final int topicsCount;
   final int cheatsheetsCount;
@@ -16,6 +17,7 @@ class MedicalAreaModel {
     required this.name,
     required this.code,
     required this.iconKey,
+    this.imageUrl,
     required this.order,
     this.topicsCount = 0,
     this.cheatsheetsCount = 0,
@@ -25,11 +27,14 @@ class MedicalAreaModel {
 
   factory MedicalAreaModel.fromMap(Map<String, dynamic> map, String documentId) {
     final String rawName = map['name'] ?? documentId;
+    final String? img = map['imageUrl'] ?? map['logoUrl'] ?? map['iconUrl'];
+
     return MedicalAreaModel(
       id: documentId,
       name: rawName,
       code: map['code'] ?? rawName.toUpperCase(),
       iconKey: (map['iconKey'] ?? '').toString().toLowerCase().trim(),
+      imageUrl: (img != null && img.trim().isNotEmpty) ? img.trim() : null,
       order: (map['order'] is int) ? map['order'] : int.tryParse('${map['order']}') ?? 999,
       topicsCount: (map['topicsCount'] is int) ? map['topicsCount'] : 0,
       cheatsheetsCount: (map['cheatsheetsCount'] is int) ? map['cheatsheetsCount'] : 0,
@@ -43,12 +48,62 @@ class MedicalAreaModel {
       'name': name,
       'code': code,
       'iconKey': iconKey,
+      if (imageUrl != null) 'imageUrl': imageUrl,
       'order': order,
       'topicsCount': topicsCount,
       'cheatsheetsCount': cheatsheetsCount,
       'quizzesCount': quizzesCount,
       'isAvailable': isAvailable,
     };
+  }
+
+  // Renderiza la imagen desde URL de Firebase Storage/Web o el icono vectorial como fallback
+  Widget buildLogoWidget({
+    double size = 24,
+    BoxFit fit = BoxFit.cover,
+    Color? iconColor,
+  }) {
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      if (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://')) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(size * 0.28),
+          child: Image.network(
+            imageUrl!,
+            width: size,
+            height: size,
+            fit: fit,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: SizedBox(
+                  width: size * 0.45,
+                  height: size * 0.45,
+                  child: const CircularProgressIndicator(strokeWidth: 2),
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(iconData, size: size, color: iconColor);
+            },
+          ),
+        );
+      } else if (imageUrl!.startsWith('assets/')) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(size * 0.28),
+          child: Image.asset(
+            imageUrl!,
+            width: size,
+            height: size,
+            fit: fit,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(iconData, size: size, color: iconColor);
+            },
+          ),
+        );
+      }
+    }
+
+    return Icon(iconData, size: size, color: iconColor);
   }
 
   IconData get iconData {

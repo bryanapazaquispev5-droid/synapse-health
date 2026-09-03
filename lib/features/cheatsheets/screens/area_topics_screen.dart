@@ -68,7 +68,12 @@ class AreaTopicsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
                     ),
-                    child: Icon(area.iconData, color: AppColors.accent, size: 22),
+                    child: Center(
+                      child: area.buildLogoWidget(
+                        size: 24,
+                        iconColor: AppColors.accent,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -193,7 +198,12 @@ class AreaTopicsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
               ),
-              child: Icon(area.iconData, color: AppColors.accent, size: 38),
+              child: Center(
+                child: area.buildLogoWidget(
+                  size: 42,
+                  iconColor: AppColors.accent,
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Container(

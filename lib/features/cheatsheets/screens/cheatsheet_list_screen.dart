@@ -199,16 +199,17 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: AppColors.accent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    area.iconData,
-                    color: AppColors.accent,
-                    size: 22,
+                  child: Center(
+                    child: area.buildLogoWidget(
+                      size: 26,
+                      iconColor: AppColors.accent,
+                    ),
                   ),
                 ),
                 Container(
