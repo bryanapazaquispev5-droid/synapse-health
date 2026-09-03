@@ -1,0 +1,294 @@
+================================================================================
+          PLAN DE TRABAJO FINAL - APLICACIONES MÓVILES MULTIPLATAFORMA
+            PROYECTO: SYNAPSE HEALTH (APP DE ESTUDIO EN SALUD)
+================================================================================
+
+1. RESUMEN EJECUTIVO Y OBJETIVO
+--------------------------------------------------------------------------------
+La aplicación es una plataforma de estudio ágil y de alto rendimiento orientada
+a estudiantes de carreras de salud (Medicina, Enfermería, Odontología, etc.).
+Su meta es permitir el repaso en cualquier momento libre con la "Regla de los 
+2 Toques": abrir la app y en menos de 5 segundos estar leyendo una chuleta o
+respondiendo un quiz de retroalimentación inmediata.
+
+Pilares del Sistema:
+* Chuletas (Cheatsheets): Resúmenes de alto rendimiento clínico y mnemotécnicas.
+* Quizzes Dinámicos: Preguntas con justificación médica inmediata.
+* Métricas Mensuales: Gráficas de evolución y detección de materias débiles.
+* Modo Offline: Acceso a chuletas dentro de hospitales o zonas sin cobertura.
+
+
+2. FILOSOFÍA DE INTERFAZ: ERGONOMÍA ONE UI (REACHABILITY FIRST)
+--------------------------------------------------------------------------------
+Inspirado en el diseño moderno de Samsung One UI, adaptado para usar el teléfono
+cómodamente con una sola mano:
+
+* ZONA SUPERIOR (70% de la pantalla): Zona de Lectura y Visualización.
+  - Títulos grandes, tarjetas de chuletas, enunciados de casos clínicos y gráficos.
+* ESQUINA SUPERIOR DERECHA:
+  - Exclusivamente el botón discreto de Ajustes (⚙️), de uso ocasional.
+* ZONA INFERIOR (30% de la pantalla): Zona de Control al alcance del Pulgar.
+  - PÍLDORAS FLOTANTES (Floating Bottom Pills): Cápsulas redondeadas que flotan
+    a 12px del borde inferior con los botones frecuentes:
+    [← Volver / Atrás] | [⭐ Guardar] | [Siguiente →] | [Perfil]
+  - Elimina la molestia de tener que estirar el pulgar hasta la esquina superior.
+
+
+3. ARQUITECTURA MODULAR POR CARPETAS AISLADAS (FEATURE-FIRST)
+--------------------------------------------------------------------------------
+Siguiendo la metodología de trabajo en equipo solicitada por el docente, cada
+módulo es independiente y autosuficiente. Si un integrante edita los quizzes,
+no afecta el login ni las chuletas.
+
+Estructura del Proyecto en Flutter:
+
+lib/
+├── core/                               <-- Componentes compartidos por toda la app
+│   ├── theme/
+│   │   └── app_theme.dart              <-- 3 colores minimalistas y tipografías
+│   ├── widgets/
+│   │   ├── bottom_floating_pill.dart   <-- Widget de píldora flotante One UI
+│   │   └── custom_card.dart            <-- Tarjeta con bordes redondeados
+│   └── services/
+│       └── firebase_service.dart       <-- Conexión global a Firestore y Auth
+│
+├── features/                           <-- CARPETAS AISLADAS POR FUNCIONALIDAD
+│   ├── onboarding_permissions/         <-- MÓDULO 1: Permisos y primer inicio
+│   │   ├── screens/initial_permission_screen.dart
+│   │   └── widgets/permission_explanation_pill.dart
+│   │
+│   ├── auth_login/                     <-- MÓDULO 2: Login, Registro y Modo Invitado
+│   │   ├── screens/login_screen.dart
+│   │   ├── screens/register_screen.dart
+│   │   ├── controllers/auth_controller.dart
+│   │   └── widgets/social_pill_button.dart
+│   │
+│   ├── cheatsheets/                    <-- MÓDULO 3: Chuletas y resúmenes médicos
+│   │   ├── models/cheatsheet_model.dart
+│   │   ├── screens/cheatsheet_list_screen.dart
+│   │   ├── screens/cheatsheet_reader_screen.dart
+│   │   └── widgets/reading_floating_pill.dart
+│   │
+│   ├── quizzes/                        <-- MÓDULO 4: Quizzes y retroalimentación
+│   │   ├── models/question_model.dart
+│   │   ├── screens/quiz_session_screen.dart
+│   │   ├── screens/quiz_result_screen.dart
+│   │   └── widgets/feedback_bottom_sheet.dart
+│   │
+│   ├── progress_metrics/               <-- MÓDULO 5: Gráficas mensuales y rachas
+│   │   ├── models/monthly_stat_model.dart
+│   │   ├── screens/progress_dashboard_screen.dart
+│   │   └── widgets/monthly_chart_widget.dart
+│   │
+│   ├── user_profile/                   <-- MÓDULO 6: Datos del alumno y carrera
+│   │   └── screens/profile_screen.dart
+│   │
+│   └── settings/                       <-- MÓDULO 7: Ajustes generales (esquina)
+│       └── screens/settings_screen.dart
+│
+└── main.dart                           <-- Enlace maestro / Router de la app
+
+
+4. DISTRIBUCIÓN DE PANTALLAS Y BOTONES
+--------------------------------------------------------------------------------
+A. Login / Autenticación:
+   - Centro: Logo oficial minimalista, campos de Usuario y Contraseña.
+   - Abajo: Botón principal "Ingresar" + Píldora con [Google] | [Modo Invitado].
+   - El Modo Invitado permite usar la app al instante sin registro previo.
+
+B. Chuletas (Home):
+   - Centro: Tarjetas de resúmenes filtrables (Farmacología, Anatomía, etc.).
+   - Píldora Flotante Principal:
+     [ 📑 Chuletas ] | [ ⚡ Quizzes ] | [ 📊 Progreso ] | [ 👤 Perfil ]
+   - Al abrir una chuleta (Visor):
+     Píldora Inferior con [← Atrás] (lado izquierdo), [⭐ Guardar] y [Siguiente →].
+
+C. Quizzes Interactivos:
+   - Centro: Caso clínico en tarjeta limpia y 4 alternativas táctiles.
+   - Al marcar: Despliegue de caja explicativa con la justificación médica.
+   - Píldora Inferior: [← Salir] | [💡 Pista] | [Siguiente Pregunta →].
+
+D. Progreso y Análisis Mensual:
+   - Centro: Contador de racha diaria ("🔥 12 días") y gráfica comparativa de meses.
+   - Alerta visual: Identifica la materia con promedio menor al 65%.
+   - Píldora Inferior: [📅 Filtrar Mes] | [⚡ Reforzar Materia Débil].
+
+E. Ajustes (Esquina Superior Derecha):
+   - Icono ⚙️ para cerrar sesión, modo oscuro y privacidad.
+
+
+5. POLÍTICA DE PERMISOS Y MODO OFFLINE
+--------------------------------------------------------------------------------
+* Permiso de Notificaciones (POST_NOTIFICATIONS):
+  No se pide de forma agresiva al instalar. Se solicita de forma amigable tras
+  completar el primer quiz: "¿Deseas recordatorios de 5 min para tu racha?".
+* Persistencia Offline de Firebase:
+  Configurada con:
+  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
+  Permite que las chuletas descargadas funcionen en sótanos de hospitales o sin red.
+
+
+6. BASE DE DATOS FIREBASE (FIRESTORE)
+--------------------------------------------------------------------------------
+Colecciones NoSQL estructuradas:
+* users/{userId}: email, displayName, career, currentStreak, lastActiveDate.
+* cheatsheets/{cheatsheetId}: category, title, contentHtml, keyPoints, readMinutes.
+* quizzes/{quizId}: category, question, options [4], correctIndex, rationale.
+* user_progress/{userId}/attempts/{attemptId}:
+  quizId, category, score, totalQuestions, monthKey ("2026-08"), timestamp.
+
+
+7. PALETA DE COLORES MINIMALISTA (MÁXIMO 3 COLORES)
+--------------------------------------------------------------------------------
+1. Blanco Nieve / Superficies:   #FFFFFF y #F8FAFC (Lienzo descansado)
+2. Grafito Pizarra / Texto:      #0F172A (Alto contraste, tipografía y botones)
+3. Azul Médico / Acento:         #4F8EE6 (Marca, estados activos y confirmación)
+(En quizzes se usan tonos tenues de Verde #10B981 y Rojo #EF4444 para feedback).
+
+
+8. ESTÁNDAR OBLIGATORIO PARA COMMITS EN GIT (EN INGLÉS)
+--------------------------------------------------------------------------------
+Para mantener el repositorio profesional y ordenado, todos los integrantes deben
+usar la convención estándar "Conventional Commits" en inglés.
+
+ESTRUCTURA DEL COMMIT:
+<type>(<scope>): <short imperative summary>
+
+- <detailed bullet point 1 explaining what was implemented>
+- <detailed bullet point 2 explaining what was changed or fixed>
+- <detailed bullet point 3 referencing files or modules affected>
+
+TIPOS PERMITIDOS (<type>):
+* feat:     Nueva funcionalidad (ej. nueva pantalla, nuevo widget).
+* fix:      Corrección de un error o bug.
+* refactor: Reestructuración de código sin alterar su funcionamiento.
+* style:    Cambios visuales, espaciados, colores o fuentes (sin cambios de lógica).
+* docs:     Cambios en documentación o comentarios.
+* chore:    Actualización de dependencias en pubspec.yaml o configuración.
+
+ÁMBITOS PERMITIDOS (<scope>):
+auth, cheatsheets, quizzes, progress, permissions, profile, settings, core.
+
+EJEMPLOS REALES PARA COPIAR:
+
+Ejemplo 1 (Nueva característica):
+feat(auth): implement clean login screen with guest mode
+
+- add text controllers for username and password fields
+- implement static credential verification for testing
+- add floating bottom pill for guest and google sign in
+- apply minimalist 3-color theme palette
+
+Ejemplo 2 (Chuletas y píldora ergonómica):
+feat(cheatsheets): add reader screen with bottom floating pill
+
+- create cheatsheet list view with category chips
+- implement floating capsule action bar with back and bookmark buttons
+- enable offline cache support using firestore persistence
+
+Ejemplo 3 (Corrección de error):
+fix(quizzes): resolve answer feedback card overflow
+
+- wrap rationale text inside singlescrollchildview
+- ensure immediate visual feedback updates correctly on tap
+- prevent user from changing selected option after submission
+
+
+9. ACCESO AL REPOSITORIO Y CREDENCIALES DEL EQUIPO
+--------------------------------------------------------------------------------
+Datos de autenticación para subir commits y clonar el repositorio:
+
+* Usuario GitHub:
+  bryanapazaquispev5-droid
+
+* Personal Access Token (PAT):
+  <TU_PERSONAL_ACCESS_TOKEN>
+
+CÓMO CONFIGURAR EL REPOSITORIO EN LA TERMINAL:
+1. Clonar el repositorio:
+   git clone https://github.com/bryanapazaquispev5-droid/<NOMBRE_DEL_REPO>.git
+
+2. Configurar usuario local:
+   git config user.name "bryanapazaquispev5-droid"
+   git config user.email "tu_correo@ejemplo.com"
+
+3. Para hacer push utilizando el token:
+   git remote set-url origin https://bryanapazaquispev5-droid:<TU_PERSONAL_ACCESS_TOKEN>@github.com/bryanapazaquispev5-droid/<NOMBRE_DEL_REPO>.git
+
+(Nota: Mantén este token privado dentro del grupo de trabajo y nunca lo subas
+a repositorios públicos).
+
+
+10. METODOLOGÍA DE EXTRACCIÓN Y ESTRUCTURA DE CHULETAS (CHEATSHEETS)
+--------------------------------------------------------------------------------
+Para garantizar resúmenes de máxima calidad médica y fidelidad bibliográfica 
+absoluta (sin invenciones ni omisiones), se definió un protocolo estricto de
+extracción, estructuración y persistencia en Firebase Firestore.
+
+A. METODOLOGÍA DE EXTRACCIÓN BIBLIOGRÁFICA (100% FIDELIDAD TEXTUAL):
+1. Fuente de Verdad Invariable:
+   - Todo el contenido proviene directamente de libros y tratados oficiales 
+     (ej. Rouvière - Anatomía Humana Tomo 1: Cabeza y Cuello, 11.ª edición).
+   - Cero alucinación o alteración: Se respetan taxativamente las relaciones 
+     topográficas, orígenes, inserciones, inervaciones y vascularizaciones.
+2. Segmentación Jerárquica:
+   - Nivel 1 (Área Médica): Colección raíz (ej. "anatomia", "farmacologia").
+   - Nivel 2 (Tema Anatómico/Clínico): División por capítulos u órganos (ej. "Hueso Esfenoides").
+   - Nivel 3 (Chuleta de Alto Rendimiento): Unidad atómica de estudio rápido (ej. "Alas Mayores y Orificios de la Base").
+3. Extracción Automatizada y Validación:
+   - Parseo digital completo del texto fuente mediante scripts especializados.
+   - Indexación de páginas oficiales para trazabilidad académica inmediata.
+
+B. ESTRUCTURA DE DATOS DE CADA CHULETA (DATA SCHEMA EN FIRESTORE):
+Cada documento de chuleta almacena los siguientes campos estandarizados:
+
+* id (String):
+  Identificador canónico único en snake_case (ej. "hueso_esfenoides_alas_mayores").
+* title (String):
+  Título formal y descriptivo de la chuleta anatómica.
+* topicId (String):
+  ID del tema padre al que pertenece dentro del área médica.
+* areaId (String):
+  ID del área médica matriz (ej. "anatomia").
+* order (Number):
+  Orden secuencial de lectura dentro del tema (1, 2, 3...).
+* readMinutes (Number):
+  Tiempo estimado de lectura ágil (habitualmente 1 a 3 minutos).
+* summary (String):
+  Síntesis concisa de 2-3 líneas para la vista previa en la tarjeta de la lista.
+* content (String - Formato Markdown):
+  Cuerpo anatómico completo estructurado con:
+  - Encabezados claros (### Descripción General, ### Caras y Bordes).
+  - Viñetas de relaciones anatómicas, inserciones musculares y trayectos vasculonerviosos.
+  - Terminología anatómica estricta según la nómina internacional.
+* keyPoints (Array de Strings):
+  Lista de 3 a 5 conceptos clave de alto rendimiento ("High-Yield Takeaways")
+  diseñados para ser repasados en menos de 30 segundos antes de un examen o guardia.
+* mnemonics (Array de Strings):
+  Reglas mnemotécnicas, siglas diagnósticas o asociaciones clínicas clave
+  (ej. "ROSE: Redondo mayor / Óptico / Sphenoid / Espinoso" o relaciones de pares craneales).
+* tags (Array de Strings):
+  Palabras clave de búsqueda y filtrado rápido (ej. ["osteologia", "esfenoides", "base_craneo"]).
+
+C. PERSISTENCIA EN FIRESTORE Y SINCRONIZACIÓN REACTIVA:
+1. Subcolección por Tema:
+   medical_areas/{areaId}/topics/{topicId}/cheatsheets/{cheatsheetId}
+   - Permite consultas rápidas, aisladas y de bajo consumo de datos al abrir un tema específico.
+2. Catálogo Global Raíz:
+   cheatsheets/{cheatsheetId}
+   - Permite búsquedas globales, marcadores favoritos y filtros transversales.
+3. Modo Offline Nativo:
+   - Gracias al motor de persistencia local de Firestore, las chuletas consultadas
+     permanecen en la memoria del dispositivo y son legibles sin conexión a internet.
+
+D. INTEGRACIÓN EN LA INTERFAZ DE USUARIO (ONE UI REACHABILITY):
+1. Pantalla de Temas (AreaTopicsScreen):
+   - Muestra el listado de temas oficiales con su contador dinámico de chuletas.
+2. Pantalla de Chuletas del Tema (TopicCheatsheetsScreen):
+   - Lista ergonómica de tarjetas con indicador de tiempo de lectura, título y resumen.
+3. Visor Detallado (CheatsheetDetailScreen):
+   - Zona Superior: Tarjeta destacada de resumen y contenido en texto enriquecido.
+   - Callout Cards: Sección visual para los Puntos Clave (Key Points) con iconos distintivos.
+   - Mnemonic Containers: Tarjetas coloreadas con acentos para retención mnemotécnica.
+   - Píldora Flotante One UI: Barra inferior al alcance del pulgar con [← Volver] y [⭐ Guardar].
+================================================================================
