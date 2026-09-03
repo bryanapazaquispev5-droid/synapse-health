@@ -24,15 +24,16 @@ class MedicalAreaModel {
   });
 
   factory MedicalAreaModel.fromMap(Map<String, dynamic> map, String documentId) {
+    final String rawName = map['name'] ?? documentId;
     return MedicalAreaModel(
       id: documentId,
-      name: map['name'] ?? '',
-      code: map['code'] ?? (map['name'] ?? '').toString().toUpperCase(),
-      iconKey: map['iconKey'] ?? 'default',
-      order: map['order'] ?? 0,
-      topicsCount: map['topicsCount'] ?? 0,
-      cheatsheetsCount: map['cheatsheetsCount'] ?? 0,
-      quizzesCount: map['quizzesCount'] ?? 0,
+      name: rawName,
+      code: map['code'] ?? rawName.toUpperCase(),
+      iconKey: (map['iconKey'] ?? '').toString().toLowerCase().trim(),
+      order: (map['order'] is int) ? map['order'] : int.tryParse('${map['order']}') ?? 999,
+      topicsCount: (map['topicsCount'] is int) ? map['topicsCount'] : 0,
+      cheatsheetsCount: (map['cheatsheetsCount'] is int) ? map['cheatsheetsCount'] : 0,
+      quizzesCount: (map['quizzesCount'] is int) ? map['quizzesCount'] : 0,
       isAvailable: map['isAvailable'] ?? true,
     );
   }
@@ -51,41 +52,84 @@ class MedicalAreaModel {
   }
 
   IconData get iconData {
-    switch (iconKey) {
-      case 'semiologia':
-        return Icons.medical_services_outlined;
-      case 'hematologia':
-        return Icons.bloodtype_outlined;
-      case 'neuroanatomia':
-        return Icons.psychology_outlined;
-      case 'inmunologia':
-        return Icons.shield_outlined;
-      case 'medicina_interna':
-        return Icons.health_and_safety_outlined;
-      case 'dermatologia':
-        return Icons.healing_outlined;
-      case 'bioquimica':
-        return Icons.science_outlined;
-      case 'genetica':
-        return Icons.biotech_outlined;
-      case 'embriologia':
-        return Icons.child_care_outlined;
-      case 'farmacologia':
-        return Icons.medication_outlined;
-      case 'infectologia':
-        return Icons.coronavirus_outlined;
-      case 'microbiologia':
-        return Icons.bubble_chart_outlined;
-      case 'fisiopatologia':
-        return Icons.monitor_heart_outlined;
-      case 'fisiologia':
-        return Icons.favorite_border_rounded;
-      case 'anatomia':
-        return Icons.accessibility_new_rounded;
-      case 'histologia':
-        return Icons.grain_outlined;
-      default:
-        return Icons.local_hospital_outlined;
+    final search = ('$iconKey $name $id').toLowerCase();
+
+    if (search.contains('semiol') || search.contains('diagnos') || search.contains('clinic')) {
+      return Icons.medical_services_rounded;
     }
+    if (search.contains('hemato') || search.contains('sangre')) {
+      return Icons.bloodtype_rounded;
+    }
+    if (search.contains('neuro') || search.contains('cerebro') || search.contains('psico')) {
+      return Icons.psychology_rounded;
+    }
+    if (search.contains('inmuno') || search.contains('defensa') || search.contains('shield')) {
+      return Icons.shield_rounded;
+    }
+    if (search.contains('interna') || search.contains('hospital') || search.contains('general')) {
+      return Icons.health_and_safety_rounded;
+    }
+    if (search.contains('derma') || search.contains('piel')) {
+      return Icons.healing_rounded;
+    }
+    if (search.contains('bioquim') || search.contains('quimica') || search.contains('lab')) {
+      return Icons.science_rounded;
+    }
+    if (search.contains('genet') || search.contains('dna') || search.contains('adn')) {
+      return Icons.biotech_rounded;
+    }
+    if (search.contains('embrio') || search.contains('pedia') || search.contains('niño')) {
+      return Icons.child_care_rounded;
+    }
+    if (search.contains('farma') || search.contains('medicam') || search.contains('droga') || search.contains('pildora')) {
+      return Icons.medication_rounded;
+    }
+    if (search.contains('infecto') || search.contains('virus') || search.contains('covid')) {
+      return Icons.coronavirus_rounded;
+    }
+    if (search.contains('microbio') || search.contains('bacteria') || search.contains('hongo')) {
+      return Icons.bubble_chart_rounded;
+    }
+    if (search.contains('fisiopat') || search.contains('patol')) {
+      return Icons.monitor_heart_rounded;
+    }
+    if (search.contains('fisio') || search.contains('vital')) {
+      return Icons.favorite_border_rounded;
+    }
+    if (search.contains('anato') || search.contains('hueso') || search.contains('cuerpo')) {
+      return Icons.accessibility_new_rounded;
+    }
+    if (search.contains('histo') || search.contains('tejido') || search.contains('celula')) {
+      return Icons.grain_rounded;
+    }
+    if (search.contains('cardio') || search.contains('corazon')) {
+      return Icons.favorite_rounded;
+    }
+    if (search.contains('cirug') || search.contains('operacion')) {
+      return Icons.cut_rounded;
+    }
+    if (search.contains('gineco') || search.contains('obste') || search.contains('mujer')) {
+      return Icons.pregnant_woman_rounded;
+    }
+    if (search.contains('odonto') || search.contains('diente')) {
+      return Icons.tag_faces_rounded;
+    }
+    if (search.contains('oftalmo') || search.contains('ojo')) {
+      return Icons.visibility_rounded;
+    }
+    if (search.contains('trauma') || search.contains('ortoped')) {
+      return Icons.personal_injury_rounded;
+    }
+    if (search.contains('pneumo') || search.contains('pulmon') || search.contains('respirat')) {
+      return Icons.air_rounded;
+    }
+    if (search.contains('gastro') || search.contains('digest')) {
+      return Icons.restaurant_rounded;
+    }
+    if (search.contains('nefro') || search.contains('renal') || search.contains('uro')) {
+      return Icons.water_drop_rounded;
+    }
+
+    return Icons.local_hospital_rounded;
   }
 }

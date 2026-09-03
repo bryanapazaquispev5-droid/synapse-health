@@ -7,7 +7,7 @@ class MedicalAreasService {
 
   static const String areasCollection = 'medical_areas';
 
-  // Lista canónica de las 16 áreas médicas solicitadas
+  // Plantilla inicial de las 16 áreas maestras (solo se inserta si la BD está completamente vacía)
   static final List<MedicalAreaModel> defaultAreas = [
     const MedicalAreaModel(
       id: 'semiologia',
@@ -123,58 +123,58 @@ class MedicalAreasService {
     ),
   ];
 
-  // Sincroniza la estructura de las 16 áreas en Firestore de forma idempotente
-  Future<void> syncDefaultAreasToFirestore() async {
-    final batch = _firestore.batch();
-
-    for (final area in defaultAreas) {
-      final docRef = _firestore.collection(areasCollection).doc(area.id);
-      batch.set(
-        docRef,
-        {
-          'name': area.name,
-          'code': area.code,
-          'iconKey': area.iconKey,
-          'order': area.order,
-          'isAvailable': area.isAvailable,
-          // Conservamos contadores si ya existen en el documento
-        },
-        SetOptions(merge: true),
-      );
-    }
-
-    await batch.commit();
+  // Si la colección en Firestore está 100% vacía, inserta las 16 áreas iniciales una sola vez
+  Future<void> ensureInitialSeedIfEmpty() async {
+    try {
+      final snapshot = await _firestore.collection(areasCollection).limit(1).get();
+      if (snapshot.docs.isEmpty) {
+        final batch = _firestore.batch();
+        for (final area in defaultAreas) {
+          final docRef = _firestore.collection(areasCollection).doc(area.id);
+          batch.set(docRef, area.toMap());
+        }
+        await batch.commit();
+      }
+    } catch (_) {}
   }
 
-  // Stream en tiempo real de las 16 áreas médicas
+  // Stream 100% en tiempo real: Cualquier cambio en Firestore (agregar, editar, eliminar)
+  // se refleja instantáneamente en la pantalla de la app sin recargar ni actualizar.
   Stream<List<MedicalAreaModel>> getAreasStream() {
     return _firestore
         .collection(areasCollection)
-        .orderBy('order')
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) {
-        // Si Firestore aún no se ha sincronizado, devolvemos la lista por defecto local
-        return defaultAreas;
-      }
-      return snapshot.docs
+      final list = snapshot.docs
           .map((doc) => MedicalAreaModel.fromMap(doc.data(), doc.id))
           .toList();
+
+      // Ordenar por el campo order (o por nombre si no tiene orden asignado)
+      list.sort((a, b) {
+        if (a.order != b.order) {
+          return a.order.compareTo(b.order);
+        }
+        return a.name.compareTo(b.name);
+      });
+
+      return list;
     });
   }
 
-  // Stream de subtemas para un área médica específica
+  // Stream en tiempo real de subtemas para un área médica específica
   Stream<List<TopicModel>> getTopicsStream(String areaId) {
     return _firestore
         .collection(areasCollection)
         .doc(areaId)
         .collection('topics')
-        .orderBy('order')
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
+      final list = snapshot.docs
           .map((doc) => TopicModel.fromMap(doc.data(), doc.id))
           .toList();
+
+      list.sort((a, b) => a.order.compareTo(b.order));
+      return list;
     });
   }
 }
