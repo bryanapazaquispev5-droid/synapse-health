@@ -138,7 +138,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
 
               return Stack(
                 children: [
-                  // CAPA 1 (FONDO): BURBUJA BLANCA CON BORDE LED CELESTE DELGADO Y SUTIL
+                  // CAPA 1 (FONDO): BURBUJA BLANCA DETRÁS DE LOS ICONOS Y TEXTOS
                   Positioned(
                     left: left + 3,
                     width: (right - left - 6).clamp(slotWidth * 0.6, totalWidth),
@@ -153,15 +153,11 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                           decoration: BoxDecoration(
                             color: Colors.white, // Fondo blanco clarito
                             borderRadius: BorderRadius.circular(27),
-                            border: Border.all(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.90), // Borde LED celestito ultradelgado
-                              width: 0.75,
-                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.28), // Resplandor LED fino
-                                blurRadius: 3,
-                                spreadRadius: 0.2,
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 1),
                               ),
                             ],
                           ),
@@ -170,7 +166,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                     ),
                   ),
 
-                  // CAPA 2 (FRENTE): LOGOS GIFS Y TEXTOS DELANTE DE LA BURBUJA
+                  // CAPA 2 (INTERMEDIO): LOGOS GIFS, ICONOS Y TEXTOS
                   Positioned.fill(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -231,6 +227,40 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                           ),
                         );
                       }),
+                    ),
+                  ),
+
+                  // CAPA 3 (FRENTE / SUPERIOR): BORDE LED CELESTE QUE FLOTA SIEMPRE POR ENCIMA DE LAS IMÁGENES
+                  Positioned(
+                    left: left + 3,
+                    width: (right - left - 6).clamp(slotWidth * 0.6, totalWidth),
+                    top: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      child: Center(
+                        child: Transform.scale(
+                          scaleY: verticalSquash * bounceScale,
+                          scaleX: bounceScale,
+                          child: Container(
+                            height: 53.5,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(27),
+                              border: Border.all(
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.95), // Borde LED celeste por encima
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.32), // Resplandor LED fino
+                                  blurRadius: 4,
+                                  spreadRadius: 0.5,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
