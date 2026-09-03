@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
@@ -44,7 +45,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 440),
     )..addListener(() {
         setState(() {});
       });
@@ -115,25 +116,38 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                 left = endLeft;
                 right = endRight;
               } else if (_targetIndex > _previousIndex) {
-                final double headT = const Interval(0.0, 0.70, curve: Curves.easeOutCubic).transform(t);
-                final double tailT = const Interval(0.20, 1.0, curve: Curves.easeInOutCubic).transform(t);
+                final double headT = const Interval(0.0, 0.50, curve: Curves.easeOutCubic).transform(t);
+                final double tailT = const Interval(0.08, 0.58, curve: Curves.easeInOutCubic).transform(t);
                 left = startLeft + (endLeft - startLeft) * tailT;
                 right = startRight + (endRight - startRight) * headT;
               } else {
-                final double headT = const Interval(0.0, 0.70, curve: Curves.easeOutCubic).transform(t);
-                final double tailT = const Interval(0.20, 1.0, curve: Curves.easeInOutCubic).transform(t);
+                final double headT = const Interval(0.0, 0.50, curve: Curves.easeOutCubic).transform(t);
+                final double tailT = const Interval(0.08, 0.58, curve: Curves.easeInOutCubic).transform(t);
                 left = startLeft + (endLeft - startLeft) * headT;
                 right = startRight + (endRight - startRight) * tailT;
               }
 
               final double currentWidth = (right - left).abs();
-              final double stretchRatio = (currentWidth / slotWidth).clamp(1.0, 2.2);
-              final double verticalSquash = (1.0 - (stretchRatio - 1.0) * 0.18).clamp(0.82, 1.0);
+              final double stretchRatio = (currentWidth / slotWidth).clamp(1.0, 1.9);
+              final double verticalSquash = (1.0 - (stretchRatio - 1.0) * 0.20).clamp(0.82, 1.0);
 
-              double bounceScale = 1.0;
-              if (t > 0.75) {
-                final double bounceT = (t - 0.75) / 0.25;
-                bounceScale = 1.0 + 0.05 * (1.0 - bounceT) * (bounceT < 0.5 ? 1.0 : -0.5);
+              double scaleX = 1.0;
+              double scaleY = 1.0;
+
+              if (_controller.isAnimating && _targetIndex != _previousIndex) {
+                if (t <= 0.58) {
+                  // Fase 1: Desplazamiento y estiramiento líquido inicial
+                  scaleX = 1.0;
+                  scaleY = verticalSquash;
+                } else {
+                  // Fase 2: Rebote marcado tipo gelatina (deformación armónica elástica perceptible)
+                  final double settleT = (t - 0.58) / 0.42;
+                  final double decay = (1.0 - settleT) * (1.0 - settleT * 0.75);
+                  final double wave = math.sin(settleT * math.pi * 3.5);
+                  final double jelly = wave * decay * 0.16; // 16% de rebote elástico (más visible y jugoso)
+                  scaleX = 1.0 + jelly;
+                  scaleY = 1.0 - (jelly * 0.82);
+                }
               }
 
               return Stack(
@@ -211,12 +225,12 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                     child: IgnorePointer(
                       child: Center(
                         child: Transform.scale(
-                          scaleY: verticalSquash * bounceScale,
-                          scaleX: bounceScale,
+                          scaleX: scaleX,
+                          scaleY: scaleY,
                           child: Container(
                             height: 53.5,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.08), // ~92% transparente
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.03), // ~97% transparente (ultra cristalino)
                               borderRadius: BorderRadius.circular(27),
                               border: Border.all(
                                 color: const Color(0xFF38BDF8).withValues(alpha: 0.85), // Borde LED celeste definido
