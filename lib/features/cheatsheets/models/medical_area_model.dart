@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class MedicalAreaModel {
@@ -5,7 +7,7 @@ class MedicalAreaModel {
   final String name;
   final String code;
   final String iconKey;
-  final String? imageUrl;
+  final String? imageBase64;
   final int order;
   final int topicsCount;
   final int cheatsheetsCount;
@@ -17,7 +19,7 @@ class MedicalAreaModel {
     required this.name,
     required this.code,
     required this.iconKey,
-    this.imageUrl,
+    this.imageBase64,
     required this.order,
     this.topicsCount = 0,
     this.cheatsheetsCount = 0,
@@ -25,16 +27,41 @@ class MedicalAreaModel {
     this.isAvailable = true,
   });
 
+  // Decodifica el texto Base64 a bytes binarios de imagen
+  Uint8List? get decodedImageBytes {
+    if (imageBase64 == null || imageBase64!.trim().isEmpty) return null;
+    try {
+      String clean = imageBase64!.trim();
+      // Si es una URL o ruta de asset, no es Base64
+      if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('assets/')) {
+        return null;
+      }
+      // Si viene con prefijo tipo "data:image/png;base64,..."
+      if (clean.contains(',')) {
+        clean = clean.split(',').last;
+      }
+      clean = clean.replaceAll(RegExp(r'\s+'), '');
+      return base64Decode(clean);
+    } catch (_) {
+      return null;
+    }
+  }
+
   factory MedicalAreaModel.fromMap(Map<String, dynamic> map, String documentId) {
     final String rawName = map['name'] ?? documentId;
-    final String? img = map['imageUrl'] ?? map['logoUrl'] ?? map['iconUrl'];
+    final String? img = map['imageBase64'] ??
+        map['logoBase64'] ??
+        map['image'] ??
+        map['imageUrl'] ??
+        map['logoUrl'] ??
+        map['iconUrl'];
 
     return MedicalAreaModel(
       id: documentId,
       name: rawName,
       code: map['code'] ?? rawName.toUpperCase(),
       iconKey: (map['iconKey'] ?? '').toString().toLowerCase().trim(),
-      imageUrl: (img != null && img.trim().isNotEmpty) ? img.trim() : null,
+      imageBase64: (img != null && img.trim().isNotEmpty) ? img.trim() : null,
       order: (map['order'] is int) ? map['order'] : int.tryParse('${map['order']}') ?? 999,
       topicsCount: (map['topicsCount'] is int) ? map['topicsCount'] : 0,
       cheatsheetsCount: (map['cheatsheetsCount'] is int) ? map['cheatsheetsCount'] : 0,
@@ -48,7 +75,7 @@ class MedicalAreaModel {
       'name': name,
       'code': code,
       'iconKey': iconKey,
-      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (imageBase64 != null) 'imageBase64': imageBase64,
       'order': order,
       'topicsCount': topicsCount,
       'cheatsheetsCount': cheatsheetsCount,
@@ -57,52 +84,57 @@ class MedicalAreaModel {
     };
   }
 
-  // Renderiza la imagen desde URL de Firebase Storage/Web o el icono vectorial como fallback
+  // Renderiza la imagen desde el texto Base64 de Firestore
   Widget buildLogoWidget({
     double size = 24,
     BoxFit fit = BoxFit.cover,
     Color? iconColor,
   }) {
-    if (imageUrl != null && imageUrl!.isNotEmpty) {
-      if (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://')) {
+    // 1. Imagen desde texto Base64 almacenado en Firebase
+    final bytes = decodedImageBytes;
+    if (bytes != null && bytes.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(size * 0.28),
+        child: Image.memory(
+          bytes,
+          width: size,
+          height: size,
+          fit: fit,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(iconData, size: size, color: iconColor);
+          },
+        ),
+      );
+    }
+
+    // 2. Soporte para URLs o Assets si aplica
+    if (imageBase64 != null && imageBase64!.isNotEmpty) {
+      if (imageBase64!.startsWith('http://') || imageBase64!.startsWith('https://')) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(size * 0.28),
           child: Image.network(
-            imageUrl!,
+            imageBase64!,
             width: size,
             height: size,
             fit: fit,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(
-                child: SizedBox(
-                  width: size * 0.45,
-                  height: size * 0.45,
-                  child: const CircularProgressIndicator(strokeWidth: 2),
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Icon(iconData, size: size, color: iconColor);
-            },
+            errorBuilder: (context, error, stackTrace) => Icon(iconData, size: size, color: iconColor),
           ),
         );
-      } else if (imageUrl!.startsWith('assets/')) {
+      } else if (imageBase64!.startsWith('assets/')) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(size * 0.28),
           child: Image.asset(
-            imageUrl!,
+            imageBase64!,
             width: size,
             height: size,
             fit: fit,
-            errorBuilder: (context, error, stackTrace) {
-              return Icon(iconData, size: size, color: iconColor);
-            },
+            errorBuilder: (context, error, stackTrace) => Icon(iconData, size: size, color: iconColor),
           ),
         );
       }
     }
 
+    // 3. Fallback a icono clínico vectorial
     return Icon(iconData, size: size, color: iconColor);
   }
 
