@@ -9,6 +9,7 @@ class CheatsheetModel {
   final List<String> mnemonics;
   final int readMinutes;
   final bool isPremium;
+  final String sourceBook;
 
   const CheatsheetModel({
     required this.id,
@@ -21,6 +22,7 @@ class CheatsheetModel {
     this.mnemonics = const [],
     this.readMinutes = 2,
     this.isPremium = true,
+    this.sourceBook = '',
   });
 
   factory CheatsheetModel.fromMap(Map<String, dynamic> map, String documentId) {
@@ -35,6 +37,7 @@ class CheatsheetModel {
       mnemonics: List<String>.from(map['mnemonics'] ?? []),
       readMinutes: map['readMinutes'] ?? 2,
       isPremium: map['isPremium'] ?? true,
+      sourceBook: map['sourceBook'] ?? map['source'] ?? map['reference'] ?? '',
     );
   }
 
@@ -49,6 +52,7 @@ class CheatsheetModel {
       'mnemonics': mnemonics,
       'readMinutes': readMinutes,
       'isPremium': isPremium,
+      'sourceBook': sourceBook,
     };
   }
 }
