@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/medical_area_model.dart';
 import '../models/topic_model.dart';
+import '../models/cheatsheet_model.dart';
 import '../models/medical_area_default_logos.dart';
 
 class MedicalAreasService {
@@ -177,6 +178,22 @@ class MedicalAreasService {
 
       list.sort((a, b) => a.order.compareTo(b.order));
       return list;
+    });
+  }
+
+  // Stream en tiempo real de chuletas clínicas para un tema específico
+  Stream<List<CheatsheetModel>> getTopicCheatsheetsStream(String areaId, String topicId) {
+    return _firestore
+        .collection(areasCollection)
+        .doc(areaId)
+        .collection('topics')
+        .doc(topicId)
+        .collection('cheatsheets')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => CheatsheetModel.fromMap(doc.data(), doc.id))
+          .toList();
     });
   }
 }
