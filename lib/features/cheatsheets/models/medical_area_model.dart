@@ -47,25 +47,36 @@ class MedicalAreaModel {
     }
   }
 
-  factory MedicalAreaModel.fromMap(Map<String, dynamic> map, String documentId) {
-    final String rawName = map['name'] ?? documentId;
-    final String? img = map['imageBase64'] ??
-        map['logoBase64'] ??
+  factory MedicalAreaModel.fromMap(Map<String, dynamic> rawMap, String documentId) {
+    // Normalizar todas las claves para tolerar espacios accidentales o mayúsculas en Firebase
+    final Map<String, dynamic> map = {};
+    rawMap.forEach((key, value) {
+      map[key.trim().toLowerCase()] = value;
+    });
+
+    final String rawName = (map['name'] ?? documentId).toString();
+    final dynamic rawImg = map['imagebase64'] ??
+        map['logobase64'] ??
+        map['image64'] ??
+        map['logo64'] ??
         map['image'] ??
-        map['imageUrl'] ??
-        map['logoUrl'] ??
-        map['iconUrl'];
+        map['imagen'] ??
+        map['imageurl'] ??
+        map['logourl'] ??
+        map['iconurl'];
+
+    final String? img = rawImg?.toString().trim();
 
     return MedicalAreaModel(
       id: documentId,
       name: rawName,
-      code: map['code'] ?? rawName.toUpperCase(),
-      imageBase64: (img != null && img.trim().isNotEmpty) ? img.trim() : null,
+      code: (map['code'] ?? rawName.toUpperCase()).toString(),
+      imageBase64: (img?.isNotEmpty ?? false) ? img : null,
       order: (map['order'] is int) ? map['order'] : int.tryParse('${map['order']}') ?? 999,
-      topicsCount: (map['topicsCount'] is int) ? map['topicsCount'] : 0,
-      cheatsheetsCount: (map['cheatsheetsCount'] is int) ? map['cheatsheetsCount'] : 0,
-      quizzesCount: (map['quizzesCount'] is int) ? map['quizzesCount'] : 0,
-      isAvailable: map['isAvailable'] ?? true,
+      topicsCount: (map['topicscount'] is int) ? map['topicscount'] : 0,
+      cheatsheetsCount: (map['cheatsheetscount'] is int) ? map['cheatsheetscount'] : 0,
+      quizzesCount: (map['quizzescount'] is int) ? map['quizzescount'] : 0,
+      isAvailable: map['isavailable'] ?? true,
     );
   }
 
@@ -118,7 +129,7 @@ class MedicalAreaModel {
       }
     }
 
-    // Si no hay imagen en Firebase, no muestra ningún icono de respaldo
+    // Si no hay imagen en Firebase, no muestra ningún icono
     return const SizedBox.shrink();
   }
 }
