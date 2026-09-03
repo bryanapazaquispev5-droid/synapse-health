@@ -202,7 +202,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                     ),
                   ),
 
-                  // CAPA 2 (FRENTE): BORDE LED CELESTE SIN FONDO QUE FLOTA POR ENCIMA
+                  // CAPA 2 (FRENTE): BORDE LED CELESTE CON 90% DE TRANSPARENCIA (CRISTALINO)
                   Positioned(
                     left: left + 3,
                     width: (right - left - 6).clamp(slotWidth * 0.6, totalWidth),
@@ -216,19 +216,12 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                           child: Container(
                             height: 53.5,
                             decoration: BoxDecoration(
-                              color: Colors.transparent, // Sin fondo alguno
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.08), // ~92% transparente
                               borderRadius: BorderRadius.circular(27),
                               border: Border.all(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.95), // Borde LED celeste puro
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.85), // Borde LED celeste definido
                                 width: 1.2,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.32), // Resplandor LED fino
-                                  blurRadius: 4,
-                                  spreadRadius: 0.5,
-                                ),
-                              ],
                             ),
                           ),
                         ),
