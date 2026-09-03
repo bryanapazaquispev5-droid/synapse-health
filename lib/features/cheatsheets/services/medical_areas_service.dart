@@ -8,13 +8,12 @@ class MedicalAreasService {
 
   static const String areasCollection = 'medical_areas';
 
-  // Plantilla canónica de las 16 áreas maestras con sus logos en texto Base64
+  // Plantilla canónica de las 16 áreas maestras con sus logos en texto Base64 (sin iconKey)
   static final List<MedicalAreaModel> defaultAreas = [
     MedicalAreaModel(
       id: 'semiologia',
       name: 'Semiología',
       code: 'SEMIOLOGÍA',
-      iconKey: 'semiologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('semiologia'),
       order: 1,
     ),
@@ -22,7 +21,6 @@ class MedicalAreasService {
       id: 'hematologia',
       name: 'Hematología',
       code: 'HEMATOLOGÍA',
-      iconKey: 'hematologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('hematologia'),
       order: 2,
     ),
@@ -30,7 +28,6 @@ class MedicalAreasService {
       id: 'neuroanatomia',
       name: 'Neuroanatomía',
       code: 'NEUROANATOMIA',
-      iconKey: 'neuroanatomia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('neuroanatomia'),
       order: 3,
     ),
@@ -38,7 +35,6 @@ class MedicalAreasService {
       id: 'inmunologia',
       name: 'Inmunología',
       code: 'INMUNOLOGIA',
-      iconKey: 'inmunologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('inmunologia'),
       order: 4,
     ),
@@ -46,7 +42,6 @@ class MedicalAreasService {
       id: 'medicina_interna',
       name: 'Medicina Interna',
       code: 'MEDICINA INTERNA',
-      iconKey: 'medicina_interna',
       imageBase64: MedicalAreaDefaultLogos.getLogo('medicina_interna'),
       order: 5,
     ),
@@ -54,7 +49,6 @@ class MedicalAreasService {
       id: 'dermatologia',
       name: 'Dermatología',
       code: 'DERMATOLOGIA',
-      iconKey: 'dermatologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('dermatologia'),
       order: 6,
     ),
@@ -62,7 +56,6 @@ class MedicalAreasService {
       id: 'bioquimica',
       name: 'Bioquímica',
       code: 'BIOQUIMICA',
-      iconKey: 'bioquimica',
       imageBase64: MedicalAreaDefaultLogos.getLogo('bioquimica'),
       order: 7,
     ),
@@ -70,7 +63,6 @@ class MedicalAreasService {
       id: 'genetica',
       name: 'Genética',
       code: 'GENETICA',
-      iconKey: 'genetica',
       imageBase64: MedicalAreaDefaultLogos.getLogo('genetica'),
       order: 8,
     ),
@@ -78,7 +70,6 @@ class MedicalAreasService {
       id: 'embriologia',
       name: 'Embriología',
       code: 'EMBRIOLOGIA',
-      iconKey: 'embriologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('embriologia'),
       order: 9,
     ),
@@ -86,7 +77,6 @@ class MedicalAreasService {
       id: 'farmacologia',
       name: 'Farmacología',
       code: 'FARMACOLOGIA',
-      iconKey: 'farmacologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('farmacologia'),
       order: 10,
     ),
@@ -94,7 +84,6 @@ class MedicalAreasService {
       id: 'infectologia',
       name: 'Infectología',
       code: 'INFECTOLOGIA',
-      iconKey: 'infectologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('infectologia'),
       order: 11,
     ),
@@ -102,7 +91,6 @@ class MedicalAreasService {
       id: 'microbiologia',
       name: 'Microbiología',
       code: 'MICROBIOLOGIA',
-      iconKey: 'microbiologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('microbiologia'),
       order: 12,
     ),
@@ -110,7 +98,6 @@ class MedicalAreasService {
       id: 'fisiopatologia',
       name: 'Fisiopatología',
       code: 'FISIOPATOLOGIA',
-      iconKey: 'fisiopatologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('fisiopatologia'),
       order: 13,
     ),
@@ -118,7 +105,6 @@ class MedicalAreasService {
       id: 'fisiologia',
       name: 'Fisiología',
       code: 'FISIOLOGIA',
-      iconKey: 'fisiologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('fisiologia'),
       order: 14,
     ),
@@ -126,7 +112,6 @@ class MedicalAreasService {
       id: 'anatomia',
       name: 'Anatomía',
       code: 'ANATOMIA',
-      iconKey: 'anatomia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('anatomia'),
       order: 15,
     ),
@@ -134,13 +119,12 @@ class MedicalAreasService {
       id: 'histologia',
       name: 'Histología',
       code: 'HISTOLOGIA',
-      iconKey: 'histologia',
       imageBase64: MedicalAreaDefaultLogos.getLogo('histologia'),
       order: 16,
     ),
   ];
 
-  // Sube los logos en texto Base64 a Firestore para todos los documentos de medical_areas
+  // Sube las 16 áreas maestras y sus logos en Base64 sin el campo iconKey
   Future<void> ensureInitialSeedIfEmpty() async {
     try {
       final snapshot = await _firestore.collection(areasCollection).get();
@@ -152,7 +136,7 @@ class MedicalAreasService {
         }
         await batch.commit();
       } else {
-        // Si las áreas ya existen pero no tienen el campo imageBase64, se lo asigna directamente
+        // Asigna imageBase64 si algún documento no lo tiene aún
         final batch = _firestore.batch();
         bool hasChanges = false;
         for (final doc in snapshot.docs) {

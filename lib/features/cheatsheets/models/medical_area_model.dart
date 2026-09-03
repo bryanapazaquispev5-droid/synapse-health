@@ -6,7 +6,6 @@ class MedicalAreaModel {
   final String id;
   final String name;
   final String code;
-  final String iconKey;
   final String? imageBase64;
   final int order;
   final int topicsCount;
@@ -18,7 +17,6 @@ class MedicalAreaModel {
     required this.id,
     required this.name,
     required this.code,
-    required this.iconKey,
     this.imageBase64,
     required this.order,
     this.topicsCount = 0,
@@ -32,11 +30,9 @@ class MedicalAreaModel {
     if (imageBase64 == null || imageBase64!.trim().isEmpty) return null;
     try {
       String clean = imageBase64!.trim();
-      // Si es una URL o ruta de asset, no es Base64
       if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('assets/')) {
         return null;
       }
-      // Si viene con prefijo tipo "data:image/png;base64,..."
       if (clean.contains(',')) {
         clean = clean.split(',').last;
       }
@@ -60,7 +56,6 @@ class MedicalAreaModel {
       id: documentId,
       name: rawName,
       code: map['code'] ?? rawName.toUpperCase(),
-      iconKey: (map['iconKey'] ?? '').toString().toLowerCase().trim(),
       imageBase64: (img != null && img.trim().isNotEmpty) ? img.trim() : null,
       order: (map['order'] is int) ? map['order'] : int.tryParse('${map['order']}') ?? 999,
       topicsCount: (map['topicsCount'] is int) ? map['topicsCount'] : 0,
@@ -74,7 +69,6 @@ class MedicalAreaModel {
     return {
       'name': name,
       'code': code,
-      'iconKey': iconKey,
       if (imageBase64 != null) 'imageBase64': imageBase64,
       'order': order,
       'topicsCount': topicsCount,
@@ -134,12 +128,12 @@ class MedicalAreaModel {
       }
     }
 
-    // 3. Fallback a icono clínico vectorial
+    // 3. Fallback a icono clínico vectorial basado en el nombre del área
     return Icon(iconData, size: size, color: iconColor);
   }
 
   IconData get iconData {
-    final search = ('$iconKey $name $id').toLowerCase();
+    final search = ('$name $id').toLowerCase();
 
     if (search.contains('semiol') || search.contains('diagnos') || search.contains('clinic')) {
       return Icons.medical_services_rounded;
