@@ -21,9 +21,11 @@ class TopicModel {
     return TopicModel(
       id: documentId,
       areaId: map['areaId'] ?? '',
-      title: map['title'] ?? '',
+      title: map['title'] ?? map['name'] ?? '',
       description: map['description'] ?? '',
-      order: map['order'] ?? 0,
+      order: (map['order'] is int)
+          ? map['order']
+          : int.tryParse(map['order']?.toString() ?? '0') ?? 0,
       cheatsheetsCount: map['cheatsheetsCount'] ?? 0,
       quizzesCount: map['quizzesCount'] ?? 0,
     );
