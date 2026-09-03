@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../user_profile/screens/profile_screen.dart';
+import '../../cheatsheets/screens/cheatsheet_list_screen.dart';
 
 class MainNavigationWrapper extends StatefulWidget {
   final User user;
@@ -12,7 +13,7 @@ class MainNavigationWrapper extends StatefulWidget {
   const MainNavigationWrapper({
     super.key,
     required this.user,
-    this.initialIndex = 3, // Inicia en Perfil para ver la pantalla completada
+    this.initialIndex = 0, // Inicia en Chuletas Médicas
   });
 
   @override
@@ -46,13 +47,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
               IndexedStack(
                 index: _currentIndex,
                 children: [
-                  _buildPlaceholder(
-                    title: 'Chuletas Médicas',
-                    subtitle: 'Resúmenes rápidos y directos de Farmacología, Anatomía y Fisiología.',
-                    gifPath: 'assets/images/book.gif',
-                    color: AppColors.accent,
-                    tag: 'Fase 2 del Plan',
-                  ),
+                  const CheatsheetListScreen(),
                   _buildPlaceholder(
                     title: 'Quizzes y Casos Clínicos',
                     subtitle: 'Evaluación rápida con retroalimentación médica inmediata.',
