@@ -26,18 +26,32 @@ class CheatsheetModel {
   });
 
   factory CheatsheetModel.fromMap(Map<String, dynamic> map, String documentId) {
+    List<String> parseList(dynamic val) {
+      if (val is List) {
+        return val.map((e) => e?.toString() ?? '').where((e) => e.isNotEmpty).toList();
+      }
+      return [];
+    }
+
+    int parseMinutes(dynamic val) {
+      if (val is int) return val;
+      if (val is num) return val.toInt();
+      if (val != null) return int.tryParse(val.toString()) ?? 2;
+      return 2;
+    }
+
     return CheatsheetModel(
       id: documentId,
-      areaId: map['areaId'] ?? '',
-      topicId: map['topicId'] ?? '',
-      title: map['title'] ?? '',
-      summary: map['summary'] ?? '',
-      contentMarkdown: map['contentMarkdown'] ?? '',
-      keyPoints: List<String>.from(map['keyPoints'] ?? []),
-      mnemonics: List<String>.from(map['mnemonics'] ?? []),
-      readMinutes: map['readMinutes'] ?? 2,
-      isPremium: map['isPremium'] ?? true,
-      sourceBook: map['sourceBook'] ?? map['source'] ?? map['reference'] ?? '',
+      areaId: map['areaId']?.toString() ?? '',
+      topicId: map['topicId']?.toString() ?? '',
+      title: map['title']?.toString() ?? map['name']?.toString() ?? '',
+      summary: map['summary']?.toString() ?? '',
+      contentMarkdown: map['contentMarkdown']?.toString() ?? map['content']?.toString() ?? '',
+      keyPoints: parseList(map['keyPoints']),
+      mnemonics: parseList(map['mnemonics']),
+      readMinutes: parseMinutes(map['readMinutes']),
+      isPremium: map['isPremium'] == true,
+      sourceBook: map['sourceBook']?.toString() ?? map['source']?.toString() ?? map['reference']?.toString() ?? '',
     );
   }
 
