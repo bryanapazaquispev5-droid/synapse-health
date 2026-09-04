@@ -67,15 +67,37 @@ class MedicalAreaModel {
 
     final String? img = rawImg?.toString().trim();
 
+    final int parsedOrder = (map['order'] is int)
+        ? map['order']
+        : int.tryParse('${map['order']}') ?? 15;
+
+    final int parsedTopics = (map['topicscount'] is int)
+        ? map['topicscount']
+        : int.tryParse('${map['totaltopics']}') ??
+            int.tryParse('${map['topicscount']}') ??
+            0;
+
+    final int parsedCheatsheets = (map['cheatsheetscount'] is int)
+        ? map['cheatsheetscount']
+        : int.tryParse('${map['totalcheatsheets']}') ??
+            int.tryParse('${map['cheatsheetscount']}') ??
+            0;
+
+    final int parsedQuizzes = (map['quizzescount'] is int)
+        ? map['quizzescount']
+        : int.tryParse('${map['totalquizzes']}') ??
+            int.tryParse('${map['quizzescount']}') ??
+            0;
+
     return MedicalAreaModel(
       id: documentId,
       name: rawName,
       code: (map['code'] ?? rawName.toUpperCase()).toString(),
       imageBase64: (img?.isNotEmpty ?? false) ? img : null,
-      order: (map['order'] is int) ? map['order'] : int.tryParse('${map['order']}') ?? 999,
-      topicsCount: (map['topicscount'] is int) ? map['topicscount'] : 0,
-      cheatsheetsCount: (map['cheatsheetscount'] is int) ? map['cheatsheetscount'] : 0,
-      quizzesCount: (map['quizzescount'] is int) ? map['quizzescount'] : 0,
+      order: parsedOrder,
+      topicsCount: parsedTopics,
+      cheatsheetsCount: parsedCheatsheets,
+      quizzesCount: parsedQuizzes,
       isAvailable: map['isavailable'] ?? true,
     );
   }
