@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../user_profile/screens/profile_screen.dart';
@@ -22,54 +25,68 @@ class MainNavigationWrapper extends StatefulWidget {
 
 class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   late int _currentIndex;
+  late final Stream<DocumentSnapshot<Map<String, dynamic>>> _userStream;
+  String _cachedGender = 'Hombre';
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _userStream = FirebaseFirestore.instance
+        .collection(AppConstants.firestoreUsers)
+        .doc(widget.user.uid)
+        .snapshots();
+    _loadCachedGender();
+  }
+
+  Future<void> _loadCachedGender() async {
+    final p = await UserLocalProfileService().getProfile(uid: widget.user.uid);
+    if (mounted) {
+      setState(() => _cachedGender = p.gender);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('users').doc(widget.user.uid).snapshots(),
-      builder: (context, snapshot) {
-        final String gender = snapshot.data?.data()?['gender'] ?? 'Hombre';
-        final String userGif = (gender.toLowerCase() == 'mujer')
-            ? 'assets/images/user_girl.gif'
-            : 'assets/images/user_boy.gif';
-
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          body: Stack(
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // Pantallas de cada pestaña
+          IndexedStack(
+            index: _currentIndex,
             children: [
-              // Pantallas de cada pestaña
-              IndexedStack(
-                index: _currentIndex,
-                children: [
-                  const CheatsheetListScreen(),
-                  _buildPlaceholder(
-                    title: 'Quizzes y Casos Clínicos',
-                    subtitle: 'Evaluación rápida con retroalimentación médica inmediata.',
-                    gifPath: 'assets/images/quiz.gif',
-                    color: const Color(0xFFF59E0B),
-                    tag: 'Fase 3 del Plan',
-                  ),
-                  _buildPlaceholder(
-                    title: 'Métricas y Rachas',
-                    subtitle: 'Análisis mensual de rendimiento y detector de materias débiles.',
-                    gifPath: 'assets/images/progreso.gif',
-                    color: const Color(0xFF10B981),
-                    tag: 'Fase 4 del Plan',
-                  ),
-                  ProfileScreen(user: widget.user),
-                ],
+              const CheatsheetListScreen(),
+              _buildPlaceholder(
+                title: 'Quizzes y Casos Clínicos',
+                subtitle: 'Evaluación rápida con retroalimentación médica inmediata.',
+                gifPath: 'assets/images/quiz.gif',
+                color: const Color(0xFFF59E0B),
+                tag: 'Fase 3 del Plan',
               ),
+              _buildPlaceholder(
+                title: 'Métricas y Rachas',
+                subtitle: 'Análisis mensual de rendimiento y detector de materias débiles.',
+                gifPath: 'assets/images/progreso.gif',
+                color: const Color(0xFF10B981),
+                tag: 'Fase 4 del Plan',
+              ),
+              ProfileScreen(user: widget.user),
+            ],
+          ),
 
-              // Píldora Flotante Ergonómica One UI (Alcance del pulgar)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: BottomFloatingPill(
+          // Píldora Flotante Ergonómica (Alcance del pulgar) - Mantenida intacta
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: _userStream,
+              builder: (context, snapshot) {
+                final String gender = snapshot.data?.data()?['gender'] ?? _cachedGender;
+                final String userGif = (gender.toLowerCase() == 'mujer')
+                    ? 'assets/images/user_girl.gif'
+                    : 'assets/images/user_boy.gif';
+
+                return BottomFloatingPill(
                   currentIndex: _currentIndex,
                   onTap: (index) => setState(() => _currentIndex = index),
                   items: [
@@ -78,12 +95,12 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                     const BottomPillItem(assetPath: 'assets/images/progreso.gif', label: 'Progreso'),
                     BottomPillItem(assetPath: userGif, label: 'Perfil'),
                   ],
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -97,13 +114,14 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
     return SafeArea(
       child: Center(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.only(left: 28, right: 28, top: 40, bottom: 110),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 90,
-                height: 90,
+                width: 96,
+                height: 96,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(28),
@@ -112,15 +130,15 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                 child: Center(
                   child: Image.asset(
                     gifPath,
-                    width: 48,
-                    height: 48,
+                    width: 52,
+                    height: 52,
                     fit: BoxFit.contain,
                   ),
                 ),
               ),
               const SizedBox(height: 24),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
@@ -140,10 +158,10 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.w800,
                   color: AppColors.primary,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.6,
                 ),
               ),
               const SizedBox(height: 8),
@@ -153,22 +171,26 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                   subtitle,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     color: AppColors.textMuted,
                     height: 1.4,
                   ),
                 ),
               ),
               const SizedBox(height: 32),
-              ElevatedButton.icon(
+              CupertinoButton.filled(
+                borderRadius: BorderRadius.circular(16),
                 onPressed: () => setState(() => _currentIndex = 3),
-                icon: const Icon(Icons.person_outline_rounded, size: 18),
-                label: const Text('Ver mi Perfil Médico (Completado)'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.surface,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(CupertinoIcons.person_fill, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      'Ver mi Perfil Médico (Completado)',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                    ),
+                  ],
                 ),
               ),
             ],

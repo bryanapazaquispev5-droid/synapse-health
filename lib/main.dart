@@ -5,13 +5,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth_login/screens/auth_screen.dart';
-import 'features/auth_login/screens/complete_profile_screen.dart';
 import 'features/navigation/screens/main_navigation_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // DESACTIVAR PERSISTENCIA EN DISCO (Seguridad y protección contra ingeniería inversa)
+  // Todo el contenido médico y chuletas residen únicamente en memoria volátil (RAM)
+  // y requieren conexión activa a internet para ser consultados.
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: false,
   );
   runApp(const SynapseHealthApp());
 }
@@ -30,6 +35,7 @@ class SynapseHealthApp extends StatelessWidget {
         builder: (context, authSnapshot) {
           if (authSnapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
+              backgroundColor: AppColors.background,
               body: Center(
                 child: CircularProgressIndicator(color: AppColors.accent),
               ),
@@ -40,44 +46,8 @@ class SynapseHealthApp extends StatelessWidget {
             return const AuthScreen();
           }
 
-          // Los invitados no requieren perfil formal
-          if (user.isAnonymous) {
-            return MainNavigationWrapper(user: user);
-          }
-
-          // Solo los usuarios de Google necesitan el onboarding "Casi listo",
-          // porque quienes se registran con correo ya llenaron su carrera en el formulario.
-          final bool isGoogleUser = user.providerData.any(
-            (p) => p.providerId == 'google.com',
-          );
-
-          if (!isGoogleUser) {
-            return MainNavigationWrapper(user: user);
-          }
-
-          // Para usuarios de Google: verificar si ya completaron su carrera médica en Firestore
-          return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
-            builder: (context, userDocSnapshot) {
-              if (userDocSnapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(
-                    child: CircularProgressIndicator(color: AppColors.accent),
-                  ),
-                );
-              }
-
-              final data = userDocSnapshot.data?.data();
-              final String? career = data?['career'];
-
-              // Si ingresó con Google por primera vez y aún no tiene carrera
-              if (career == null || career.trim().isEmpty) {
-                return CompleteProfileScreen(user: user);
-              }
-
-              return MainNavigationWrapper(user: user);
-            },
-          );
+          // Usuario autenticado (con persistencia de sesión segura en Firebase Auth)
+          return MainNavigationWrapper(user: user);
         },
       ),
     );
