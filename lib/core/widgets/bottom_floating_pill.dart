@@ -45,7 +45,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 440),
+      duration: const Duration(milliseconds: 640),
     )..addListener(() {
         setState(() {});
       });
@@ -166,7 +166,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                             behavior: HitTestBehavior.opaque,
                             child: AnimatedScale(
                               scale: isSelected ? 1.35 : 1.0,
-                              duration: const Duration(milliseconds: 240),
+                              duration: const Duration(milliseconds: 350),
                               curve: Curves.easeOutBack,
                               child: Center(
                                 child: Column(
@@ -189,7 +189,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
                                           ),
                                     const SizedBox(height: 1.5),
                                     AnimatedDefaultTextStyle(
-                                      duration: const Duration(milliseconds: 180),
+                                      duration: const Duration(milliseconds: 260),
                                       style: TextStyle(
                                         fontFamily: 'Roboto',
                                         fontSize: 10.2,

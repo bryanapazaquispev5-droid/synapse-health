@@ -90,7 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: const Color(0x33000000),
+      barrierColor: const Color(0x5A000000),
       transitionDuration: const Duration(milliseconds: 600),
       pageBuilder: (context, animation, secondaryAnimation) => builder(context),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -189,7 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 12),
                     CupertinoTextField(
                       controller: controller,
-                      autofocus: true,
+                      autofocus: false,
                       textCapitalization: TextCapitalization.words,
                       placeholder: 'Nombre y Apellidos',
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -301,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 12),
                     CupertinoTextField(
                       controller: controller,
-                      autofocus: true,
+                      autofocus: false,
                       textCapitalization: TextCapitalization.words,
                       placeholder: 'Ej: Cardiología, Pediatría...',
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -354,92 +354,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     _showSmoothCupertinoActionSheet(
       context: context,
-      builder: (context) => Opacity(
-        opacity: 0.90,
-        child: CupertinoActionSheet(
-          title: const Text(
-            'Especialidad o Carrera',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
-            ),
-          ),
-          message: const Text(
-            'Selecciona tu área de formación en salud:',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textMuted,
-            ),
-          ),
-          actions: [
-            ...careers.map((c) {
-              final String title = c['title'] as String;
-              final IconData icon = c['icon'] as IconData;
-              final Color color = c['color'] as Color;
-              final bool isSelected = currentCareer.trim().toLowerCase() == title.toLowerCase();
-
-              return CupertinoActionSheetAction(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await _updateCareer(title);
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(icon, color: color, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? AppColors.accent : AppColors.primary,
-                      ),
-                    ),
-                    if (isSelected) ...[
-                      const SizedBox(width: 6),
-                      const Icon(CupertinoIcons.checkmark_alt, size: 16, color: AppColors.accent),
-                    ],
-                  ],
-                ),
-              );
-            }),
-            CupertinoActionSheetAction(
-              onPressed: () {
-                Navigator.pop(context);
-                _openCustomCareerDialog(currentCareer);
-              },
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(CupertinoIcons.pencil_ellipsis_rectangle, color: AppColors.textMuted, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Otra especialidad...',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.accent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          cancelButton: CupertinoActionSheetAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.accent,
-              ),
-            ),
+      builder: (context) => _OpaqueActionSheet(
+        title: const Text(
+          'Especialidad o Carrera',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: '.SF Pro Text',
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textMuted,
+            decoration: TextDecoration.none,
           ),
         ),
+        message: const Text(
+          'Selecciona tu área de formación en salud:',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: '.SF Pro Text',
+            fontSize: 13,
+            fontWeight: FontWeight.normal,
+            color: AppColors.textMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        actions: [
+          ...careers.map((c) {
+            final String title = c['title'] as String;
+            final IconData icon = c['icon'] as IconData;
+            final Color color = c['color'] as Color;
+            final bool isSelected = currentCareer.trim().toLowerCase() == title.toLowerCase();
+
+            return _OpaqueActionSheetActionItem(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _updateCareer(title);
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: '.SF Pro Text',
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? AppColors.accent : AppColors.primary,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(width: 6),
+                    const Icon(CupertinoIcons.checkmark_alt, size: 16, color: AppColors.accent),
+                  ],
+                ],
+              ),
+            );
+          }),
+          _OpaqueActionSheetActionItem(
+            onPressed: () {
+              Navigator.pop(context);
+              _openCustomCareerDialog(currentCareer);
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(CupertinoIcons.pencil_ellipsis_rectangle, color: AppColors.textMuted, size: 18),
+                SizedBox(width: 8),
+                Text(
+                  'Otra especialidad...',
+                  style: TextStyle(
+                    fontFamily: '.SF Pro Text',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.accent,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -447,115 +443,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _openEditGenderDialog(String currentGender) {
     _showSmoothCupertinoActionSheet(
       context: context,
-      builder: (context) => Opacity(
-        opacity: 0.90,
-        child: CupertinoActionSheet(
-          title: const Text(
-            'Seleccionar Género',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
-            ),
-          ),
-          message: const Text(
-            'Elige tu avatar de estudiante de salud:',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textMuted,
-            ),
-          ),
-          actions: [
-            CupertinoActionSheetAction(
-              onPressed: () async {
-                Navigator.pop(context);
-                try {
-                  await UserLocalProfileService().saveProfile(
-                    uid: widget.user.uid,
-                    name: _localProfile?.name ?? widget.user.displayName ?? '',
-                    email: widget.user.email ?? '',
-                    career: _localProfile?.career ?? 'Medicina Humana',
-                    gender: 'Hombre',
-                    photoUrl: widget.user.photoURL,
-                  );
-                  _loadLocalProfile();
-                  await FirebaseFirestore.instance
-                      .collection(AppConstants.firestoreUsers)
-                      .doc(widget.user.uid)
-                      .set({'gender': 'Hombre'}, SetOptions(merge: true));
-                  _showFeedback('¡Género actualizado!');
-                } catch (e) {
-                  _showFeedback('Error: $e', isError: true);
-                }
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(CupertinoIcons.person_fill, color: AppColors.accent, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Hombre',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: currentGender == 'Hombre' ? FontWeight.w700 : FontWeight.w500,
-                      color: AppColors.accent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            CupertinoActionSheetAction(
-              onPressed: () async {
-                Navigator.pop(context);
-                try {
-                  await UserLocalProfileService().saveProfile(
-                    uid: widget.user.uid,
-                    name: _localProfile?.name ?? widget.user.displayName ?? '',
-                    email: widget.user.email ?? '',
-                    career: _localProfile?.career ?? 'Medicina Humana',
-                    gender: 'Mujer',
-                    photoUrl: widget.user.photoURL,
-                  );
-                  _loadLocalProfile();
-                  await FirebaseFirestore.instance
-                      .collection(AppConstants.firestoreUsers)
-                      .doc(widget.user.uid)
-                      .set({'gender': 'Mujer'}, SetOptions(merge: true));
-                  _showFeedback('¡Género actualizado!');
-                } catch (e) {
-                  _showFeedback('Error: $e', isError: true);
-                }
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(CupertinoIcons.person_crop_circle_fill, color: AppColors.systemPink, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Mujer',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: currentGender == 'Mujer' ? FontWeight.w700 : FontWeight.w500,
-                      color: AppColors.systemPink,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          cancelButton: CupertinoActionSheetAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.accent,
-              ),
-            ),
+      builder: (context) => _OpaqueActionSheet(
+        title: const Text(
+          'Seleccionar Género',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: '.SF Pro Text',
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textMuted,
+            decoration: TextDecoration.none,
           ),
         ),
+        message: const Text(
+          'Elige tu avatar de estudiante de salud:',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: '.SF Pro Text',
+            fontSize: 13,
+            fontWeight: FontWeight.normal,
+            color: AppColors.textMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        actions: [
+          _OpaqueActionSheetActionItem(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await UserLocalProfileService().saveProfile(
+                  uid: widget.user.uid,
+                  name: _localProfile?.name ?? widget.user.displayName ?? '',
+                  email: widget.user.email ?? '',
+                  career: _localProfile?.career ?? 'Medicina Humana',
+                  gender: 'Hombre',
+                  photoUrl: widget.user.photoURL,
+                );
+                _loadLocalProfile();
+                await FirebaseFirestore.instance
+                    .collection(AppConstants.firestoreUsers)
+                    .doc(widget.user.uid)
+                    .set({'gender': 'Hombre'}, SetOptions(merge: true));
+                _showFeedback('¡Género actualizado!');
+              } catch (e) {
+                _showFeedback('Error: $e', isError: true);
+              }
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(CupertinoIcons.person_fill, color: AppColors.accent, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Hombre',
+                  style: TextStyle(
+                    fontFamily: '.SF Pro Text',
+                    fontSize: 15,
+                    fontWeight: currentGender == 'Hombre' ? FontWeight.w700 : FontWeight.w500,
+                    color: AppColors.accent,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _OpaqueActionSheetActionItem(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await UserLocalProfileService().saveProfile(
+                  uid: widget.user.uid,
+                  name: _localProfile?.name ?? widget.user.displayName ?? '',
+                  email: widget.user.email ?? '',
+                  career: _localProfile?.career ?? 'Medicina Humana',
+                  gender: 'Mujer',
+                  photoUrl: widget.user.photoURL,
+                );
+                _loadLocalProfile();
+                await FirebaseFirestore.instance
+                    .collection(AppConstants.firestoreUsers)
+                    .doc(widget.user.uid)
+                    .set({'gender': 'Mujer'}, SetOptions(merge: true));
+                _showFeedback('¡Género actualizado!');
+              } catch (e) {
+                _showFeedback('Error: $e', isError: true);
+              }
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(CupertinoIcons.person_crop_circle_fill, color: AppColors.systemPink, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Mujer',
+                  style: TextStyle(
+                    fontFamily: '.SF Pro Text',
+                    fontSize: 15,
+                    fontWeight: currentGender == 'Mujer' ? FontWeight.w700 : FontWeight.w500,
+                    color: AppColors.systemPink,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -968,6 +960,136 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OpaqueActionSheetActionItem {
+  final Widget child;
+  final VoidCallback onPressed;
+
+  const _OpaqueActionSheetActionItem({
+    required this.child,
+    required this.onPressed,
+  });
+}
+
+class _OpaqueActionSheet extends StatelessWidget {
+  final Widget? title;
+  final Widget? message;
+  final List<_OpaqueActionSheetActionItem> actions;
+
+  const _OpaqueActionSheet({
+    this.title,
+    this.message,
+    required this.actions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    // 10% de transparencia = 90% de opacidad
+    final cardColor = const Color(0xFFFFFFFF).withValues(alpha: 0.90);
+    const dividerColor = AppColors.border;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: const TextStyle(
+          fontFamily: '.SF Pro Text',
+          decoration: TextDecoration.none,
+          color: AppColors.primary,
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 10,
+              right: 10,
+              bottom: bottomPadding > 0 ? 8 : 14,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Top action group card
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    color: cardColor,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (title != null || message != null) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ?title,
+                                if (title != null && message != null) const SizedBox(height: 4),
+                                ?message,
+                              ],
+                            ),
+                          ),
+                          const Divider(height: 0.5, thickness: 0.5, color: dividerColor),
+                        ],
+                        for (int i = 0; i < actions.length; i++) ...[
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: actions[i].onPressed,
+                              highlightColor: const Color(0xFFE5E5EA).withValues(alpha: 0.5),
+                              splashColor: Colors.transparent,
+                              child: Container(
+                                width: double.infinity,
+                                constraints: const BoxConstraints(minHeight: 52),
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                child: actions[i].child,
+                              ),
+                            ),
+                          ),
+                          if (i < actions.length - 1)
+                            const Divider(height: 0.5, thickness: 0.5, color: dividerColor),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Cancel button card
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Material(
+                    color: cardColor,
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      highlightColor: const Color(0xFFE5E5EA).withValues(alpha: 0.5),
+                      splashColor: Colors.transparent,
+                      child: Container(
+                        width: double.infinity,
+                        height: 54,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            fontFamily: '.SF Pro Text',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accent,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
