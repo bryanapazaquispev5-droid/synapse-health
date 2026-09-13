@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/cheatsheet_model.dart';
@@ -20,27 +21,33 @@ class CheatsheetDetailScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Barra superior One UI
+            // Barra superior estilo Apple Navigation Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.only(left: 12, right: 16, top: 10, bottom: 8),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.primary),
+                  CupertinoButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    minimumSize: const Size(36, 36),
                     onPressed: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      area.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(CupertinoIcons.chevron_back, size: 24, color: AppColors.accent),
+                        SizedBox(width: 2),
+                        Text(
+                          'Atrás',
+                          style: TextStyle(
+                            fontSize: 17,
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
@@ -49,13 +56,13 @@ class CheatsheetDetailScreen extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time_rounded, size: 14, color: AppColors.accent),
+                        const Icon(CupertinoIcons.time, size: 13, color: AppColors.accent),
                         const SizedBox(width: 4),
                         Text(
                           '${cheatsheet.readMinutes} min',
                           style: const TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.accent,
                           ),
                         ),
@@ -66,22 +73,21 @@ class CheatsheetDetailScreen extends StatelessWidget {
               ),
             ),
 
-            const Divider(height: 1, color: AppColors.border),
-
-            // Contenido clínico
+            // Contenido clínico estilo Apple Notes / Books
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                 children: [
-                  // Título principal
+                  // Título principal estilo Large Title
                   Text(
                     cheatsheet.title,
                     style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
                       color: AppColors.primary,
-                      letterSpacing: -0.5,
-                      height: 1.25,
+                      letterSpacing: -0.6,
+                      height: 1.2,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -103,22 +109,22 @@ class CheatsheetDetailScreen extends StatelessWidget {
                   if (cheatsheet.sourceBook.isNotEmpty) ...[
                     Container(
                       margin: const EdgeInsets.only(bottom: 18),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.border),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border, width: 0.6),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.menu_book_rounded, size: 16, color: AppColors.accent),
+                          const Icon(CupertinoIcons.book_fill, size: 16, color: AppColors.accent),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Fuente oficial: ${cheatsheet.sourceBook}',
                               style: const TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: AppColors.primary,
                               ),
                             ),
@@ -128,29 +134,36 @@ class CheatsheetDetailScreen extends StatelessWidget {
                     ),
                   ],
 
-                  // Puntos Clave de Alto Rendimiento (High-Yield)
+                  // Puntos Clave de Alto Rendimiento (High-Yield Apple Callout Card)
                   if (cheatsheet.keyPoints.isNotEmpty) ...[
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border, width: 0.6),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x08000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.star_rounded, size: 20, color: AppColors.accent),
+                          Row(
+                            children: const [
+                              Icon(CupertinoIcons.star_fill, size: 16, color: AppColors.accent),
                               SizedBox(width: 8),
                               Text(
-                                'PUNTOS CLAVE (ROUVIÈRE)',
+                                'PUNTOS CLAVE DE ALTO RENDIMIENTO',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
                                   color: AppColors.accent,
-                                  letterSpacing: 0.8,
+                                  letterSpacing: 0.6,
                                 ),
                               ),
                             ],
@@ -166,8 +179,8 @@ class CheatsheetDetailScreen extends StatelessWidget {
                                       child: Text(
                                         kp,
                                         style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w500,
                                           color: AppColors.primary,
                                           height: 1.35,
                                         ),
@@ -179,32 +192,39 @@ class CheatsheetDetailScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                   ],
 
-                  // Mnemotécnicas clínicas
+                  // Mnemotécnicas clínicas (Apple Amber Callout Card)
                   if (cheatsheet.mnemonics.isNotEmpty) ...[
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.systemOrange.withValues(alpha: 0.3), width: 0.8),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x08000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.lightbulb_rounded, size: 20, color: Color(0xFFD97706)),
+                          Row(
+                            children: const [
+                              Icon(CupertinoIcons.lightbulb_fill, size: 16, color: AppColors.systemOrange),
                               SizedBox(width: 8),
                               Text(
                                 'REGLA MNEMOTÉCNICA',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
-                                  color: Color(0xFFD97706),
-                                  letterSpacing: 0.8,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.systemOrange,
+                                  letterSpacing: 0.6,
                                 ),
                               ),
                             ],
@@ -213,8 +233,8 @@ class CheatsheetDetailScreen extends StatelessWidget {
                           ...cheatsheet.mnemonics.map((m) => Text(
                                 m,
                                 style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
                                   color: Color(0xFF92400E),
                                   height: 1.35,
                                 ),
@@ -222,11 +242,11 @@ class CheatsheetDetailScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                   ],
 
                   // Contenido Markdown estructurado
-                  _buildFormattedContent(cheatsheet.contentMarkdown),
+                  _formatMarkdownContent(cheatsheet.contentMarkdown),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -237,8 +257,8 @@ class CheatsheetDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFormattedContent(String markdown) {
-    final sections = markdown.split('\n');
+  Widget _formatMarkdownContent(String markdownContent) {
+    final sections = markdownContent.split('\n');
     final List<Widget> widgets = [];
 
     for (final line in sections) {
@@ -251,10 +271,10 @@ class CheatsheetDetailScreen extends StatelessWidget {
           child: Text(
             trimmed.replaceFirst('### ', ''),
             style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
               color: AppColors.primary,
-              letterSpacing: -0.3,
+              letterSpacing: -0.4,
             ),
           ),
         ));
@@ -265,7 +285,7 @@ class CheatsheetDetailScreen extends StatelessWidget {
             trimmed.replaceFirst('#### ', ''),
             style: const TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.accent,
             ),
           ),
@@ -273,16 +293,16 @@ class CheatsheetDetailScreen extends StatelessWidget {
       } else if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
         final text = trimmed.substring(2);
         widgets.add(Padding(
-          padding: const EdgeInsets.only(left: 8, bottom: 6),
+          padding: const EdgeInsets.only(left: 6, bottom: 6),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('•  ', style: TextStyle(fontSize: 13, color: AppColors.accent, fontWeight: FontWeight.bold)),
               Expanded(
                 child: Text(
-                  _cleanMarkdown(text),
+                  _sanitizeMarkdownText(text),
                   style: const TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     color: AppColors.primary,
                     height: 1.4,
                   ),
@@ -296,7 +316,7 @@ class CheatsheetDetailScreen extends StatelessWidget {
       } else if (trimmed.startsWith('|')) {
         // Filas de tablas simples
         if (!trimmed.contains('---')) {
-          final cells = trimmed.split('|').map((c) => c.trim()).filter((c) => c.isNotEmpty).toList();
+          final cells = trimmed.split('|').map((c) => c.trim()).where((c) => c.isNotEmpty).toList();
           if (cells.isNotEmpty) {
             widgets.add(Container(
               margin: const EdgeInsets.only(bottom: 6),
@@ -304,11 +324,11 @@ class CheatsheetDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: AppColors.border, width: 0.6),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: cells.map((cell) => Text(_cleanMarkdown(cell), style: const TextStyle(fontSize: 12.5, color: AppColors.primary, height: 1.3))).toList(),
+                children: cells.map((cell) => Text(_sanitizeMarkdownText(cell), style: const TextStyle(fontSize: 13, color: AppColors.primary, height: 1.3))).toList(),
               ),
             ));
           }
@@ -317,9 +337,9 @@ class CheatsheetDetailScreen extends StatelessWidget {
         widgets.add(Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Text(
-            _cleanMarkdown(trimmed),
+            _sanitizeMarkdownText(trimmed),
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 14.5,
               color: AppColors.primary,
               height: 1.45,
             ),
@@ -334,15 +354,11 @@ class CheatsheetDetailScreen extends StatelessWidget {
     );
   }
 
-  String _cleanMarkdown(String raw) {
-    return raw
+  String _sanitizeMarkdownText(String rawText) {
+    return rawText
         .replaceAll('**', '')
         .replaceAll('*', '')
         .replaceAll('`', '')
         .replaceAll(r'$', '');
   }
-}
-
-extension _IterableFilter<E> on Iterable<E> {
-  Iterable<E> filter(bool Function(E element) test) => where(test);
 }

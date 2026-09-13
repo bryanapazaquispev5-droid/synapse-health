@@ -26,17 +26,17 @@ class CheatsheetModel {
   });
 
   factory CheatsheetModel.fromMap(Map<String, dynamic> map, String documentId) {
-    List<String> parseList(dynamic val) {
-      if (val is List) {
-        return val.map((e) => e?.toString() ?? '').where((e) => e.isNotEmpty).toList();
+    List<String> parseStringList(dynamic rawList) {
+      if (rawList is List) {
+        return rawList.map((e) => e?.toString() ?? '').where((e) => e.isNotEmpty).toList();
       }
-      return [];
+      return const [];
     }
 
-    int parseMinutes(dynamic val) {
-      if (val is int) return val;
-      if (val is num) return val.toInt();
-      if (val != null) return int.tryParse(val.toString()) ?? 2;
+    int parseReadMinutes(dynamic rawMinutes) {
+      if (rawMinutes is int) return rawMinutes;
+      if (rawMinutes is num) return rawMinutes.toInt();
+      if (rawMinutes != null) return int.tryParse(rawMinutes.toString()) ?? 2;
       return 2;
     }
 
@@ -47,9 +47,9 @@ class CheatsheetModel {
       title: map['title']?.toString() ?? map['name']?.toString() ?? '',
       summary: map['summary']?.toString() ?? '',
       contentMarkdown: map['contentMarkdown']?.toString() ?? map['content']?.toString() ?? '',
-      keyPoints: parseList(map['keyPoints']),
-      mnemonics: parseList(map['mnemonics']),
-      readMinutes: parseMinutes(map['readMinutes']),
+      keyPoints: parseStringList(map['keyPoints']),
+      mnemonics: parseStringList(map['mnemonics']),
+      readMinutes: parseReadMinutes(map['readMinutes']),
       isPremium: map['isPremium'] == true,
       sourceBook: map['sourceBook']?.toString() ?? map['source']?.toString() ?? map['reference']?.toString() ?? '',
     );
