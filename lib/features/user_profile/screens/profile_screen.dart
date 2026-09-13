@@ -97,259 +97,265 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _openEditNameDialog(String currentName) {
     final controller = TextEditingController(text: currentName);
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text(
+          'Editar Nombre',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.4,
+          ),
+        ),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Ingresa tu nombre y apellidos para tu credencial médica:',
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              ),
+              const SizedBox(height: 12),
+              CupertinoTextField(
+                controller: controller,
+                autofocus: true,
+                textCapitalization: TextCapitalization.words,
+                placeholder: 'Nombre y Apellidos',
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2F2F7),
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(color: const Color(0xFFD1D1D6), width: 0.8),
+                ),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(fontSize: 16)),
+          ),
+          CupertinoDialogAction(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isEmpty) return;
+              Navigator.pop(context);
+              try {
+                await widget.user.updateDisplayName(newName);
+                await UserLocalProfileService().saveProfile(
+                  uid: widget.user.uid,
+                  name: newName,
+                  email: widget.user.email ?? '',
+                  career: _localProfile?.career ?? 'Medicina Humana',
+                  gender: _localProfile?.gender ?? 'Hombre',
+                  photoUrl: widget.user.photoURL,
+                );
+                _loadLocalProfile();
+                await FirebaseFirestore.instance
+                    .collection(AppConstants.firestoreUsers)
+                    .doc(widget.user.uid)
+                    .set({'name': newName}, SetOptions(merge: true));
+                _showFeedback('¡Nombre actualizado!');
+              } catch (e) {
+                _showFeedback('Error al actualizar nombre: $e', isError: true);
+              }
+            },
+            child: const Text(
+              'Guardar',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.accent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updateCareer(String newCareer) async {
+    if (newCareer.trim().isEmpty) return;
+    try {
+      await UserLocalProfileService().saveProfile(
+        uid: widget.user.uid,
+        name: _localProfile?.name ?? widget.user.displayName ?? '',
+        email: widget.user.email ?? '',
+        career: newCareer.trim(),
+        gender: _localProfile?.gender ?? 'Hombre',
+        photoUrl: widget.user.photoURL,
+      );
+      _loadLocalProfile();
+      await FirebaseFirestore.instance
+          .collection(AppConstants.firestoreUsers)
+          .doc(widget.user.uid)
+          .set({'career': newCareer.trim()}, SetOptions(merge: true));
+      _showFeedback('¡Especialidad actualizada!');
+    } catch (e) {
+      _showFeedback('Error al actualizar especialidad: $e', isError: true);
+    }
+  }
+
+  void _openCustomCareerDialog(String currentCareer) {
+    final controller = TextEditingController(text: currentCareer);
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text(
+          'Otra Especialidad',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.4),
+        ),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Escribe tu carrera médica o especialidad:',
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              ),
+              const SizedBox(height: 12),
+              CupertinoTextField(
+                controller: controller,
+                autofocus: true,
+                textCapitalization: TextCapitalization.words,
+                placeholder: 'Ej: Cardiología, Pediatría...',
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2F2F7),
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(color: const Color(0xFFD1D1D6), width: 0.8),
+                ),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(fontSize: 16)),
+          ),
+          CupertinoDialogAction(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              Navigator.pop(context);
+              _updateCareer(text);
+            },
+            child: const Text('Guardar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.accent)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openEditCareerDialog(String currentCareer) {
+    final List<Map<String, dynamic>> careers = [
+      {'title': 'Medicina Humana', 'icon': CupertinoIcons.heart_fill, 'color': AppColors.systemRed},
+      {'title': 'Enfermería', 'icon': CupertinoIcons.bandage_fill, 'color': AppColors.systemTeal},
+      {'title': 'Odontología', 'icon': CupertinoIcons.sparkles, 'color': AppColors.systemIndigo},
+      {'title': 'Farmacia y Bioquímica', 'icon': CupertinoIcons.lab_flask_solid, 'color': AppColors.systemGreen},
+      {'title': 'Obstetricia', 'icon': CupertinoIcons.person_crop_circle_badge_checkmark, 'color': AppColors.systemPink},
+      {'title': 'Nutrición', 'icon': CupertinoIcons.leaf_arrow_circlepath, 'color': AppColors.systemOrange},
+    ];
+
     showCupertinoModalPopup(
       context: context,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      builder: (context) => CupertinoActionSheet(
+        title: const Text(
+          'Especialidad o Carrera',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textMuted,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        message: const Text(
+          'Selecciona tu área de formación en salud:',
+          style: TextStyle(
+            fontSize: 12,
+            color: AppColors.textMuted,
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+        ),
+        actions: [
+          ...careers.map((c) {
+            final String title = c['title'] as String;
+            final IconData icon = c['icon'] as IconData;
+            final Color color = c['color'] as Color;
+            final bool isSelected = currentCareer.trim().toLowerCase() == title.toLowerCase();
+
+            return CupertinoActionSheetAction(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _updateCareer(title);
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? AppColors.accent : AppColors.primary,
+                    ),
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(width: 6),
+                    const Icon(CupertinoIcons.checkmark_alt, size: 16, color: AppColors.accent),
+                  ],
+                ],
+              ),
+            );
+          }),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(context);
+              _openCustomCareerDialog(currentCareer);
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD1D1D6),
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Nombre Completo',
+                Icon(CupertinoIcons.pencil_ellipsis_rectangle, color: AppColors.textMuted, size: 18),
+                SizedBox(width: 8),
+                Text(
+                  'Otra especialidad...',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
-                    letterSpacing: -0.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                CupertinoTextField(
-                  controller: controller,
-                  autofocus: true,
-                  placeholder: 'Nombre y Apellidos',
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE5E5EA),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefix: const Padding(
-                    padding: EdgeInsets.only(left: 12),
-                    child: Icon(CupertinoIcons.person, size: 20, color: AppColors.textMuted),
-                  ),
-                  style: const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  height: 48,
-                  child: CupertinoButton.filled(
-                    padding: EdgeInsets.zero,
-                    borderRadius: BorderRadius.circular(14),
-                    onPressed: () async {
-                      final newName = controller.text.trim();
-                      if (newName.isEmpty) return;
-                      Navigator.pop(context);
-                      try {
-                        await widget.user.updateDisplayName(newName);
-                        await UserLocalProfileService().saveProfile(
-                          uid: widget.user.uid,
-                          name: newName,
-                          email: widget.user.email ?? '',
-                          career: _localProfile?.career ?? 'Medicina Humana',
-                          gender: _localProfile?.gender ?? 'Hombre',
-                          photoUrl: widget.user.photoURL,
-                        );
-                        _loadLocalProfile();
-                        await FirebaseFirestore.instance
-                            .collection(AppConstants.firestoreUsers)
-                            .doc(widget.user.uid)
-                            .set({'name': newName}, SetOptions(merge: true));
-                        _showFeedback('¡Nombre actualizado!');
-                      } catch (e) {
-                        _showFeedback('Error: $e', isError: true);
-                      }
-                    },
-                    child: const Text(
-                      'Guardar',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                    ),
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.accent,
                   ),
                 ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
-
-  void _openEditCareerDialog(String currentCareer) {
-    final controller = TextEditingController(text: currentCareer);
-    final List<String> suggestions = [
-      'Medicina Humana',
-      'Enfermería',
-      'Odontología',
-      'Farmacia y Bioquímica',
-      'Obstetricia',
-      'Nutrición',
-    ];
-
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 36,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD1D1D6),
-                          borderRadius: BorderRadius.circular(2.5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Especialidad o Carrera',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                        letterSpacing: -0.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      alignment: WrapAlignment.center,
-                      children: suggestions.map((s) {
-                        final isSelected = controller.text.trim().toLowerCase() == s.toLowerCase();
-                        return GestureDetector(
-                          onTap: () {
-                            setModalState(() {
-                              controller.text = s;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : const Color(0xFFE5E5EA),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isSelected ? AppColors.accent : Colors.transparent,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Text(
-                              s,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? AppColors.accent : AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    CupertinoTextField(
-                      controller: controller,
-                      placeholder: 'O escribe tu carrera médica',
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE5E5EA),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefix: const Padding(
-                        padding: EdgeInsets.only(left: 12),
-                        child: Icon(CupertinoIcons.book, size: 20, color: AppColors.textMuted),
-                      ),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      height: 48,
-                      child: CupertinoButton.filled(
-                        padding: EdgeInsets.zero,
-                        borderRadius: BorderRadius.circular(14),
-                        onPressed: () async {
-                          final newCareer = controller.text.trim();
-                          if (newCareer.isEmpty) return;
-                          Navigator.pop(context);
-                          try {
-                            await UserLocalProfileService().saveProfile(
-                              uid: widget.user.uid,
-                              name: _localProfile?.name ?? widget.user.displayName ?? '',
-                              email: widget.user.email ?? '',
-                              career: newCareer,
-                              gender: _localProfile?.gender ?? 'Hombre',
-                              photoUrl: widget.user.photoURL,
-                            );
-                            _loadLocalProfile();
-                            await FirebaseFirestore.instance
-                                .collection(AppConstants.firestoreUsers)
-                                .doc(widget.user.uid)
-                                .set({'career': newCareer}, SetOptions(merge: true));
-                            _showFeedback('¡Especialidad actualizada!');
-                          } catch (e) {
-                            _showFeedback('Error: $e', isError: true);
-                          }
-                        },
-                        child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            'Cancelar',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
