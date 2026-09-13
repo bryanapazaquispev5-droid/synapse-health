@@ -18,10 +18,10 @@ class TopicModel {
   });
 
   factory TopicModel.fromMap(Map<String, dynamic> map, String documentId) {
-    int parseInt(dynamic val) {
-      if (val is int) return val;
-      if (val is num) return val.toInt();
-      if (val != null) return int.tryParse(val.toString()) ?? 0;
+    int parseInteger(dynamic rawValue) {
+      if (rawValue is int) return rawValue;
+      if (rawValue is num) return rawValue.toInt();
+      if (rawValue != null) return int.tryParse(rawValue.toString()) ?? 0;
       return 0;
     }
 
@@ -30,9 +30,9 @@ class TopicModel {
       areaId: map['areaId']?.toString() ?? '',
       title: map['title']?.toString() ?? map['name']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      order: parseInt(map['order']),
-      cheatsheetsCount: parseInt(map['cheatsheetsCount'] ?? map['totalCheatsheets']),
-      quizzesCount: parseInt(map['quizzesCount']),
+      order: parseInteger(map['order']),
+      cheatsheetsCount: parseInteger(map['cheatsheetsCount'] ?? map['totalCheatsheets']),
+      quizzesCount: parseInteger(map['quizzesCount']),
     );
   }
 

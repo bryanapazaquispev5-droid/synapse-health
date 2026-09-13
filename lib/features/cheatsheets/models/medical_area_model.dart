@@ -12,8 +12,9 @@ class MedicalAreaModel {
   final int cheatsheetsCount;
   final int quizzesCount;
   final bool isAvailable;
+  final Uint8List? cachedBytes;
 
-  const MedicalAreaModel({
+  MedicalAreaModel({
     required this.id,
     required this.name,
     required this.code,
@@ -23,29 +24,40 @@ class MedicalAreaModel {
     this.cheatsheetsCount = 0,
     this.quizzesCount = 0,
     this.isAvailable = true,
-  });
+    Uint8List? cachedBytes,
+  }) : cachedBytes = cachedBytes ?? _decodeBase64String(imageBase64);
 
-  bool get hasImage {
-    return (imageBase64 != null && imageBase64!.trim().isNotEmpty);
-  }
+  static final Map<String, Uint8List> _bytesCache = {};
 
-  // Decodifica el texto Base64 a bytes binarios de imagen
-  Uint8List? get decodedImageBytes {
-    if (imageBase64 == null || imageBase64!.trim().isEmpty) return null;
+  static Uint8List? _decodeBase64String(String? base64Str) {
+    if (base64Str == null || base64Str.trim().isEmpty) return null;
+    final clean = base64Str.trim();
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('assets/')) {
+      return null;
+    }
+    if (_bytesCache.containsKey(clean)) {
+      return _bytesCache[clean];
+    }
     try {
-      String clean = imageBase64!.trim();
-      if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('assets/')) {
-        return null;
+      String raw = clean;
+      if (raw.contains(',')) {
+        raw = raw.split(',').last;
       }
-      if (clean.contains(',')) {
-        clean = clean.split(',').last;
-      }
-      clean = clean.replaceAll(RegExp(r'\s+'), '');
-      return base64Decode(clean);
+      raw = raw.replaceAll(RegExp(r'\s+'), '');
+      final bytes = base64Decode(raw);
+      _bytesCache[clean] = bytes;
+      return bytes;
     } catch (_) {
       return null;
     }
   }
+
+  bool get hasImage {
+    return cachedBytes != null || (imageBase64 != null && imageBase64!.trim().isNotEmpty);
+  }
+
+  // Retorna los bytes binarios de la imagen memoizados
+  Uint8List? get decodedImageBytes => cachedBytes;
 
   factory MedicalAreaModel.fromMap(Map<String, dynamic> rawMap, String documentId) {
     // Normalizar todas las claves para tolerar espacios accidentales o mayúsculas en Firebase
@@ -115,7 +127,7 @@ class MedicalAreaModel {
     };
   }
 
-  // Renderiza únicamente la imagen si existe en Firebase; si no existe, no muestra nada
+  // Renderiza únicamente la imagen si existe en Firebase; con gaplessPlayback para evitar parpadeos
   Widget buildLogoWidget({
     double size = 24,
     BoxFit fit = BoxFit.cover,
@@ -130,6 +142,7 @@ class MedicalAreaModel {
           width: size,
           height: size,
           fit: fit,
+          gaplessPlayback: true,
           errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
         ),
       );
@@ -145,6 +158,7 @@ class MedicalAreaModel {
             width: size,
             height: size,
             fit: fit,
+            gaplessPlayback: true,
             errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
           ),
         );
