@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/password_strength_bar.dart';
 import '../widgets/recaptcha_card.dart';
+import 'complete_profile_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -18,14 +22,14 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
+  bool _isPasswordObscured = true;
+  bool _isConfirmPasswordObscured = true;
   bool _isLoading = false;
 
   // Control de seguridad: Rate Limiting & reCAPTCHA
   int _createdAccountsOnDevice = 0;
-  bool _captchaVerified = false;
-  int _failedAttempts = 0;
+  bool _isCaptchaVerified = false;
+  int _failedAttemptsCount = 0;
   int _lockoutSeconds = 0;
   Timer? _lockoutTimer;
 
@@ -38,27 +42,27 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _loadSecurityState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final created = prefs.getInt('created_accounts_on_device') ?? 0;
-      final failed = prefs.getInt('failed_login_attempts') ?? 0;
-      final lockoutUntil = prefs.getInt('login_lockout_until') ?? 0;
-      final nowMs = DateTime.now().millisecondsSinceEpoch;
+      final created = prefs.getInt(AppConstants.prefCreatedAccounts) ?? 0;
+      final failed = prefs.getInt(AppConstants.prefFailedLoginAttempts) ?? 0;
+      final lockoutUntil = prefs.getInt(AppConstants.prefLoginLockoutUntil) ?? 0;
+      final nowInMilliseconds = DateTime.now().millisecondsSinceEpoch;
 
       if (mounted) {
         setState(() {
           _createdAccountsOnDevice = created;
-          _failedAttempts = failed;
+          _failedAttemptsCount = failed;
         });
       }
 
-      if (lockoutUntil > nowMs) {
-        _startLockoutTimer((lockoutUntil - nowMs) ~/ 1000);
+      if (lockoutUntil > nowInMilliseconds) {
+        _startLockoutTimer((lockoutUntil - nowInMilliseconds) ~/ 1000);
       }
     } catch (_) {}
   }
 
-  void _startLockoutTimer(int seconds) {
+  void _startLockoutTimer(int durationInSeconds) {
     _lockoutTimer?.cancel();
-    setState(() => _lockoutSeconds = seconds);
+    setState(() => _lockoutSeconds = durationInSeconds);
 
     _lockoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -75,25 +79,25 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _recordFailedLogin() async {
-    _failedAttempts++;
+    _failedAttemptsCount++;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('failed_login_attempts', _failedAttempts);
+      await prefs.setInt(AppConstants.prefFailedLoginAttempts, _failedAttemptsCount);
 
-      if (_failedAttempts >= 3) {
-        int duration = 30; // 3 intentos: 30s
-        if (_failedAttempts == 4) {
-          duration = 60; // 4 intentos: 60s
-        } else if (_failedAttempts >= 5) {
-          duration = 120; // 5+ intentos: 120s
+      if (_failedAttemptsCount >= 3) {
+        int durationInSeconds = AppConstants.lockoutTier1Seconds; // 3 intentos: 30s
+        if (_failedAttemptsCount == 4) {
+          durationInSeconds = AppConstants.lockoutTier2Seconds; // 4 intentos: 60s
+        } else if (_failedAttemptsCount >= 5) {
+          durationInSeconds = AppConstants.lockoutTier3Seconds; // 5+ intentos: 120s
         }
 
-        final lockoutUntil = DateTime.now().millisecondsSinceEpoch + (duration * 1000);
-        await prefs.setInt('login_lockout_until', lockoutUntil);
-        _startLockoutTimer(duration);
+        final lockoutUntil = DateTime.now().millisecondsSinceEpoch + (durationInSeconds * 1000);
+        await prefs.setInt(AppConstants.prefLoginLockoutUntil, lockoutUntil);
+        _startLockoutTimer(durationInSeconds);
 
         _showFeedback(
-          'Demasiados intentos fallidos ($_failedAttempts). Por seguridad médica, espera $duration segundos.',
+          'Demasiados intentos fallidos ($_failedAttemptsCount). Por seguridad médica, espera $durationInSeconds segundos.',
           isError: true,
         );
       }
@@ -101,13 +105,13 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _clearLoginLockout() async {
-    _failedAttempts = 0;
+    _failedAttemptsCount = 0;
     _lockoutSeconds = 0;
     _lockoutTimer?.cancel();
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('failed_login_attempts');
-      await prefs.remove('login_lockout_until');
+      await prefs.remove(AppConstants.prefFailedLoginAttempts);
+      await prefs.remove(AppConstants.prefLoginLockoutUntil);
     } catch (_) {}
   }
 
@@ -137,13 +141,13 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
         backgroundColor: isError ? AppColors.primary : AppColors.accent,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
 
   // 1. Recuperar Contraseña por Correo con validación de existencia en Firebase/Firestore
-  void _openForgotPasswordDialog() {
+  void _handleOpenForgotPasswordDialog() {
     final TextEditingController resetEmailController = TextEditingController(
       text: _loginEmailController.text.trim(),
     );
@@ -155,7 +159,7 @@ class _AuthScreenState extends State<AuthScreen> {
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -164,7 +168,7 @@ class _AuthScreenState extends State<AuthScreen> {
               padding: EdgeInsets.only(
                 left: 24,
                 right: 24,
-                top: 24,
+                top: 20,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
               child: Column(
@@ -173,11 +177,11 @@ class _AuthScreenState extends State<AuthScreen> {
                 children: [
                   Center(
                     child: Container(
-                      width: 40,
-                      height: 4,
+                      width: 44,
+                      height: 5,
                       decoration: BoxDecoration(
                         color: AppColors.border,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
                   ),
@@ -188,6 +192,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,
+                      letterSpacing: -0.4,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -200,7 +205,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     controller: resetEmailController,
                     label: 'Correo Electrónico',
                     hint: 'ej. estudiante@gmail.com',
-                    prefixIcon: Icons.alternate_email_rounded,
+                    prefixIcon: CupertinoIcons.mail,
                     keyboardType: TextInputType.emailAddress,
                     onChanged: (_) {
                       if (localError != null) {
@@ -214,12 +219,12 @@ class _AuthScreenState extends State<AuthScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFFFCA5A5)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+                          const Icon(CupertinoIcons.exclamationmark_circle_fill, color: Color(0xFFDC2626), size: 18),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -237,8 +242,10 @@ class _AuthScreenState extends State<AuthScreen> {
                   ],
                   const SizedBox(height: 20),
                   SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
+                    height: 50,
+                    child: CupertinoButton.filled(
+                      padding: EdgeInsets.zero,
+                      borderRadius: BorderRadius.circular(14),
                       onPressed: isChecking
                           ? null
                           : () async {
@@ -260,7 +267,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
                               try {
                                 final snapshot = await _firestore
-                                    .collection('users')
+                                    .collection(AppConstants.firestoreUsers)
                                     .where('email', isEqualTo: email)
                                     .limit(1)
                                     .get();
@@ -295,20 +302,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 });
                               }
                             },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.surface,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
                       child: isChecking
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surface),
-                            )
+                          ? const CupertinoActivityIndicator(color: AppColors.surface)
                           : const Text(
                               'Enviar Enlace de Recuperación',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.surface),
                             ),
                     ),
                   ),
@@ -322,7 +320,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   // 2, 4 y 5. Registro con Anti-Bot Captcha y Login con Rate Limiting
-  Future<void> _submitEmailAuth() async {
+  Future<void> _handleSubmitEmailAuth() async {
     FocusScope.of(context).unfocus();
 
     // Validar si el inicio de sesión está bloqueado por intentos fallidos
@@ -355,10 +353,31 @@ class _AuthScreenState extends State<AuthScreen> {
         // Login exitoso: limpiar bloqueos e intentos fallidos
         await _clearLoginLockout();
 
+        // Cargar y almacenar perfil localmente para soporte offline
+        if (userCredential.user != null) {
+          try {
+            final docSnapshot = await _firestore
+                .collection(AppConstants.firestoreUsers)
+                .doc(userCredential.user!.uid)
+                .get();
+            final d = docSnapshot.data();
+            if (d != null) {
+              await UserLocalProfileService().saveProfile(
+                uid: userCredential.user!.uid,
+                name: d['name'] ?? userCredential.user!.displayName ?? '',
+                email: d['email'] ?? userCredential.user!.email ?? '',
+                career: d['career'] ?? 'Medicina Humana',
+                gender: d['gender'] ?? 'Hombre',
+                photoUrl: userCredential.user!.photoURL,
+              );
+            }
+          } catch (_) {}
+        }
+
         _showFeedback('¡Bienvenido de nuevo, ${userCredential.user?.email}!');
       } else {
         // En Registro: Si ya se creó al menos 1 cuenta en este celular, requerir reCAPTCHA
-        if (_createdAccountsOnDevice >= 1 && !_captchaVerified) {
+        if (_createdAccountsOnDevice >= 1 && !_isCaptchaVerified) {
           _showFeedback(
             'Por seguridad anti-bots, marca la casilla "No soy un robot" para continuar.',
             isError: true,
@@ -410,8 +429,6 @@ class _AuthScreenState extends State<AuthScreen> {
           return;
         }
 
-        // Crear usuario en Firebase Auth directamente (fuente de verdad)
-
         // Crear usuario en Firebase Auth
         final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: email,
@@ -423,7 +440,7 @@ class _AuthScreenState extends State<AuthScreen> {
           await user.updateDisplayName(name);
           await user.sendEmailVerification();
 
-          await _firestore.collection('users').doc(user.uid).set({
+          await _firestore.collection(AppConstants.firestoreUsers).doc(user.uid).set({
             'uid': user.uid,
             'name': name,
             'email': email,
@@ -434,10 +451,20 @@ class _AuthScreenState extends State<AuthScreen> {
             'authProvider': 'password',
           }, SetOptions(merge: true));
 
+          // Guardar perfil del usuario localmente para soporte offline
+          await UserLocalProfileService().saveProfile(
+            uid: user.uid,
+            name: name,
+            email: email,
+            career: career,
+            gender: _registerGender,
+            photoUrl: user.photoURL,
+          );
+
           // Limpiar documentos huérfanos de cuentas previamente eliminadas
           try {
             final oldDocs = await _firestore
-                .collection('users')
+                .collection(AppConstants.firestoreUsers)
                 .where('email', isEqualTo: email)
                 .get();
             for (final d in oldDocs.docs) {
@@ -450,8 +477,8 @@ class _AuthScreenState extends State<AuthScreen> {
           // Registrar que se creó una cuenta en este celular
           try {
             final prefs = await SharedPreferences.getInstance();
-            final current = prefs.getInt('created_accounts_on_device') ?? 0;
-            await prefs.setInt('created_accounts_on_device', current + 1);
+            final current = prefs.getInt(AppConstants.prefCreatedAccounts) ?? 0;
+            await prefs.setInt(AppConstants.prefCreatedAccounts, current + 1);
             if (mounted) {
               setState(() => _createdAccountsOnDevice = current + 1);
             }
@@ -491,7 +518,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   // Google Sign-In con sincronización a Firestore
-  Future<void> _signInWithGoogle() async {
+  Future<void> _handleSignInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -511,11 +538,44 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user;
 
       // Limpiar bloqueos de login
       await _clearLoginLockout();
 
-      // No creamos documento en Firestore todavía: solo se creará si el usuario completa su carrera en CompleteProfileScreen
+      if (user != null) {
+        try {
+          final docSnapshot = await _firestore
+              .collection(AppConstants.firestoreUsers)
+              .doc(user.uid)
+              .get();
+
+          final data = docSnapshot.data();
+          final String? career = data?['career'];
+
+          if (career == null || career.trim().isEmpty) {
+            if (mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CompleteProfileScreen(user: user),
+                ),
+              );
+              return;
+            }
+          } else {
+            // Guardar perfil existente de Google en caché local para visualización offline
+            await UserLocalProfileService().saveProfile(
+              uid: user.uid,
+              name: data?['name'] ?? user.displayName ?? '',
+              email: data?['email'] ?? user.email ?? '',
+              career: career,
+              gender: data?['gender'] ?? 'Hombre',
+              photoUrl: user.photoURL,
+            );
+          }
+        } catch (_) {}
+      }
 
       _showFeedback('¡Conectado con Google: ${userCredential.user?.displayName}!');
     } catch (e) {
@@ -526,14 +586,14 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   // 3. Modo Invitado Real (Firebase Anonymous Auth)
-  Future<void> _signInAsGuest() async {
+  Future<void> _handleSignInAsGuest() async {
     setState(() => _isLoading = true);
     try {
       final UserCredential userCredential = await _auth.signInAnonymously();
       final user = userCredential.user;
 
       if (user != null) {
-        await _firestore.collection('users').doc(user.uid).set({
+        await _firestore.collection(AppConstants.firestoreUsers).doc(user.uid).set({
           'uid': user.uid,
           'name': 'Invitado Temporal',
           'email': 'invitado@synapse.app',
@@ -639,31 +699,43 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Selector de pestañas Login / Registro
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _tabButton(
-                            title: 'Ingresar',
-                            isSelected: _isLogin,
-                            onTap: () => setState(() => _isLogin = true),
+                  // Selector de pestañas iOS (CupertinoSlidingSegmentedControl)
+                  SizedBox(
+                    width: double.infinity,
+                    child: CupertinoSlidingSegmentedControl<bool>(
+                      groupValue: _isLogin,
+                      backgroundColor: const Color(0xFFE5E5EA),
+                      thumbColor: AppColors.surface,
+                      padding: const EdgeInsets.all(3),
+                      children: const {
+                        true: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 9),
+                          child: Text(
+                            'Iniciar Sesión',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                              letterSpacing: -0.3,
+                            ),
                           ),
                         ),
-                        Expanded(
-                          child: _tabButton(
-                            title: 'Registrarse',
-                            isSelected: !_isLogin,
-                            onTap: () => setState(() => _isLogin = false),
+                        false: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 9),
+                          child: Text(
+                            'Registrarse',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                              letterSpacing: -0.3,
+                            ),
                           ),
                         ),
-                      ],
+                      },
+                      onValueChanged: (val) {
+                        if (val != null) setState(() => _isLogin = val);
+                      },
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -680,14 +752,14 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.timer_outlined, color: Color(0xFFDC2626), size: 20),
+                          const Icon(CupertinoIcons.timer, color: Color(0xFFDC2626), size: 20),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Demasiados intentos fallidos ($_failedAttempts). Por seguridad médica, espera $_lockoutSeconds segundos...',
+                              'Demasiados intentos fallidos ($_failedAttemptsCount). Espera $_lockoutSeconds segundos...',
                               style: const TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: Color(0xFF991B1B),
                               ),
                             ),
@@ -702,39 +774,27 @@ class _AuthScreenState extends State<AuthScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Botón Principal
+                  // Botón Principal iOS (Vibrant Apple Blue)
                   SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: (_isLoading || isLockoutActive) ? null : _submitEmailAuth,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isLockoutActive ? const Color(0xFF94A3B8) : AppColors.primary,
-                        foregroundColor: AppColors.surface,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
+                    height: 50,
+                    child: CupertinoButton.filled(
+                      padding: EdgeInsets.zero,
+                      borderRadius: BorderRadius.circular(14),
+                      onPressed: (_isLoading || isLockoutActive) ? null : _handleSubmitEmailAuth,
                       child: _isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.2,
-                                color: AppColors.surface,
-                              ),
-                            )
+                          ? const CupertinoActivityIndicator(color: AppColors.surface)
                           : isLockoutActive
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.lock_clock_rounded, size: 18),
+                                    const Icon(CupertinoIcons.lock_fill, size: 18, color: AppColors.surface),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Bloqueado ($_lockoutSeconds s)',
                                       style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.surface,
                                       ),
                                     ),
                                   ],
@@ -743,61 +803,75 @@ class _AuthScreenState extends State<AuthScreen> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      _isLogin ? 'Acceder al Sistema' : 'Completar Registro',
+                                      _isLogin ? 'Iniciar Sesión' : 'Crear Cuenta Médica',
                                       style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.surface,
+                                        letterSpacing: -0.3,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    const Icon(Icons.arrow_forward_rounded, size: 18),
+                                    const SizedBox(width: 6),
+                                    const Icon(CupertinoIcons.arrow_right, size: 16, color: AppColors.surface),
                                   ],
                                 ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   // Botón de Google
                   SizedBox(
-                    height: 48,
-                    child: OutlinedButton(
-                      onPressed: _isLoading ? null : _signInWithGoogle,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.border, width: 1.2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                    height: 50,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      onPressed: _isLoading ? null : _handleSignInWithGoogle,
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border, width: 1.2),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.g_mobiledata_rounded, size: 28, color: AppColors.accent),
-                          SizedBox(width: 6),
-                          Text(
-                            'Continuar con Google',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.g_mobiledata_rounded, size: 28, color: AppColors.accent),
+                            SizedBox(width: 6),
+                            Text(
+                              'Continuar con Google',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   // Modo Invitado
                   Center(
-                    child: TextButton.icon(
-                      onPressed: _isLoading ? null : _signInAsGuest,
-                      icon: const Icon(Icons.person_outline_rounded, size: 16),
-                      label: const Text(
-                        'Continuar como Invitado (Modo Prueba)',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.textMuted,
+                    child: CupertinoButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      onPressed: _isLoading ? null : _handleSignInAsGuest,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(CupertinoIcons.person_crop_circle, size: 16, color: AppColors.textMuted),
+                          SizedBox(width: 6),
+                          Text(
+                            'Continuar como Invitado (Modo Prueba)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -810,81 +884,13 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _tabButton({
-    required String title,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: isSelected ? AppColors.surface : AppColors.primary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _genderOption({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: 1.2,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? AppColors.surface : AppColors.textMuted,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: isSelected ? AppColors.surface : AppColors.primary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   List<Widget> _buildLoginForm() {
     return [
       AuthTextField(
         controller: _loginEmailController,
         label: 'Correo Electrónico',
         hint: 'ej. estudiante@gmail.com',
-        prefixIcon: Icons.alternate_email_rounded,
+        prefixIcon: CupertinoIcons.mail,
         keyboardType: TextInputType.emailAddress,
       ),
       const SizedBox(height: 14),
@@ -892,25 +898,24 @@ class _AuthScreenState extends State<AuthScreen> {
         controller: _loginPasswordController,
         label: 'Contraseña',
         hint: '••••••••',
-        prefixIcon: Icons.lock_outline_rounded,
-        obscureText: _obscurePassword,
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+        prefixIcon: CupertinoIcons.lock,
+        obscureText: _isPasswordObscured,
+        suffixIcon: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Icon(
+            _isPasswordObscured ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
             color: AppColors.primary,
             size: 20,
           ),
-          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+          onPressed: () => setState(() => _isPasswordObscured = !_isPasswordObscured),
         ),
       ),
       // Enlace de Recuperar Contraseña
       Align(
         alignment: Alignment.centerRight,
-        child: TextButton(
-          onPressed: _openForgotPasswordDialog,
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          ),
+        child: CupertinoButton(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          onPressed: _handleOpenForgotPasswordDialog,
           child: const Text(
             '¿Olvidaste tu contraseña?',
             style: TextStyle(
@@ -932,14 +937,14 @@ class _AuthScreenState extends State<AuthScreen> {
         controller: _registerNameController,
         label: 'Nombre Completo',
         hint: 'ej. Bryan Apaza',
-        prefixIcon: Icons.badge_outlined,
+        prefixIcon: CupertinoIcons.person,
       ),
       const SizedBox(height: 14),
       AuthTextField(
         controller: _registerEmailController,
         label: 'Correo Electrónico',
         hint: 'ej. estudiante@gmail.com',
-        prefixIcon: Icons.mail_outline_rounded,
+        prefixIcon: CupertinoIcons.mail,
         keyboardType: TextInputType.emailAddress,
         onChanged: (_) => setState(() {}),
       ),
@@ -948,49 +953,66 @@ class _AuthScreenState extends State<AuthScreen> {
         controller: _registerCareerController,
         label: 'Carrera o Especialidad',
         hint: 'ej. Medicina Humana / Enfermería',
-        prefixIcon: Icons.school_outlined,
+        prefixIcon: CupertinoIcons.book,
       ),
       const SizedBox(height: 14),
-      // Selector de Género (Hombre / Mujer)
+      // Selector de Género (Hombre / Mujer) con CupertinoSlidingSegmentedControl
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border, width: 1.2),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Género del Estudiante',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMuted,
+            const Padding(
+              padding: EdgeInsets.only(left: 2, bottom: 8),
+              child: Text(
+                'Género del Estudiante',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _genderOption(
-                    label: 'Hombre',
-                    icon: Icons.male_rounded,
-                    isSelected: _registerGender == 'Hombre',
-                    onTap: () => setState(() => _registerGender = 'Hombre'),
+            SizedBox(
+              width: double.infinity,
+              child: CupertinoSlidingSegmentedControl<String>(
+                groupValue: _registerGender,
+                backgroundColor: const Color(0xFFF1F5F9),
+                thumbColor: AppColors.surface,
+                padding: const EdgeInsets.all(4),
+                children: const {
+                  'Hombre': Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.person_fill, size: 16, color: AppColors.primary),
+                        SizedBox(width: 6),
+                        Text('Hombre', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _genderOption(
-                    label: 'Mujer',
-                    icon: Icons.female_rounded,
-                    isSelected: _registerGender == 'Mujer',
-                    onTap: () => setState(() => _registerGender = 'Mujer'),
+                  'Mujer': Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.person_alt, size: 16, color: AppColors.primary),
+                        SizedBox(width: 6),
+                        Text('Mujer', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                },
+                onValueChanged: (val) {
+                  if (val != null) setState(() => _registerGender = val);
+                },
+              ),
             ),
           ],
         ),
@@ -1000,16 +1022,17 @@ class _AuthScreenState extends State<AuthScreen> {
         controller: _registerPasswordController,
         label: 'Crear Contraseña',
         hint: 'Mínimo 6 caracteres',
-        prefixIcon: Icons.lock_outline_rounded,
-        obscureText: _obscurePassword,
+        prefixIcon: CupertinoIcons.lock,
+        obscureText: _isPasswordObscured,
         onChanged: (_) => setState(() {}),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+        suffixIcon: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Icon(
+            _isPasswordObscured ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
             color: AppColors.primary,
             size: 20,
           ),
-          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+          onPressed: () => setState(() => _isPasswordObscured = !_isPasswordObscured),
         ),
       ),
       PasswordStrengthBar(
@@ -1021,23 +1044,24 @@ class _AuthScreenState extends State<AuthScreen> {
         controller: _registerConfirmPasswordController,
         label: 'Confirmar Contraseña',
         hint: 'Repite tu contraseña',
-        prefixIcon: Icons.lock_clock_outlined,
-        obscureText: _obscureConfirmPassword,
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+        prefixIcon: CupertinoIcons.lock_shield,
+        obscureText: _isConfirmPasswordObscured,
+        suffixIcon: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Icon(
+            _isConfirmPasswordObscured ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
             color: AppColors.primary,
             size: 20,
           ),
-          onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+          onPressed: () => setState(() => _isConfirmPasswordObscured = !_isConfirmPasswordObscured),
         ),
       ),
 
       // Casilla Google reCAPTCHA: solo si ya se creó 1 cuenta previa en este celular
       if (requireCaptcha) ...[
         RecaptchaCard(
-          isVerified: _captchaVerified,
-          onVerified: (verified) => setState(() => _captchaVerified = verified),
+          isVerified: _isCaptchaVerified,
+          onVerified: (verified) => setState(() => _isCaptchaVerified = verified),
         ),
       ],
     ];

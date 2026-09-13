@@ -47,24 +47,24 @@ class RecaptchaCard extends StatefulWidget {
 
 class _RecaptchaCardState extends State<RecaptchaCard> {
   bool _isChecking = false;
-  bool _verified = false;
+  bool _isVerified = false;
 
   @override
   void initState() {
     super.initState();
-    _verified = widget.isVerified;
+    _isVerified = widget.isVerified;
   }
 
   @override
   void didUpdateWidget(covariant RecaptchaCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isVerified != _verified) {
-      setState(() => _verified = widget.isVerified);
+    if (widget.isVerified != _isVerified) {
+      setState(() => _isVerified = widget.isVerified);
     }
   }
 
-  Future<void> _triggerCaptcha() async {
-    if (_verified || _isChecking) return;
+  Future<void> _handleTriggerCaptcha() async {
+    if (_isVerified || _isChecking) return;
 
     setState(() => _isChecking = true);
 
@@ -85,13 +85,13 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
       HapticFeedback.mediumImpact();
       setState(() {
         _isChecking = false;
-        _verified = true;
+        _isVerified = true;
       });
       widget.onVerified(true);
     } else {
       setState(() {
         _isChecking = false;
-        _verified = false;
+        _isVerified = false;
       });
       widget.onVerified(false);
     }
@@ -106,8 +106,8 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: _verified ? const Color(0xFF10B981) : AppColors.border,
-          width: _verified ? 1.5 : 1.0,
+          color: _isVerified ? const Color(0xFF10B981) : AppColors.border,
+          width: _isVerified ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
@@ -121,16 +121,16 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
         children: [
           // Casilla de verificación reCAPTCHA
           GestureDetector(
-            onTap: _triggerCaptcha,
+            onTap: _handleTriggerCaptcha,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: _verified ? const Color(0xFF10B981) : Colors.white,
+                color: _isVerified ? const Color(0xFF10B981) : Colors.white,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: _verified
+                  color: _isVerified
                       ? const Color(0xFF10B981)
                       : (_isChecking ? const Color(0xFF4285F4) : const Color(0xFFCBD5E1)),
                   width: 2,
@@ -146,7 +146,7 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
                           color: Color(0xFF4285F4),
                         ),
                       )
-                    : _verified
+                    : _isVerified
                         ? const Icon(Icons.check_rounded, size: 22, color: Colors.white)
                         : null,
               ),
@@ -157,7 +157,7 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
           // Texto "No soy un robot"
           Expanded(
             child: GestureDetector(
-              onTap: _triggerCaptcha,
+              onTap: _handleTriggerCaptcha,
               child: const Text(
                 'No soy un robot',
                 style: TextStyle(
@@ -446,7 +446,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
     _currentChallengeIndex = Random().nextInt(_challenges.length);
   }
 
-  void _nextChallenge() {
+  void _handleNextChallenge() {
     HapticFeedback.selectionClick();
     setState(() {
       _currentChallengeIndex = (_currentChallengeIndex + 1) % _challenges.length;
@@ -456,7 +456,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
     });
   }
 
-  void _toggleTile(int index) {
+  void _handleToggleTile(int index) {
     HapticFeedback.lightImpact();
     setState(() {
       _hasError = false;
@@ -468,7 +468,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
     });
   }
 
-  void _verify() {
+  void _handleVerifyChallenge() {
     final challenge = _challenges[_currentChallengeIndex];
     final bool isCorrect = _selectedIndices.length == challenge.correctIndices.length &&
         _selectedIndices.containsAll(challenge.correctIndices);
@@ -585,7 +585,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
                   final bool isSelected = _selectedIndices.contains(index);
 
                   return GestureDetector(
-                    onTap: () => _toggleTile(index),
+                    onTap: () => _handleToggleTile(index),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 160),
                       curve: Curves.easeOut,
@@ -608,7 +608,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Container(
-                                  color: const Color(0xFFF1F5F9),
+                                   color: const Color(0xFFF1F5F9),
                                   child: const Center(
                                     child: SizedBox(
                                       width: 18,
@@ -688,7 +688,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded, color: Color(0xFF5F6368), size: 22),
                     tooltip: 'Cambiar desafío',
-                    onPressed: _nextChallenge,
+                    onPressed: _handleNextChallenge,
                   ),
                   IconButton(
                     icon: const Icon(Icons.headphones_outlined, color: Color(0xFF5F6368), size: 22),
@@ -741,7 +741,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
                   ),
                   const SizedBox(width: 4),
                   ElevatedButton(
-                    onPressed: _verify,
+                    onPressed: _handleVerifyChallenge,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1A73E8),
                       foregroundColor: Colors.white,

@@ -1,7 +1,9 @@
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -21,7 +23,7 @@ class WelcomeScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+          stream: FirebaseFirestore.instance.collection(AppConstants.firestoreUsers).doc(user.uid).snapshots(),
           builder: (context, snapshot) {
             final data = snapshot.data?.data() ?? {};
             final String name = data['name'] ?? user.displayName ?? (isAnonymous ? 'Invitado Médico' : 'Estudiante');
@@ -30,6 +32,7 @@ class WelcomeScreen extends StatelessWidget {
             final String email = user.email ?? (isAnonymous ? 'Sin correo (Modo Invitado)' : 'Sin correo');
 
             return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,12 +45,12 @@ class WelcomeScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: const Color(0xFFFDE68A)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.mark_email_unread_outlined, color: Color(0xFFD97706), size: 24),
+                          const Icon(CupertinoIcons.mail_solid, color: Color(0xFFD97706), size: 22),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -69,7 +72,8 @@ class WelcomeScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          TextButton(
+                          CupertinoButton(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             onPressed: () async {
                               await user.sendEmailVerification();
                               if (context.mounted) {
@@ -99,8 +103,8 @@ class WelcomeScreen extends StatelessWidget {
                   // Logo de la aplicacion
                   Center(
                     child: Container(
-                      width: 80,
-                      height: 80,
+                      width: 76,
+                      height: 76,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
@@ -120,7 +124,7 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   // Titulo
                   const Text(
@@ -130,7 +134,7 @@ class WelcomeScreen extends StatelessWidget {
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,
-                      letterSpacing: -0.5,
+                      letterSpacing: -0.6,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -144,18 +148,18 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Tarjeta con Datos del Usuario y Firestore
+                  // Tarjeta con Datos del Usuario (Apple Inset Card)
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border, width: 1.2),
-                      boxShadow: [
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border, width: 0.8),
+                      boxShadow: const [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                          color: Color(0x08000000),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
                         ),
                       ],
                     ),
@@ -170,11 +174,11 @@ class WelcomeScreen extends StatelessWidget {
                               )
                             : CircleAvatar(
                                 radius: 36,
-                                backgroundColor: AppColors.accent.withValues(alpha: 0.15),
+                                backgroundColor: AppColors.accent.withValues(alpha: 0.12),
                                 child: Text(
                                   name.isNotEmpty ? name[0].toUpperCase() : 'U',
                                   style: const TextStyle(
-                                    fontSize: 26,
+                                    fontSize: 24,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.accent,
                                   ),
@@ -190,6 +194,7 @@ class WelcomeScreen extends StatelessWidget {
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: AppColors.primary,
+                            letterSpacing: -0.4,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -212,16 +217,16 @@ class WelcomeScreen extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: _infoItem(
-                                icon: Icons.school_outlined,
+                              child: _buildInfoItem(
+                                icon: CupertinoIcons.book,
                                 label: 'Especialidad',
                                 value: career,
                               ),
                             ),
                             Container(width: 1, height: 36, color: AppColors.border),
                             Expanded(
-                              child: _infoItem(
-                                icon: Icons.local_fire_department_rounded,
+                              child: _buildInfoItem(
+                                icon: CupertinoIcons.flame_fill,
                                 label: 'Racha de Estudio',
                                 value: '$streak días',
                                 isHighlight: true,
@@ -235,9 +240,8 @@ class WelcomeScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppColors.border),
+                            color: const Color(0xFFF2F2F7),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -246,8 +250,8 @@ class WelcomeScreen extends StatelessWidget {
                                 isGoogleUser
                                     ? Icons.g_mobiledata_rounded
                                     : isAnonymous
-                                        ? Icons.visibility_outlined
-                                        : Icons.mail_outline_rounded,
+                                        ? CupertinoIcons.person
+                                        : CupertinoIcons.mail,
                                 size: 18,
                                 color: AppColors.accent,
                               ),
@@ -271,31 +275,41 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
 
-                  // Boton de Cerrar Sesion en pildora ergonómica One UI
+                  // Boton de Cerrar Sesion en estilo iOS
                   SizedBox(
-                    height: 52,
-                    child: OutlinedButton.icon(
+                    height: 50,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(14),
                       onPressed: () async {
                         try {
                           await GoogleSignIn().signOut();
                         } catch (_) {}
                         await FirebaseAuth.instance.signOut();
                       },
-                      icon: const Icon(Icons.logout_rounded, size: 18),
-                      label: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.border, width: 0.8),
                         ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.border, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(CupertinoIcons.square_arrow_right, size: 18, color: AppColors.systemRed),
+                            SizedBox(width: 8),
+                            Text(
+                              'Cerrar Sesión',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.systemRed,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -310,7 +324,7 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoItem({
+  Widget _buildInfoItem({
     required IconData icon,
     required String label,
     required String value,
@@ -321,7 +335,7 @@ class WelcomeScreen extends StatelessWidget {
         Icon(
           icon,
           size: 20,
-          color: isHighlight ? const Color(0xFFF59E0B) : AppColors.accent,
+          color: isHighlight ? AppColors.systemOrange : AppColors.accent,
         ),
         const SizedBox(height: 4),
         Text(
@@ -337,7 +351,7 @@ class WelcomeScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: isHighlight ? const Color(0xFFD97706) : AppColors.primary,
+            color: isHighlight ? AppColors.systemOrange : AppColors.primary,
           ),
         ),
       ],
