@@ -47,8 +47,8 @@ class PasswordStrengthBar extends StatelessWidget {
     return PasswordStrength.strong;
   }
 
-  Color _getColor(PasswordStrength s) {
-    switch (s) {
+  Color _calculateStrengthColor(PasswordStrength strength) {
+    switch (strength) {
       case PasswordStrength.forbidden:
       case PasswordStrength.weak:
         return const Color(0xFFEF4444); // Rojo
@@ -61,8 +61,8 @@ class PasswordStrengthBar extends StatelessWidget {
     }
   }
 
-  String _getLabel(PasswordStrength s) {
-    switch (s) {
+  String _formatStrengthLabel(PasswordStrength strength) {
+    switch (strength) {
       case PasswordStrength.forbidden:
         return '¡Peligro! La contraseña no puede ser igual a tu correo';
       case PasswordStrength.weak:
@@ -80,11 +80,11 @@ class PasswordStrengthBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (password.isEmpty) return const SizedBox.shrink();
 
-    final s = strength;
-    final color = _getColor(s);
-    final activeSegments = (s == PasswordStrength.weak || s == PasswordStrength.forbidden)
+    final currentStrength = strength;
+    final strengthColor = _calculateStrengthColor(currentStrength);
+    final activeSegmentsCount = (currentStrength == PasswordStrength.weak || currentStrength == PasswordStrength.forbidden)
         ? 1
-        : s == PasswordStrength.medium
+        : currentStrength == PasswordStrength.medium
             ? 2
             : 3;
 
@@ -95,13 +95,13 @@ class PasswordStrengthBar extends StatelessWidget {
         children: [
           Row(
             children: List.generate(3, (index) {
-              final isActive = index < activeSegments;
+              final isActive = index < activeSegmentsCount;
               return Expanded(
                 child: Container(
                   height: 4,
                   margin: EdgeInsets.only(right: index < 2 ? 6.0 : 0.0),
                   decoration: BoxDecoration(
-                    color: isActive ? color : AppColors.border,
+                    color: isActive ? strengthColor : AppColors.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -111,17 +111,17 @@ class PasswordStrengthBar extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              if (s == PasswordStrength.forbidden) ...[
+              if (currentStrength == PasswordStrength.forbidden) ...[
                 const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFEF4444)),
                 const SizedBox(width: 4),
               ],
               Expanded(
                 child: Text(
-                  _getLabel(s),
+                  _formatStrengthLabel(currentStrength),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: color,
+                    color: strengthColor,
                   ),
                 ),
               ),

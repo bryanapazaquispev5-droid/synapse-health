@@ -1,9 +1,13 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/services/user_local_profile_service.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../navigation/screens/main_navigation_wrapper.dart';
 import '../widgets/auth_text_field.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -47,21 +51,18 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   // Cancelar y retroceder: elimina la cuenta temporal de Firebase para que no quede registrada
-  Future<void> _cancelAndGoBack() async {
+  Future<void> _handleCancelAndGoBack() async {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Eliminar la cuenta no completada de Firebase Auth
       await widget.user.delete();
     } catch (_) {}
 
     try {
-      // 2. Desconectar sesion de Google
       await GoogleSignIn().signOut();
     } catch (_) {}
 
     try {
-      // 3. Cerrar sesion por seguridad
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
 
@@ -72,16 +73,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             'Registro cancelado. No se guardó ningún dato en Firebase.',
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.systemRed,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       );
     }
   }
 
   // Guardar y confirmar registro definitivo en Firestore
-  Future<void> _saveProfile() async {
+  Future<void> _handleSaveProfile() async {
     final name = _nameController.text.trim();
     final career = _careerController.text.trim();
 
@@ -92,9 +93,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             'Por favor completa tu nombre y especialidad médica',
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.systemRed,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       );
       return;
@@ -107,8 +108,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         await widget.user.updateDisplayName(name);
       }
 
-      // Solo aqui se guarda el registro definitivo en Firebase
-      await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).set({
+      // Registro definitivo en Firebase
+      await FirebaseFirestore.instance.collection(AppConstants.firestoreUsers).doc(widget.user.uid).set({
         'uid': widget.user.uid,
         'name': name,
         'email': widget.user.email?.toLowerCase() ?? '',
@@ -119,20 +120,30 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         'authProvider': 'google.com',
       }, SetOptions(merge: true));
 
+      // Guardar perfil del usuario localmente para soporte offline
+      await UserLocalProfileService().saveProfile(
+        uid: widget.user.uid,
+        name: name,
+        email: widget.user.email?.toLowerCase() ?? '',
+        career: career,
+        gender: _selectedGender,
+        photoUrl: widget.user.photoURL,
+      );
+
       // Registrar cuenta creada en este dispositivo
       try {
         final prefs = await SharedPreferences.getInstance();
-        final current = prefs.getInt('created_accounts_on_device') ?? 0;
-        await prefs.setInt('created_accounts_on_device', current + 1);
+        final current = prefs.getInt(AppConstants.prefCreatedAccounts) ?? 0;
+        await prefs.setInt(AppConstants.prefCreatedAccounts, current + 1);
       } catch (_) {}
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Cuenta médica registrada con éxito!'),
-            backgroundColor: AppColors.accent,
-            behavior: SnackBarBehavior.floating,
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainNavigationWrapper(user: widget.user),
           ),
+          (route) => false,
         );
       }
     } catch (e) {
@@ -140,7 +151,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al guardar en Firebase: $e'),
-            backgroundColor: AppColors.primary,
+            backgroundColor: AppColors.systemRed,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -156,7 +167,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && !_isLoading) {
-          _cancelAndGoBack();
+          _handleCancelAndGoBack();
         }
       },
       child: Scaffold(
@@ -164,6 +175,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
@@ -204,7 +216,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         color: AppColors.primary,
-                        letterSpacing: -0.5,
+                        letterSpacing: -0.6,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -216,14 +228,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         color: AppColors.textMuted,
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
 
                     // Campo de Nombre
                     AuthTextField(
                       controller: _nameController,
                       label: 'Nombre y Apellidos',
                       hint: 'ej. Bryan Apaza',
-                      prefixIcon: Icons.badge_outlined,
+                      prefixIcon: CupertinoIcons.person,
                     ),
                     const SizedBox(height: 16),
 
@@ -232,7 +244,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       controller: _careerController,
                       label: 'Carrera o Especialidad',
                       hint: 'ej. Medicina Humana',
-                      prefixIcon: Icons.school_outlined,
+                      prefixIcon: CupertinoIcons.book,
                     ),
                     const SizedBox(height: 12),
 
@@ -251,127 +263,144 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       runSpacing: 8,
                       children: _suggestedCareers.map((c) {
                         final bool isSelected = _careerController.text == c;
-                        return ActionChip(
-                          label: Text(c),
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? AppColors.surface : AppColors.primary,
+                        return GestureDetector(
+                          onTap: () => setState(() => _careerController.text = c),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : AppColors.surface,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected ? AppColors.accent : AppColors.border,
+                                width: isSelected ? 1.5 : 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              c,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                color: isSelected ? AppColors.accent : AppColors.primary,
+                              ),
+                            ),
                           ),
-                          backgroundColor: isSelected ? AppColors.primary : AppColors.surface,
-                          side: BorderSide(
-                            color: isSelected ? AppColors.primary : AppColors.border,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _careerController.text = c;
-                            });
-                          },
                         );
                       }).toList(),
                     ),
                     const SizedBox(height: 20),
 
-                    // Selector de Género (Hombre / Mujer)
+                    // Selector de Género con CupertinoSlidingSegmentedControl
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border, width: 0.8),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Género del Estudiante',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textMuted,
+                          const Padding(
+                            padding: EdgeInsets.only(left: 2, bottom: 8),
+                            child: Text(
+                              'Género del Estudiante',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textMuted,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _genderButton(
-                                  label: 'Hombre',
-                                  icon: Icons.male_rounded,
-                                  isSelected: _selectedGender == 'Hombre',
-                                  onTap: () => setState(() => _selectedGender = 'Hombre'),
+                          SizedBox(
+                            width: double.infinity,
+                            child: CupertinoSlidingSegmentedControl<String>(
+                              groupValue: _selectedGender,
+                              backgroundColor: const Color(0xFFE5E5EA),
+                              thumbColor: AppColors.surface,
+                              padding: const EdgeInsets.all(3),
+                              children: const {
+                                'Hombre': Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(CupertinoIcons.person_fill, size: 16, color: AppColors.accent),
+                                      SizedBox(width: 6),
+                                      Text('Hombre', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: _genderButton(
-                                  label: 'Mujer',
-                                  icon: Icons.female_rounded,
-                                  isSelected: _selectedGender == 'Mujer',
-                                  onTap: () => setState(() => _selectedGender = 'Mujer'),
+                                'Mujer': Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(CupertinoIcons.person_crop_circle_fill, size: 16, color: AppColors.systemPink),
+                                      SizedBox(width: 6),
+                                      Text('Mujer', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              },
+                              onValueChanged: (val) {
+                                if (val != null) setState(() => _selectedGender = val);
+                              },
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
 
-                    // Boton Guardar y Continuar
+                    // Boton Guardar y Continuar iOS (Vibrant Apple Blue)
                     SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _saveProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.surface,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                      height: 50,
+                      child: CupertinoButton.filled(
+                        padding: EdgeInsets.zero,
+                        borderRadius: BorderRadius.circular(14),
+                        onPressed: _isLoading ? null : _handleSaveProfile,
                         child: _isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.2,
-                                  color: AppColors.surface,
-                                ),
-                              )
+                            ? const CupertinoActivityIndicator(color: AppColors.surface)
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
                                   Text(
                                     'Guardar y Empezar',
                                     style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.surface,
+                                      letterSpacing: -0.3,
                                     ),
                                   ),
-                                  SizedBox(width: 8),
-                                  Icon(Icons.arrow_forward_rounded, size: 18),
+                                  SizedBox(width: 6),
+                                  Icon(CupertinoIcons.arrow_right, size: 16, color: AppColors.surface),
                                 ],
                               ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
                     // Boton inferior de cancelar y volver
                     Center(
-                      child: TextButton.icon(
-                        onPressed: _isLoading ? null : _cancelAndGoBack,
-                        icon: const Icon(Icons.close_rounded, size: 16),
-                        label: const Text(
-                          'Cancelar y no registrarme',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFFDC2626), // Rojo suave
+                      child: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        onPressed: _isLoading ? null : _handleCancelAndGoBack,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(CupertinoIcons.clear_circled, size: 16, color: AppColors.systemRed),
+                            SizedBox(width: 6),
+                            Text(
+                              'Cancelar y no registrarme',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.systemRed,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -380,48 +409,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _genderButton({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: 1.2,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? AppColors.surface : AppColors.textMuted,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: isSelected ? AppColors.surface : AppColors.primary,
-              ),
-            ),
-          ],
         ),
       ),
     );
