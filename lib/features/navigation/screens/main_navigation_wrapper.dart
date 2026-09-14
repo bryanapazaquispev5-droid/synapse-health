@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../user_profile/screens/profile_screen.dart';
 import '../../cheatsheets/screens/cheatsheet_list_screen.dart';
+import '../../quizzes/screens/quiz_list_screen.dart';
 
 class MainNavigationWrapper extends StatefulWidget {
   final User user;
@@ -58,13 +59,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
             index: _currentIndex,
             children: [
               const CheatsheetListScreen(),
-              _buildPlaceholder(
-                title: 'Quizzes y Casos Clínicos',
-                subtitle: 'Evaluación rápida con retroalimentación médica inmediata.',
-                gifPath: 'assets/images/quiz.gif',
-                color: const Color(0xFFF59E0B),
-                tag: 'Fase 3 del Plan',
-              ),
+              const QuizListScreen(),
               _buildPlaceholder(
                 title: 'Métricas y Rachas',
                 subtitle: 'Análisis mensual de rendimiento y detector de materias débiles.',
