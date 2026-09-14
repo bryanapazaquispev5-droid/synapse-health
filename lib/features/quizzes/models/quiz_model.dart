@@ -74,8 +74,12 @@ class QuizModel {
         return 'Para Relacionar';
       case 'ordering':
         return 'Para Ordenar';
+      case 'case_study':
+        return 'Caso Clínico';
+      case 'single_choice':
+      case 'multiple_choice':
       default:
-        return 'Opción Múltiple';
+        return 'Selección Simple';
     }
   }
 }
