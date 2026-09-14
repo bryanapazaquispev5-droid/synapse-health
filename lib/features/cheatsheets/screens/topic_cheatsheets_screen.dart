@@ -254,7 +254,28 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
-            const SizedBox(height: 12),
+            if (cs.sourceBook.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(CupertinoIcons.book, size: 12, color: AppColors.accent),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      cs.sourceBook,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accent,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 10),
             Row(
               children: [
                 if (cs.keyPoints.isNotEmpty) ...[
