@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/quiz_model.dart';
 import '../widgets/interactive_matching_widget.dart';
+import '../widgets/interactive_ordering_widget.dart';
 
 class QuizSessionScreen extends StatefulWidget {
   final List<QuizModel> quizzes;
@@ -22,6 +23,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   int _currentIndex = 0;
   int? _selectedOptionIndex;
   bool? _isMatchingCorrect;
+  bool? _isOrderingCorrect;
   bool _isAnswered = false;
   int _score = 0;
   bool _isCompleted = false;
@@ -51,12 +53,23 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     });
   }
 
+  void _handleOrderingCompleted(bool isCorrect) {
+    setState(() {
+      _isAnswered = true;
+      _isOrderingCorrect = isCorrect;
+      if (isCorrect) {
+        _score++;
+      }
+    });
+  }
+
   void _handleNextQuestion() {
     if (_currentIndex < widget.quizzes.length - 1) {
       setState(() {
         _currentIndex++;
         _selectedOptionIndex = null;
         _isMatchingCorrect = null;
+        _isOrderingCorrect = null;
         _isAnswered = false;
       });
     } else {
@@ -71,6 +84,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       _currentIndex = 0;
       _selectedOptionIndex = null;
       _isMatchingCorrect = null;
+      _isOrderingCorrect = null;
       _isAnswered = false;
       _score = 0;
       _isCompleted = false;
@@ -241,8 +255,16 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                       isAnswered: _isAnswered,
                       onCompleted: _handleMatchingCompleted,
                     ),
+                  ] else if (quiz.type == 'ordering') ...[
+                    // Si es pregunta de tipo 'ordering' (Para Ordenar), mostrar el widget táctil reordenable
+                    InteractiveOrderingWidget(
+                      key: ValueKey('${quiz.id}_$_currentIndex'),
+                      quiz: quiz,
+                      isAnswered: _isAnswered,
+                      onCompleted: _handleOrderingCompleted,
+                    ),
                   ] else ...[
-                    // Las 3 Alternativas para Selección Simple, Caso Clínico y Para Ordenar
+                    // Las 3 Alternativas para Selección Simple y Caso Clínico
                     ...List.generate(quiz.options.length, (index) {
                       final optionText = quiz.options[index];
                       final optionLetter = String.fromCharCode(65 + index); // A, B, C
@@ -400,7 +422,9 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   Widget _buildRationaleCard(QuizModel quiz) {
     final bool isCorrect = quiz.type == 'matching'
         ? (_isMatchingCorrect ?? false)
-        : (_selectedOptionIndex == quiz.correctIndex);
+        : quiz.type == 'ordering'
+            ? (_isOrderingCorrect ?? false)
+            : (_selectedOptionIndex == quiz.correctIndex);
 
     return Container(
       padding: const EdgeInsets.all(16),

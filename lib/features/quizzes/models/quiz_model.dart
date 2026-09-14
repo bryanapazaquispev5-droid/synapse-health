@@ -37,6 +37,7 @@ class QuizModel {
   final String sourceBook;
   final int order;
   final List<MatchingPair> matchingPairs;
+  final List<String> orderingItems;
 
   const QuizModel({
     required this.id,
@@ -50,6 +51,7 @@ class QuizModel {
     required this.sourceBook,
     this.order = 1,
     this.matchingPairs = const [],
+    this.orderingItems = const [],
   });
 
   factory QuizModel.fromMap(Map<String, dynamic> map, String documentId) {
@@ -95,6 +97,16 @@ class QuizModel {
       );
     }
 
+    var orderItems = parseOptions(map['orderingItems']);
+    // Fallback inteligente para preguntas de ordenar si aún no están estructuradas
+    if (orderItems.isEmpty && typeStr == 'ordering') {
+      orderItems = _extractFallbackOrderingItems(
+        question: map['question']?.toString() ?? '',
+        options: parsedOptions,
+        correctIndex: parsedCorrectIndex,
+      );
+    }
+
     return QuizModel(
       id: documentId,
       areaId: map['areaId']?.toString() ?? '',
@@ -107,6 +119,7 @@ class QuizModel {
       sourceBook: map['sourceBook']?.toString() ?? map['source']?.toString() ?? '',
       order: parseIndex(map['order']),
       matchingPairs: pairs,
+      orderingItems: orderItems,
     );
   }
 
@@ -156,6 +169,48 @@ class QuizModel {
     }
   }
 
+  static List<String> _extractFallbackOrderingItems({
+    required String question,
+    required List<String> options,
+    required int correctIndex,
+  }) {
+    try {
+      if (options.isNotEmpty && correctIndex >= 0 && correctIndex < options.length) {
+        final opt = options[correctIndex];
+        if (opt.contains('->')) {
+          final items = opt.split('->').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+          // Si los items son solo números '1 -> 2 -> 3', extraer el texto real de question
+          if (items.isNotEmpty && items.every((e) => RegExp(r'^\d+$').hasMatch(e))) {
+            final questionItems = <String>[];
+            for (final line in question.split('\n')) {
+              final m = RegExp(r'^\d+\.\s*(.+)$').firstMatch(line.trim());
+              if (m != null) questionItems.add(m.group(1)!.trim());
+            }
+            if (questionItems.isNotEmpty) {
+              return items.map((numStr) {
+                final idx = int.parse(numStr) - 1;
+                return (idx >= 0 && idx < questionItems.length) ? questionItems[idx] : numStr;
+              }).toList();
+            }
+          }
+          return items;
+        } else if (opt.contains('|')) {
+          return opt.split('|').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        }
+      }
+
+      // Extraer desde el question si contiene 1., 2., etc.
+      final items = <String>[];
+      for (final line in question.split('\n')) {
+        final m = RegExp(r'^\d+\.\s*(.+)$').firstMatch(line.trim());
+        if (m != null) items.add(m.group(1)!.trim());
+      }
+      return items;
+    } catch (_) {
+      return const [];
+    }
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'areaId': areaId,
@@ -168,12 +223,13 @@ class QuizModel {
       'sourceBook': sourceBook,
       'order': order,
       'matchingPairs': matchingPairs.map((p) => p.toMap()).toList(),
+      'orderingItems': orderingItems,
     };
   }
 
-  /// Devuelve el enunciado limpio sin los numerales 1., 2., 3. si es de tipo matching
+  /// Devuelve el enunciado limpio sin los numerales 1., 2., 3. si es de tipo matching u ordering
   String get cleanQuestionPrompt {
-    if (type == 'matching') {
+    if (type == 'matching' || type == 'ordering') {
       final firstNum = question.indexOf(RegExp(r'\n\s*1\.'));
       if (firstNum != -1) {
         return question.substring(0, firstNum).trim();

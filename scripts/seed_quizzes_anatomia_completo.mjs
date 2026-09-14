@@ -115,6 +115,11 @@ const quizzes = [
       '3 -> 1 -> 2'
     ],
     correctIndex: 1,
+    orderingItems: [
+      'Arteria carótida común',
+      'Bifurcación carotídea en C4 (seno y glomo carotídeo)',
+      'Arterias temporal superficial y maxilar'
+    ],
     rationale: 'La carótida común asciende hasta C4 (borde superior del cartílago tiroides), donde se divide en carótida interna y externa; esta última culmina en la parótida dando la temporal superficial y la maxilar.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 1 (Cabeza y Cuello)'
   },
@@ -175,6 +180,10 @@ const quizzes = [
       'Ambos planos se encuentran al mismo nivel superficial'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Plano superficial: Esternohioideo y Omohioideo',
+      'Plano profundo: Esternotiroideo y Tirohioideo'
+    ],
     rationale: 'En los músculos infrahioideos, el esternohioideo y el vientre superior del omohioideo forman la capa superficial, mientras que el esternotiroideo y tirohioideo yacen inmediatamente por debajo.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 1 (Cabeza y Cuello)'
   },
@@ -258,6 +267,11 @@ const quizzes = [
       'Hiato Esofágico (T8) -> Hiato Vena Cava (T10) -> Hiato Aórtico (T12)'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Hiato Vena Cava Inferior (T8)',
+      'Hiato Esofágico (T10)',
+      'Hiato Aórtico (T12)'
+    ],
     rationale: 'Mnemotecnia VEA: Vena Cava (T8 en centro tendinoso), Esófago (T10 en pilar derecho muscular), Aorta (T12 en plano osteofibroso posterior).',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 2 (Tronco)'
   },
@@ -307,6 +321,11 @@ const quizzes = [
       'Plano posterior: Colédoco | Plano anterior: Vena Cava Inferior y Vena Porta'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Plano posterior: Vena Porta',
+      'Plano anterior izquierdo: Arteria Hepática Propia',
+      'Plano anterior derecho: Conducto Colédoco'
+    ],
     rationale: 'Regla VAC: Vena porta atrás, Arteria hepática propia adelante a la izquierda y Conducto colédoco adelante a la derecha.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 2 (Tronco)'
   },
@@ -397,6 +416,11 @@ const quizzes = [
       'Pelvis Renal -> Arteria Renal -> Vena Renal'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Vena Renal (anterior)',
+      'Arteria Renal (intermedia)',
+      'Pelvis Renal (posterior)'
+    ],
     rationale: 'Mnemotecnia VAP: de adelante hacia atrás se disponen la Vena renal (anterior), Arteria renal (media) y Pelvis renal (posterior).',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 2 (Tronco)'
   },
@@ -481,6 +505,11 @@ const quizzes = [
       'Arteria Femoral -> Nervio Femoral -> Vena Femoral'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Nervio Femoral (lateral)',
+      'Arteria Femoral (intermedia)',
+      'Vena Femoral (medial)'
+    ],
     rationale: 'Regla NAV: de afuera hacia adentro en la ingle se hallan el Nervio femoral, la Arteria femoral y la Vena femoral (y los linfáticos mediales en el anillo crural).',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 3 (Miembros)'
   },
@@ -546,6 +575,11 @@ const quizzes = [
       'Vena Poplítea -> Arteria Poplítea -> Nervio Tibial'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Nervio Tibial (superficial)',
+      'Vena Poplítea (intermedia)',
+      'Arteria Poplítea (profunda)'
+    ],
     rationale: 'Regla NVA de superficial a profundo: el nervio tibial es el más superficial, la vena poplítea es intermedia y la arteria poplítea es la más profunda en contacto con el fémur.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 3 (Miembros)'
   },
@@ -576,6 +610,12 @@ const quizzes = [
       'Pisiforme -> Piramidal -> Semilunar -> Escafoides'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Hueso Escafoides (lateral)',
+      'Hueso Semilunar',
+      'Hueso Piramidal',
+      'Hueso Pisiforme (medial)'
+    ],
     rationale: 'Mnemotecnia Es-Se-Pi-Pi: Escafoides, Semilunar, Piramidal y Pisiforme de radial a cubital en la fila proximal.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 3 (Miembros)'
   },
@@ -694,6 +734,13 @@ const quizzes = [
       '4.° ventrículo -> Acueducto de Silvio -> 3.er ventrículo -> Ventrículos laterales'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Ventrículos laterales',
+      'Forámenes de Monro',
+      '3.er ventrículo',
+      'Acueducto de Silvio',
+      '4.° ventrículo y forámenes de Luschka/Magendie'
+    ],
     rationale: 'El LCR fluye desde los ventrículos laterales al 3.er ventrículo por los forámenes de Monro, desciende por el acueducto de Silvio al 4.° ventrículo y sale a la cisterna magna por los orificios de Luschka y Magendie.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 4 (Sistema Nervioso Central)'
   },
@@ -702,29 +749,29 @@ const quizzes = [
     areaId: 'anatomia',
     topicId: 'telencefalo_corteza_ganglios_base',
     type: 'case_study',
-    question: 'Un paciente hipertenso sufre infarto de las arterias lenticuloestriadas con hemiplejía motora pura contralateral completa y proporcionada. ¿Qué estructura anatómica se lesionó?',
+    question: 'Un paciente sufre un ictus hemorrágico afectando el brazo posterior de la cápsula interna izquierda. ¿Qué déficit motor clásico esperaría encontrar?',
     options: [
-      'Brazo anterior de la cápsula interna',
-      'Brazo posterior de la cápsula interna (haz corticoespinal)',
-      'Corteza prefrontal dorsolateral'
+      'Hemiplejía flácida contralateral derecha (fascículo corticoespinal)',
+      'Parálisis facial homolateral izquierda aislada',
+      'Ataxia sensitiva bilateral exclusiva'
     ],
-    correctIndex: 1,
-    rationale: 'Por el brazo posterior de la cápsula interna discurren condensadas las fibras de la vía piramidal (haz corticoespinal motor); su isquemia genera hemiplejía contralateral densa.',
+    correctIndex: 0,
+    rationale: 'Por el brazo posterior de la cápsula interna descienden las fibras del haz corticoespinal motor para el hemicuerpo opuesto; su destrucción provoca hemiplejía contralateral.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 4 (Sistema Nervioso Central)'
   },
   {
     id: 'quiz_t4_06_talamo_excepcion_olfato',
     areaId: 'anatomia',
-    topicId: 'diencefalo_sistema_limbico',
+    topicId: 'tronco_encefalico_cuarto_ventriculo',
     type: 'single_choice',
-    question: 'El tálamo es la gran estación de relevo de todas las sensibilidades del cuerpo hacia la corteza, con la ÚNICA excepción de:',
+    question: '¿Cuál es la única modalidad sensorial que alcanza la corteza cerebral sin hacer relevo sináptico previo en los núcleos del tálamo?',
     options: [
-      'La vía auditiva',
-      'La vía olfatoria',
-      'La vía gustativa'
+      'Vía visual',
+      'Vía auditiva',
+      'Vía olfatoria'
     ],
-    correctIndex: 1,
-    rationale: 'La vía olfatoria es la única sensación que proyecta directamente a la corteza cerebral (corteza piriforme/rinencéfalo) sin realizar relevo previo en los núcleos del tálamo.',
+    correctIndex: 2,
+    rationale: 'La vía olfatoria es la única que proyecta directamente desde el bulbo olfatorio a la corteza piriforme temporal sin pasar previamente por los núcleos del tálamo.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 4 (Sistema Nervioso Central)'
   },
   {
@@ -739,6 +786,12 @@ const quizzes = [
       'Núcleo Globoso -> Núcleo Dentado -> Núcleo del Fastigio -> Núcleo Émbolo'
     ],
     correctIndex: 0,
+    orderingItems: [
+      'Núcleo Dentado (lateral)',
+      'Núcleo Émbolo (emboliforme)',
+      'Núcleo Globoso',
+      'Núcleo del Fastigio (del techo - medial)'
+    ],
     rationale: 'Mnemotecnia DEGF ("Don Émbolo Guarda Frutas"): de lateral a medial se hallan el Dentado, Emboliforme, Globoso y Fastigio.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 4 (Sistema Nervioso Central)'
   },
