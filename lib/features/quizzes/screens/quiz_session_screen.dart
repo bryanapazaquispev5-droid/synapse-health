@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/quiz_model.dart';
+import '../widgets/interactive_matching_widget.dart';
 
 class QuizSessionScreen extends StatefulWidget {
   final List<QuizModel> quizzes;
@@ -20,6 +21,7 @@ class QuizSessionScreen extends StatefulWidget {
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
   int _currentIndex = 0;
   int? _selectedOptionIndex;
+  bool? _isMatchingCorrect;
   bool _isAnswered = false;
   int _score = 0;
   bool _isCompleted = false;
@@ -39,11 +41,22 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     });
   }
 
+  void _handleMatchingCompleted(bool isCorrect) {
+    setState(() {
+      _isAnswered = true;
+      _isMatchingCorrect = isCorrect;
+      if (isCorrect) {
+        _score++;
+      }
+    });
+  }
+
   void _handleNextQuestion() {
     if (_currentIndex < widget.quizzes.length - 1) {
       setState(() {
         _currentIndex++;
         _selectedOptionIndex = null;
+        _isMatchingCorrect = null;
         _isAnswered = false;
       });
     } else {
@@ -57,6 +70,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     setState(() {
       _currentIndex = 0;
       _selectedOptionIndex = null;
+      _isMatchingCorrect = null;
       _isAnswered = false;
       _score = 0;
       _isCompleted = false;
@@ -207,7 +221,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                       ],
                     ),
                     child: Text(
-                      quiz.question,
+                      quiz.cleanQuestionPrompt,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -219,18 +233,28 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                   ),
                   const SizedBox(height: 18),
 
-                  // Las 3 Alternativas
-                  ...List.generate(quiz.options.length, (index) {
-                    final optionText = quiz.options[index];
-                    final optionLetter = String.fromCharCode(65 + index); // A, B, C
+                  // Si es pregunta de tipo 'matching' (Para Relacionar), mostrar el widget de 2 columnas
+                  if (quiz.type == 'matching') ...[
+                    InteractiveMatchingWidget(
+                      key: ValueKey('${quiz.id}_$_currentIndex'),
+                      quiz: quiz,
+                      isAnswered: _isAnswered,
+                      onCompleted: _handleMatchingCompleted,
+                    ),
+                  ] else ...[
+                    // Las 3 Alternativas para Selección Simple, Caso Clínico y Para Ordenar
+                    ...List.generate(quiz.options.length, (index) {
+                      final optionText = quiz.options[index];
+                      final optionLetter = String.fromCharCode(65 + index); // A, B, C
 
-                    return _buildOptionCard(
-                      index: index,
-                      letter: optionLetter,
-                      text: optionText,
-                      correctIndex: quiz.correctIndex,
-                    );
-                  }),
+                      return _buildOptionCard(
+                        index: index,
+                        letter: optionLetter,
+                        text: optionText,
+                        correctIndex: quiz.correctIndex,
+                      );
+                    }),
+                  ],
 
                   // Caja de Justificación Médica (Feedback Inmediato)
                   if (_isAnswered) ...[
@@ -374,7 +398,9 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   }
 
   Widget _buildRationaleCard(QuizModel quiz) {
-    final bool isCorrect = _selectedOptionIndex == quiz.correctIndex;
+    final bool isCorrect = quiz.type == 'matching'
+        ? (_isMatchingCorrect ?? false)
+        : (_selectedOptionIndex == quiz.correctIndex);
 
     return Container(
       padding: const EdgeInsets.all(16),

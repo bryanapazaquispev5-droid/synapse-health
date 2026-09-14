@@ -20,7 +20,16 @@ async function setDocument(path, fields) {
     } else if (Array.isArray(value)) {
       formattedFields[key] = {
         arrayValue: {
-          values: value.map(item => ({ stringValue: item }))
+          values: value.map(item => {
+            if (typeof item === 'object' && item !== null) {
+              const mapFields = {};
+              for (const [k, v] of Object.entries(item)) {
+                mapFields[k] = { stringValue: String(v) };
+              }
+              return { mapValue: { fields: mapFields } };
+            }
+            return { stringValue: String(item) };
+          })
         }
       };
     }
@@ -71,6 +80,11 @@ const quizzes = [
       '1: Nervio maxilar | 2: Arteria auditiva externa | 3: Nervio trigémino'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Meato acústico interno', right: 'Pares VII, VIII y A. laberíntica' },
+      { left: 'Foramen estilomastoideo', right: 'Nervio facial motor' },
+      { left: 'Conducto carotídeo', right: 'Arteria carótida interna' }
+    ],
     rationale: 'El meato acústico interno conduce los nervios VII, VII bis, VIII y la arteria laberíntica; por el estilomastoideo emerge el tronco motor del facial; y el conducto carotídeo aloja a la carótida interna.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 1 (Cabeza y Cuello)'
   },
@@ -221,6 +235,10 @@ const quizzes = [
       '1: Fijación estática | 2: Movimientos de lateralidad exclusiva'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Compartimento Supradiscal (disco-temporal)', right: 'Movimientos de traslación' },
+      { left: 'Compartimento Infradiscal (disco-condilar)', right: 'Movimientos de rotación pura' }
+    ],
     rationale: 'La ATM es bicompartimental: en el compartimento superior o supradiscal el menisco se traslada hacia el tubérculo temporal, y en el inferior o infradiscal el cóndilo rota.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 1 (Cabeza y Cuello)'
   },
@@ -270,6 +288,10 @@ const quizzes = [
       '1: Arteria mesentérica superior | 2: Vena porta hepática'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Papila Duodenal Mayor (Ampolla de Vater)', right: 'Conducto Colédoco y Pancreático Principal (Wirsung)' },
+      { left: 'Papila Duodenal Menor', right: 'Conducto Pancreático Accesorio (Santorini)' }
+    ],
     rationale: 'En la 2.ª porción duodenal, la papila mayor recibe al colédoco y al conducto de Wirsung regulados por el esfínter de Oddi; la papila menor recibe al accesorio de Santorini 2 cm más arriba.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 2 (Tronco)'
   },
@@ -405,6 +427,11 @@ const quizzes = [
       '1: T10 | 2: T12 | 3: L2'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Tronco Celíaco', right: 'Nivel T12 (hiato aórtico)' },
+      { left: 'Arteria Mesentérica Superior', right: 'Nivel L1 (retropancreático)' },
+      { left: 'Arteria Mesentérica Inferior', right: 'Nivel L3 (subduodenal)' }
+    ],
     rationale: 'El tronco celíaco nace a la altura de T12, la arteria mesentérica superior en L1 y la arteria mesentérica inferior en L3.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 2 (Tronco)'
   },
@@ -469,6 +496,11 @@ const quizzes = [
       '1: Ligamento Cruzado Posterior | 2: Ligamento Cruzado Anterior | 3: Menisco medial'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Maniobra de Cajón Anterior', right: 'Ligamento Cruzado Anterior (LCA)' },
+      { left: 'Maniobra de Cajón Posterior', right: 'Ligamento Cruzado Posterior (LCP)' },
+      { left: 'Bostezo en valgo forzado', right: 'Ligamento Colateral Medial' }
+    ],
     rationale: 'El cajón anterior evalúa el LCA impidiendo el desplazamiento anterior de la tibia; el cajón posterior evalúa el LCP; y la apertura en valgo evalúa el ligamento colateral medial.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 3 (Miembros)'
   },
@@ -589,6 +621,10 @@ const quizzes = [
       '1: Carece de vascularización periférica | 2: Es completamente óseo'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Menisco Medial (Interno)', right: 'Forma de "C", más fijo al ligamento colateral y más vulnerable' },
+      { left: 'Menisco Lateral (Externo)', right: 'Forma de "O", más móvil y circular' }
+    ],
     rationale: 'Mnemotecnia CITO: C (Interno) y O (Externo). El menisco medial tiene forma de C y se ancla al ligamento colateral medial, lo que lo hace menos móvil y más propenso a roturas.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 3 (Miembros)'
   },
@@ -623,6 +659,11 @@ const quizzes = [
       '1: Tono muscular | 2: Movimiento fino | 3: Reflejos oculares'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Arquicerebelo (Vestibulocerebelo)', right: 'Equilibrio corporal y movimientos oculares' },
+      { left: 'Paleocerebelo (Espinocerebelo)', right: 'Tono muscular y postura axial' },
+      { left: 'Neocerebelo (Cerebrocerebelo)', right: 'Coordinación de motricidad fina voluntaria' }
+    ],
     rationale: 'El arquicerebelo coordina el equilibrio; el paleocerebelo regula el tono postural y la marcha axial; y el neocerebelo programa y modula los movimientos voluntarios finos distales.',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 4 (Sistema Nervioso Central)'
   },
@@ -728,6 +769,10 @@ const quizzes = [
       '1: Centro del olfato | 2: Centro del gusto'
     ],
     correctIndex: 0,
+    matchingPairs: [
+      { left: 'Colículos Superiores', right: 'Reflejos visuales y movimientos sacádicos' },
+      { left: 'Colículos Inferiores', right: 'Relevo de la vía auditiva' }
+    ],
     rationale: 'Regla: Colículos Superiores arriba para los ojos (visión), Colículos Inferiores abajo para los oídos (audición).',
     sourceBook: 'Rouvière - Delmas: Anatomía Humana Tomo 4 (Sistema Nervioso Central)'
   },

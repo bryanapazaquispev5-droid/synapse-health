@@ -1,28 +1,55 @@
+/// Modelo de Par Estructurado para Quizzes de tipo 'Para Relacionar' (matching)
+class MatchingPair {
+  final String left;
+  final String right;
+
+  const MatchingPair({
+    required this.left,
+    required this.right,
+  });
+
+  factory MatchingPair.fromMap(Map<String, dynamic> map) {
+    return MatchingPair(
+      left: map['left']?.toString() ?? '',
+      right: map['right']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'left': left,
+      'right': right,
+    };
+  }
+}
+
 /// Modelo de Dominio para los Quizzes Clínicos de Synapse Health
 /// Soporta preguntas de 3 alternativas con retroalimentación médica inmediata
 class QuizModel {
   final String id;
   final String areaId;
   final String topicId;
-  final String type; // 'multiple_choice', 'matching', 'ordering'
+  final String type; // 'single_choice', 'case_study', 'matching', 'ordering'
   final String question;
   final List<String> options;
   final int correctIndex;
   final String rationale;
   final String sourceBook;
   final int order;
+  final List<MatchingPair> matchingPairs;
 
   const QuizModel({
     required this.id,
     required this.areaId,
     required this.topicId,
-    this.type = 'multiple_choice',
+    this.type = 'single_choice',
     required this.question,
     required this.options,
     required this.correctIndex,
     required this.rationale,
     required this.sourceBook,
     this.order = 1,
+    this.matchingPairs = const [],
   });
 
   factory QuizModel.fromMap(Map<String, dynamic> map, String documentId) {
@@ -40,18 +67,93 @@ class QuizModel {
       return 0;
     }
 
+    List<MatchingPair> parseMatchingPairs(dynamic raw) {
+      if (raw is List && raw.isNotEmpty) {
+        return raw.map((item) {
+          if (item is Map<String, dynamic>) {
+            return MatchingPair.fromMap(item);
+          } else if (item is Map) {
+            return MatchingPair.fromMap(Map<String, dynamic>.from(item));
+          }
+          return const MatchingPair(left: '', right: '');
+        }).where((p) => p.left.isNotEmpty && p.right.isNotEmpty).toList();
+      }
+      return const [];
+    }
+
+    final typeStr = map['type']?.toString() ?? 'single_choice';
+    final parsedOptions = parseOptions(map['options']);
+    final parsedCorrectIndex = parseIndex(map['correctIndex']);
+    var pairs = parseMatchingPairs(map['matchingPairs']);
+
+    // Fallback inteligente para preguntas de relacionar si aún no están estructuradas
+    if (pairs.isEmpty && typeStr == 'matching') {
+      pairs = _extractFallbackPairs(
+        question: map['question']?.toString() ?? '',
+        options: parsedOptions,
+        correctIndex: parsedCorrectIndex,
+      );
+    }
+
     return QuizModel(
       id: documentId,
       areaId: map['areaId']?.toString() ?? '',
       topicId: map['topicId']?.toString() ?? '',
-      type: map['type']?.toString() ?? 'multiple_choice',
+      type: typeStr,
       question: map['question']?.toString() ?? '',
-      options: parseOptions(map['options']),
-      correctIndex: parseIndex(map['correctIndex']),
+      options: parsedOptions,
+      correctIndex: parsedCorrectIndex,
       rationale: map['rationale']?.toString() ?? '',
       sourceBook: map['sourceBook']?.toString() ?? map['source']?.toString() ?? '',
       order: parseIndex(map['order']),
+      matchingPairs: pairs,
     );
+  }
+
+  static List<MatchingPair> _extractFallbackPairs({
+    required String question,
+    required List<String> options,
+    required int correctIndex,
+  }) {
+    try {
+      if (options.isEmpty || correctIndex < 0 || correctIndex >= options.length) {
+        return const [];
+      }
+
+      // 1. Extraer elementos de la izquierda del question
+      final leftItems = <String>[];
+      final lines = question.split('\n');
+      for (final line in lines) {
+        final trimmed = line.trim();
+        final match = RegExp(r'^\d+\.\s*(.+)$').firstMatch(trimmed);
+        if (match != null) {
+          leftItems.add(match.group(1)!.trim());
+        }
+      }
+
+      // 2. Extraer elementos de la derecha de la opción correcta
+      final rightItems = <String>[];
+      final correctOption = options[correctIndex];
+      final segments = correctOption.split('|');
+      for (final segment in segments) {
+        final trimmed = segment.trim();
+        final colonIdx = trimmed.indexOf(':');
+        if (colonIdx != -1) {
+          rightItems.add(trimmed.substring(colonIdx + 1).trim());
+        } else {
+          rightItems.add(trimmed);
+        }
+      }
+
+      final pairs = <MatchingPair>[];
+      final count = leftItems.length < rightItems.length ? leftItems.length : rightItems.length;
+      for (int i = 0; i < count; i++) {
+        pairs.add(MatchingPair(left: leftItems[i], right: rightItems[i]));
+      }
+      return pairs;
+    } catch (_) {
+      return const [];
+    }
   }
 
   Map<String, dynamic> toMap() {
@@ -65,7 +167,19 @@ class QuizModel {
       'rationale': rationale,
       'sourceBook': sourceBook,
       'order': order,
+      'matchingPairs': matchingPairs.map((p) => p.toMap()).toList(),
     };
+  }
+
+  /// Devuelve el enunciado limpio sin los numerales 1., 2., 3. si es de tipo matching
+  String get cleanQuestionPrompt {
+    if (type == 'matching') {
+      final firstNum = question.indexOf(RegExp(r'\n\s*1\.'));
+      if (firstNum != -1) {
+        return question.substring(0, firstNum).trim();
+      }
+    }
+    return question;
   }
 
   String get typeLabel {
