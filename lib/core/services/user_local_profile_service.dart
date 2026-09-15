@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalUserProfile {
@@ -21,12 +22,21 @@ class LocalUserProfile {
   });
 }
 
-/// Servicio exclusivo para almacenar únicamente los datos del usuario localmente (Nombre, Email, Foto, Carrera, Género).
-/// NINGÚN dato médico, chuleta, tema ni área médica se almacena aquí.
+/// Servicio seguro para almacenar datos del usuario con cifrado por hardware (OWASP MASVS Sección 9.2).
+/// Utiliza Android Keystore (EncryptedSharedPreferences) e iOS Keychain.
 class UserLocalProfileService {
   static final UserLocalProfileService _instance = UserLocalProfileService._internal();
   factory UserLocalProfileService() => _instance;
   UserLocalProfileService._internal();
+
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      resetOnError: true,
+    ),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock,
+    ),
+  );
 
   Future<void> saveProfile({
     required String uid,
@@ -37,14 +47,12 @@ class UserLocalProfileService {
     String? photoUrl,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      if (name.isNotEmpty) await prefs.setString('user_name_$uid', name);
-      if (email.isNotEmpty) await prefs.setString('user_email_$uid', email);
-      if (career.isNotEmpty) await prefs.setString('user_career_$uid', career);
-      if (gender.isNotEmpty) await prefs.setString('user_gender_$uid', gender);
+      if (name.isNotEmpty) await _secureStorage.write(key: 'user_name_$uid', value: name);
+      if (email.isNotEmpty) await _secureStorage.write(key: 'user_email_$uid', value: email);
+      if (career.isNotEmpty) await _secureStorage.write(key: 'user_career_$uid', value: career);
+      if (gender.isNotEmpty) await _secureStorage.write(key: 'user_gender_$uid', value: gender);
       if (photoUrl != null && photoUrl.isNotEmpty) {
-        await prefs.setString('user_photo_url_$uid', photoUrl);
-        // Descargar foto de Google y guardarla en Base64 para visualización offline
+        await _secureStorage.write(key: 'user_photo_url_$uid', value: photoUrl);
         _downloadAndCachePhoto(uid, photoUrl);
       }
     } catch (_) {}
@@ -59,8 +67,7 @@ class UserLocalProfileService {
         final bytes = await consolidateHttpClientResponseBytes(response);
         if (bytes.isNotEmpty) {
           final base64Str = base64Encode(bytes);
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('user_photo_base64_$uid', base64Str);
+          await _secureStorage.write(key: 'user_photo_base64_$uid', value: base64Str);
         }
       }
     } catch (_) {}
@@ -73,15 +80,35 @@ class UserLocalProfileService {
     String? fallbackPhotoUrl,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final name = prefs.getString('user_name_$uid') ?? fallbackName ?? 'Estudiante de Salud';
-      final email = prefs.getString('user_email_$uid') ?? fallbackEmail ?? 'estudiante@synapse.app';
-      final career = prefs.getString('user_career_$uid') ?? 'Medicina Humana';
-      final gender = prefs.getString('user_gender_$uid') ?? 'Hombre';
-      final photoUrl = prefs.getString('user_photo_url_$uid') ?? fallbackPhotoUrl;
+      // 1. Intentar lectura cifrada desde FlutterSecureStorage
+      String? name = await _secureStorage.read(key: 'user_name_$uid');
+      String? email = await _secureStorage.read(key: 'user_email_$uid');
+      String? career = await _secureStorage.read(key: 'user_career_$uid');
+      String? gender = await _secureStorage.read(key: 'user_gender_$uid');
+      String? photoUrl = await _secureStorage.read(key: 'user_photo_url_$uid');
+      String? photoBase64 = await _secureStorage.read(key: 'user_photo_base64_$uid');
+
+      // 2. Fallback de migración transparente desde SharedPreferences si aún no fue migrado
+      if (name == null || email == null) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          name ??= prefs.getString('user_name_$uid');
+          email ??= prefs.getString('user_email_$uid');
+          career ??= prefs.getString('user_career_$uid');
+          gender ??= prefs.getString('user_gender_$uid');
+          photoUrl ??= prefs.getString('user_photo_url_$uid');
+          photoBase64 ??= prefs.getString('user_photo_base64_$uid');
+
+          // Migrar automáticamente al almacenamiento cifrado
+          if (name != null) await _secureStorage.write(key: 'user_name_$uid', value: name);
+          if (email != null) await _secureStorage.write(key: 'user_email_$uid', value: email);
+          if (career != null) await _secureStorage.write(key: 'user_career_$uid', value: career);
+          if (gender != null) await _secureStorage.write(key: 'user_gender_$uid', value: gender);
+          if (photoUrl != null) await _secureStorage.write(key: 'user_photo_url_$uid', value: photoUrl);
+        } catch (_) {}
+      }
 
       Uint8List? photoBytes;
-      final photoBase64 = prefs.getString('user_photo_base64_$uid');
       if (photoBase64 != null && photoBase64.isNotEmpty) {
         try {
           photoBytes = base64Decode(photoBase64);
@@ -89,11 +116,11 @@ class UserLocalProfileService {
       }
 
       return LocalUserProfile(
-        name: name,
-        email: email,
-        career: career,
-        gender: gender,
-        photoUrl: photoUrl,
+        name: name ?? fallbackName ?? 'Estudiante de Salud',
+        email: email ?? fallbackEmail ?? 'estudiante@synapse.app',
+        career: career ?? 'Medicina Humana',
+        gender: gender ?? 'Hombre',
+        photoUrl: photoUrl ?? fallbackPhotoUrl,
         photoBytes: photoBytes,
       );
     } catch (_) {
