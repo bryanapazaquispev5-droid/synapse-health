@@ -485,7 +485,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
 
   Widget _buildResultView() {
     final double percentage = (_score / widget.quizzes.length) * 100;
-    final bool passed = percentage >= 60;
+    final bool hasPassed = percentage >= 60;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -502,21 +502,21 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(
-                    color: passed ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
+                    color: hasPassed ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Icon(
-                      passed ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.exclamationmark_circle_fill,
+                      hasPassed ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.exclamationmark_circle_fill,
                       size: 50,
-                      color: passed ? AppColors.systemGreen : AppColors.systemRed,
+                      color: hasPassed ? AppColors.systemGreen : AppColors.systemRed,
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
 
                 Text(
-                  passed ? '¡Excelente Desempeño!' : 'Buen Intento de Repaso',
+                  hasPassed ? '¡Excelente Desempeño!' : 'Buen Intento de Repaso',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,

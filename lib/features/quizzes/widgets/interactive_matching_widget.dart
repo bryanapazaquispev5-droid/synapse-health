@@ -167,7 +167,7 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
   void _checkAnswers() {
     if (_userPairings.length < _leftItems.length || _isSubmitted) return;
 
-    bool allCorrect = true;
+    bool isAllCorrect = true;
     for (final entry in _userPairings.entries) {
       final leftText = _leftItems[entry.key];
       final userRightText = _rightItems[entry.value];
@@ -178,7 +178,7 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
       );
 
       if (pair.right != userRightText) {
-        allCorrect = false;
+        isAllCorrect = false;
       }
     }
 
@@ -187,7 +187,7 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
       _selectedLeftIndex = null;
     });
 
-    widget.onCompleted(allCorrect);
+    widget.onCompleted(isAllCorrect);
   }
 
   bool _isPairCorrect(int leftIndex) {
@@ -216,7 +216,7 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final bool allPaired = _userPairings.length == _leftItems.length;
+    final bool isAllPaired = _userPairings.length == _leftItems.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -340,26 +340,26 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
             width: double.infinity,
             height: 48,
             child: CupertinoButton(
-              color: allPaired ? AppColors.accent : const Color(0xFFE5E5EA),
+              color: isAllPaired ? AppColors.accent : const Color(0xFFE5E5EA),
               borderRadius: BorderRadius.circular(14),
-              onPressed: allPaired ? _checkAnswers : null,
+              onPressed: isAllPaired ? _checkAnswers : null,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    allPaired ? CupertinoIcons.checkmark_alt_circle_fill : CupertinoIcons.link,
+                    isAllPaired ? CupertinoIcons.checkmark_alt_circle_fill : CupertinoIcons.link,
                     size: 18,
-                    color: allPaired ? Colors.white : AppColors.textMuted,
+                    color: isAllPaired ? Colors.white : AppColors.textMuted,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    allPaired
+                    isAllPaired
                         ? 'Comprobar Relaciones'
                         : 'Conecta todas las parejas (${_userPairings.length}/${_leftItems.length})',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: allPaired ? Colors.white : AppColors.textMuted,
+                      color: isAllPaired ? Colors.white : AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -387,8 +387,8 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
 
     // Estados post-comprobación
     final isSubmitted = _isSubmitted;
-    final bool leftCorrect = isSubmitted && isLeftPaired && _isPairCorrect(index);
-    final bool leftIncorrect = isSubmitted && isLeftPaired && !_isPairCorrect(index);
+    final bool isLeftCorrect = isSubmitted && isLeftPaired && _isPairCorrect(index);
+    final bool isLeftIncorrect = isSubmitted && isLeftPaired && !_isPairCorrect(index);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -405,8 +405,8 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
                 isPaired: isLeftPaired,
                 pairNumber: leftPairNum,
                 pairColor: pairColor,
-                isCorrect: leftCorrect,
-                isIncorrect: leftIncorrect,
+                isCorrect: isLeftCorrect,
+                isIncorrect: isLeftIncorrect,
               ),
             ),
             const SizedBox(width: 10),

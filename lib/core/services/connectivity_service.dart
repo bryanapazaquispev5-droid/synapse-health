@@ -30,19 +30,19 @@ class ConnectivityService {
     try {
       final result = await InternetAddress.lookup('google.com')
           .timeout(const Duration(milliseconds: 2000));
-      final online = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-      _updateStatus(online);
-      return online;
+      final bool isConnectionOnline = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      _updateStatus(isConnectionOnline);
+      return isConnectionOnline;
     } catch (_) {
       _updateStatus(false);
       return false;
     }
   }
 
-  void _updateStatus(bool online) {
-    if (_isOnline != online) {
-      _isOnline = online;
-      _controller.add(online);
+  void _updateStatus(bool isOnline) {
+    if (_isOnline != isOnline) {
+      _isOnline = isOnline;
+      _controller.add(isOnline);
     }
   }
 

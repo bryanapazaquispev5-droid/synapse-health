@@ -365,7 +365,7 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
   }
 
   Widget _buildSequenceSummary() {
-    final bool allCorrect = _areListsEqual(_currentItems, _correctSequence);
+    final bool isAllCorrect = _areListsEqual(_currentItems, _correctSequence);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -380,17 +380,17 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
           Row(
             children: [
               Icon(
-                allCorrect ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.compass_fill,
+                isAllCorrect ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.compass_fill,
                 size: 16,
-                color: allCorrect ? AppColors.systemGreen : AppColors.accent,
+                color: isAllCorrect ? AppColors.systemGreen : AppColors.accent,
               ),
               const SizedBox(width: 6),
               Text(
-                allCorrect ? '¡Secuencia Exacta!' : 'Secuencia Anatómica Canónica',
+                isAllCorrect ? '¡Secuencia Exacta!' : 'Secuencia Anatómica Canónica',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: allCorrect ? AppColors.systemGreen : AppColors.primary,
+                  color: isAllCorrect ? AppColors.systemGreen : AppColors.primary,
                 ),
               ),
             ],
