@@ -50,7 +50,7 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
     if (shuffled.length > 1) {
       shuffled.shuffle(Random());
       // Asegurar que comience desordenado si hay 2 o más elementos
-      if (_listsEqual(shuffled, _correctSequence)) {
+      if (_areListsEqual(shuffled, _correctSequence)) {
         final first = shuffled.removeAt(0);
         shuffled.add(first);
       }
@@ -60,7 +60,7 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
     _isSubmitted = widget.isAnswered;
   }
 
-  bool _listsEqual(List<String> a, List<String> b) {
+  bool _areListsEqual(List<String> a, List<String> b) {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
       if (a[i] != b[i]) return false;
@@ -90,7 +90,7 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
   void _checkOrder() {
     if (_isSubmitted) return;
 
-    final isCorrect = _listsEqual(_currentItems, _correctSequence);
+    final isCorrect = _areListsEqual(_currentItems, _correctSequence);
 
     setState(() {
       _isSubmitted = true;
@@ -365,7 +365,7 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
   }
 
   Widget _buildSequenceSummary() {
-    final bool allCorrect = _listsEqual(_currentItems, _correctSequence);
+    final bool allCorrect = _areListsEqual(_currentItems, _correctSequence);
 
     return Container(
       padding: const EdgeInsets.all(14),

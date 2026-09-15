@@ -64,7 +64,7 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
     final shuffledRights = _originalPairs.map((p) => p.right).toList();
     shuffledRights.shuffle(Random());
     // Asegurar que si hay más de 1 elemento, no queden en el mismo orden original si es posible
-    if (shuffledRights.length > 1 && _arraysEqual(shuffledRights, _originalPairs.map((p) => p.right).toList())) {
+    if (shuffledRights.length > 1 && _areArraysEqual(shuffledRights, _originalPairs.map((p) => p.right).toList())) {
       final first = shuffledRights.removeAt(0);
       shuffledRights.add(first);
     }
@@ -75,7 +75,7 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
     _isSubmitted = widget.isAnswered;
   }
 
-  bool _arraysEqual(List<String> a, List<String> b) {
+  bool _areArraysEqual(List<String> a, List<String> b) {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
       if (a[i] != b[i]) return false;

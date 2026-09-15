@@ -90,7 +90,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     }
   }
 
-  void _restartQuiz() {
+  void _restartQuizSession() {
     setState(() {
       _currentIndex = 0;
       _selectedOptionIndex = null;
@@ -574,7 +574,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                   height: 50,
                   child: CupertinoButton.filled(
                     borderRadius: BorderRadius.circular(16),
-                    onPressed: _restartQuiz,
+                    onPressed: _restartQuizSession,
                     child: const Text(
                       'Repetir Quiz',
                       style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
