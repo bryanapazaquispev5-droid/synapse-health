@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
-enum PasswordStrength { none, forbidden, weak, medium, strong }
+enum PasswordStrength { NONE, FORBIDDEN, WEAK, MEDIUM, STRONG }
 
 class PasswordStrengthBar extends StatelessWidget {
   final String password;
@@ -32,8 +32,8 @@ class PasswordStrengthBar extends StatelessWidget {
   }
 
   PasswordStrength get strength {
-    if (password.isEmpty) return PasswordStrength.none;
-    if (_isSameAsEmail) return PasswordStrength.forbidden;
+    if (password.isEmpty) return PasswordStrength.NONE;
+    if (_isSameAsEmail) return PasswordStrength.FORBIDDEN;
 
     int score = 0;
     if (password.length >= 6) score++;
@@ -42,36 +42,36 @@ class PasswordStrengthBar extends StatelessWidget {
     if (RegExp(r'[0-9]').hasMatch(password)) score++;
     if (RegExp(r'[!@#\$&*~]').hasMatch(password)) score++;
 
-    if (score <= 1) return PasswordStrength.weak;
-    if (score <= 3) return PasswordStrength.medium;
-    return PasswordStrength.strong;
+    if (score <= 1) return PasswordStrength.WEAK;
+    if (score <= 3) return PasswordStrength.MEDIUM;
+    return PasswordStrength.STRONG;
   }
 
   Color _calculateStrengthColor(PasswordStrength strength) {
     switch (strength) {
-      case PasswordStrength.forbidden:
-      case PasswordStrength.weak:
+      case PasswordStrength.FORBIDDEN:
+      case PasswordStrength.WEAK:
         return const Color(0xFFEF4444); // Rojo
-      case PasswordStrength.medium:
+      case PasswordStrength.MEDIUM:
         return const Color(0xFFF59E0B); // Ambar / Naranja
-      case PasswordStrength.strong:
+      case PasswordStrength.STRONG:
         return const Color(0xFF10B981); // Verde
-      case PasswordStrength.none:
+      case PasswordStrength.NONE:
         return AppColors.border;
     }
   }
 
   String _formatStrengthLabel(PasswordStrength strength) {
     switch (strength) {
-      case PasswordStrength.forbidden:
+      case PasswordStrength.FORBIDDEN:
         return '¡Peligro! La contraseña no puede ser igual a tu correo';
-      case PasswordStrength.weak:
+      case PasswordStrength.WEAK:
         return 'Seguridad: Débil (Agrega números y mayúsculas)';
-      case PasswordStrength.medium:
+      case PasswordStrength.MEDIUM:
         return 'Seguridad: Media (Agrega símbolos o más longitud)';
-      case PasswordStrength.strong:
+      case PasswordStrength.STRONG:
         return 'Seguridad: Fuerte (Excelente contraseña médica)';
-      case PasswordStrength.none:
+      case PasswordStrength.NONE:
         return '';
     }
   }
@@ -82,9 +82,9 @@ class PasswordStrengthBar extends StatelessWidget {
 
     final currentStrength = strength;
     final strengthColor = _calculateStrengthColor(currentStrength);
-    final activeSegmentsCount = (currentStrength == PasswordStrength.weak || currentStrength == PasswordStrength.forbidden)
+    final activeSegmentsCount = (currentStrength == PasswordStrength.WEAK || currentStrength == PasswordStrength.FORBIDDEN)
         ? 1
-        : currentStrength == PasswordStrength.medium
+        : currentStrength == PasswordStrength.MEDIUM
             ? 2
             : 3;
 
@@ -111,7 +111,7 @@ class PasswordStrengthBar extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              if (currentStrength == PasswordStrength.forbidden) ...[
+              if (currentStrength == PasswordStrength.FORBIDDEN) ...[
                 const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFEF4444)),
                 const SizedBox(width: 4),
               ],
