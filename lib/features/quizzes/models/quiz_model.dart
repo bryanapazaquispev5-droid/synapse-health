@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Modelo de Par Estructurado para Quizzes de tipo 'Para Relacionar' (matching)
 class MatchingPair {
   final String left;
@@ -251,6 +253,30 @@ class QuizModel {
       case 'single_choice':
       default:
         return 'Selección Simple';
+    }
+  }
+
+  Color get typeColor {
+    switch (type) {
+      case 'matching':
+        return const Color(0xFF2563EB); // Azul Zafiro
+      case 'ordering':
+        return const Color(0xFF7C3AED); // Morado / Púrpura
+      case 'single_choice':
+      default:
+        return const Color(0xFF059669); // Verde Esmeralda
+    }
+  }
+
+  Color get typeBackgroundColor {
+    switch (type) {
+      case 'matching':
+        return const Color(0xFFDBEAFE); // Fondo Azul Claro
+      case 'ordering':
+        return const Color(0xFFEDE9FE); // Fondo Morado Claro
+      case 'single_choice':
+      default:
+        return const Color(0xFFD1FAE5); // Fondo Verde Claro
     }
   }
 }

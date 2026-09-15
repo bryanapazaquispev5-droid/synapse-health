@@ -292,17 +292,17 @@ class _QuizListScreenState extends State<QuizListScreen> with AutomaticKeepAlive
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.accent.withValues(alpha: 0.1),
+                              color: quiz.typeBackgroundColor,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               quiz.typeLabel,
-                              style: const TextStyle(
-                                fontSize: 10,
+                              style: TextStyle(
+                                fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.accent,
+                                color: quiz.typeColor,
                               ),
                             ),
                           ),

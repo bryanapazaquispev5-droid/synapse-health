@@ -198,18 +198,18 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF2F2F7),
+                          color: quiz.typeBackgroundColor,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: quiz.typeColor.withValues(alpha: 0.25)),
                         ),
                         child: Text(
                           quiz.typeLabel,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: quiz.typeColor,
                           ),
                         ),
                       ),
