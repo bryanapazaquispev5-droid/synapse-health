@@ -29,7 +29,7 @@ class QuizModel {
   final String id;
   final String areaId;
   final String topicId;
-  final String type; // 'single_choice', 'case_study', 'matching', 'ordering'
+  final String type; // 'single_choice', 'matching', 'ordering'
   final String question;
   final List<String> options;
   final int correctIndex;
@@ -83,7 +83,11 @@ class QuizModel {
       return const [];
     }
 
-    final typeStr = map['type']?.toString() ?? 'single_choice';
+    var rawType = map['type']?.toString() ?? 'single_choice';
+    if (rawType == 'case_study' || (rawType != 'matching' && rawType != 'ordering')) {
+      rawType = 'single_choice';
+    }
+    final typeStr = rawType;
     final parsedOptions = parseOptions(map['options']);
     final parsedCorrectIndex = parseIndex(map['correctIndex']);
     var pairs = parseMatchingPairs(map['matchingPairs']);
@@ -244,10 +248,7 @@ class QuizModel {
         return 'Para Relacionar';
       case 'ordering':
         return 'Para Ordenar';
-      case 'case_study':
-        return 'Caso Clínico';
       case 'single_choice':
-      case 'multiple_choice':
       default:
         return 'Selección Simple';
     }

@@ -1,7 +1,7 @@
 // Banco Masivo de Quizzes Clínicos de Anatomía Humana (Rouvière Tomos 1 a 4)
 // Total: 48 Quizzes de alta rentabilidad clínica.
 // Formato: 3 Alternativas estrictas (A, B, C), UNA sola respuesta correcta por pregunta.
-// Tipos: 'single_choice' (Selección Simple), 'case_study' (Caso Clínico), 'matching' (Para Relacionar), 'ordering' (Para Ordenar).
+// Tipos: 'single_choice' (Selección Simple), 'matching' (Para Relacionar), 'ordering' (Para Ordenar).
 // Relaciones estrictamente 1:N (Cero relaciones Muchos a Muchos).
 
 const BASE_URL = 'https://firestore.googleapis.com/v1/projects/synapse-health/databases/(default)/documents';
@@ -92,7 +92,7 @@ const quizzes = [
     id: 'quiz_t1_03_pterigoideo_lateral_caso',
     areaId: 'anatomia',
     topicId: 'musculos_masticacion_cuello',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Paciente acude a consulta tras golpe mandibular con incapacidad activa para la apertura de la boca y propulsión hacia adelante. ¿Qué músculo masticador está comprometido?',
     options: [
       'Músculo masetero',
@@ -191,7 +191,7 @@ const quizzes = [
     id: 'quiz_t1_09_spix_mandibular_caso',
     areaId: 'anatomia',
     topicId: 'osteologia_craneo',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Un odontólogo busca anestesiar las piezas dentarias mandibulares inferiores antes de una extracción. ¿Qué referencia ósea utiliza para el bloqueo del nervio alveolar inferior?',
     options: [
       'Foramen mentoniano',
@@ -221,7 +221,7 @@ const quizzes = [
     id: 'quiz_t1_11_laringeo_recurrente_caso',
     areaId: 'anatomia',
     topicId: 'visceras_cuello_sentidos',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Tras una tiroidectomía total, la paciente presenta voz bitonal y disfonía persistente. ¿Qué estructura nerviosa fue lesionada durante la intervención?',
     options: [
       'Nervio laríngeo superior',
@@ -279,7 +279,7 @@ const quizzes = [
     id: 'quiz_t2_02_hernia_hesselbach_caso',
     areaId: 'anatomia',
     topicId: 'pared_abdominal_conducto_inguinal',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Durante la exploración inguinal, el cirujano evidencia protrusión peritoneal que empuja MEDIAL a los vasos epigástricos inferiores en el triángulo de Hesselbach. ¿Cuál es el diagnóstico?',
     options: [
       'Hernia inguinal indirecta',
@@ -378,7 +378,7 @@ const quizzes = [
     id: 'quiz_t2_08_taponamiento_beck_caso',
     areaId: 'anatomia',
     topicId: 'cardiovascular_corazon_pericardio',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Paciente con herida torácica presenta hipotensión arterial, ingurgitación yugular y ruidos cardíacos apagados. ¿Qué cuadro anatómico explica esta tríada de Beck?',
     options: [
       'Neumotórax espontáneo',
@@ -428,7 +428,7 @@ const quizzes = [
     id: 'quiz_t2_11_pinza_aortomesenterica_caso',
     areaId: 'anatomia',
     topicId: 'digestivo_abdominal_peritoneo',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Un paciente presenta obstrucción duodenal alta. Los estudios por imagen revelan compresión de la 3.ª porción duodenal entre la aorta y la arteria mesentérica superior. ¿Cómo se conoce este reparo?',
     options: [
       'Hiato de Winslow',
@@ -467,7 +467,7 @@ const quizzes = [
     id: 'quiz_t3_01_supraespinoso_abduccion_caso',
     areaId: 'anatomia',
     topicId: 'cintura_escapular_hombro',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Un paciente presenta dolor agudo en el hombro y es incapaz de iniciar los primeros 15 grados de abducción del brazo. ¿Qué tendón del manguito rotador está lesionado?',
     options: [
       'Tendón del músculo subescapular',
@@ -537,7 +537,7 @@ const quizzes = [
     id: 'quiz_t3_05_carpo_escafoides_caso',
     areaId: 'anatomia',
     topicId: 'muneca_mano_tunel_carpiano',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Tras una caída apoyando la palma de la mano en hiperextensión, un joven refiere intenso dolor a la presión en el fondo de la tabaquera anatómica. ¿Qué fractura ósea debe sospecharse?',
     options: [
       'Fractura del hueso piramidal',
@@ -587,7 +587,7 @@ const quizzes = [
     id: 'quiz_t3_08_pie_caido_peroneo_caso',
     areaId: 'anatomia',
     topicId: 'rodilla_pierna_fosa_poplitea',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Un paciente sufre una fractura a nivel del cuello del peroné y desarrolla marcha en estepaje (pie caído, con incapacidad para la flexión dorsal). ¿Qué nervio resultó lesionado?',
     options: [
       'Nervio Tibial posterior',
@@ -711,7 +711,7 @@ const quizzes = [
     id: 'quiz_t4_03_afasia_broca_caso',
     areaId: 'anatomia',
     topicId: 'telencefalo_corteza_ganglios_base',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Un paciente comprende perfectamente el lenguaje hablado pero es incapaz de articular palabras fluidamente (afasia motora no fluente). ¿Qué área de Brodmann está afectada?',
     options: [
       'Área de Broca (áreas 44 y 45, lóbulo frontal inferior)',
@@ -748,7 +748,7 @@ const quizzes = [
     id: 'quiz_t4_05_capsula_interna_hemiplejia_caso',
     areaId: 'anatomia',
     topicId: 'telencefalo_corteza_ganglios_base',
-    type: 'case_study',
+    type: 'single_choice',
     question: 'Un paciente sufre un ictus hemorrágico afectando el brazo posterior de la cápsula interna izquierda. ¿Qué déficit motor clásico esperaría encontrar?',
     options: [
       'Hemiplejía flácida contralateral derecha (fascículo corticoespinal)',
@@ -910,7 +910,7 @@ async function main() {
   console.log('\n=================================================================');
   console.log(`¡CARGA MASIVA FINALIZADA: ${quizzes.length} QUIZZES EN FIRESTORE!`);
   console.log('Todos con 3 alternativas estrictas, una sola respuesta correcta,');
-  console.log('clasificados como Selección Simple, Caso Clínico, Para Relacionar o Para Ordenar.');
+  console.log('clasificados como Selección Simple, Para Relacionar o Para Ordenar.');
   console.log('=================================================================');
 }
 
