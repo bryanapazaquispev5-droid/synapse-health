@@ -275,7 +275,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                       onCompleted: _handleOrderingCompleted,
                     ),
                   ] else ...[
-                    // Las 3 Alternativas para Selección Simple y Caso Clínico
+                    // Las 3 Alternativas para Selección Simple
                     ...List.generate(quiz.options.length, (index) {
                       final optionText = quiz.options[index];
                       final optionLetter = String.fromCharCode(65 + index); // A, B, C
