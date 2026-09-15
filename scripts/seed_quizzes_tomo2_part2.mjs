@@ -854,7 +854,7 @@ const tomo2Part2Quizzes = [
     order: 9
   },
   {
-    id: 'quiz_t2_ret_010',
+    id: 'quiz_t2_ret_10',
     topicId: 'visceras_retroperitoneo_rinones',
     type: 'single_choice',
     question: 'La vena renal izquierda es significativamente más larga que la derecha y pasa entre:',
