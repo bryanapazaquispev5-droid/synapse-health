@@ -267,12 +267,12 @@ class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            final subset = allQuizzes.sublist(index - 1);
             Navigator.push(
               context,
               AppPageRoute(
                 child: QuizSessionScreen(
-                  quizzes: subset,
+                  quizzes: allQuizzes,
+                  initialIndex: index - 1,
                   areaTitle: '${widget.area.name} - Pregunta #$index',
                 ),
               ),

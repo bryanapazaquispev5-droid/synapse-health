@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../cheatsheets/models/medical_area_model.dart';
 import '../../cheatsheets/services/medical_areas_service.dart';
-import 'area_quizzes_screen.dart';
+import 'quiz_topics_screen.dart';
 
 class QuizAreasScreen extends StatefulWidget {
   const QuizAreasScreen({super.key});
@@ -144,7 +144,7 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
             Navigator.push(
               context,
               AppPageRoute(
-                child: AreaQuizzesScreen(area: area),
+                child: QuizTopicsScreen(area: area),
               ),
             );
           },

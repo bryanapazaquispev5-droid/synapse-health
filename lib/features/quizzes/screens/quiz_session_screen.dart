@@ -9,10 +9,13 @@ class QuizSessionScreen extends StatefulWidget {
   final List<QuizModel> quizzes;
   final String areaTitle;
 
+  final int initialIndex;
+
   const QuizSessionScreen({
     super.key,
     required this.quizzes,
     this.areaTitle = 'Anatomía Humana',
+    this.initialIndex = 0,
   });
 
   @override
@@ -20,13 +23,21 @@ class QuizSessionScreen extends StatefulWidget {
 }
 
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   int? _selectedOptionIndex;
   bool? _isMatchingCorrect;
   bool? _isOrderingCorrect;
   bool _isAnswered = false;
   int _score = 0;
   bool _isCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = (widget.initialIndex >= 0 && widget.initialIndex < widget.quizzes.length)
+        ? widget.initialIndex
+        : 0;
+  }
 
   void _handleOptionSelected(int index) {
     if (_isAnswered) return;
