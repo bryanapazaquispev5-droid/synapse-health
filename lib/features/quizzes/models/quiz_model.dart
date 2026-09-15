@@ -37,7 +37,8 @@ class QuizModel {
   final int correctIndex;
   final String rationale;
   final String sourceBook;
-  final int order;
+  final int orderIndex;
+  int get order => orderIndex;
   final List<MatchingPair> matchingPairs;
   final List<String> orderingItems;
 
@@ -51,10 +52,11 @@ class QuizModel {
     required this.correctIndex,
     required this.rationale,
     required this.sourceBook,
-    this.order = 1,
+    int? order,
+    int? orderIndex,
     this.matchingPairs = const [],
     this.orderingItems = const [],
-  });
+  }) : orderIndex = orderIndex ?? order ?? 1;
 
   factory QuizModel.fromMap(Map<String, dynamic> map, String documentId) {
     List<String> parseOptions(dynamic raw) {
@@ -123,7 +125,7 @@ class QuizModel {
       correctIndex: parsedCorrectIndex,
       rationale: map['rationale']?.toString() ?? '',
       sourceBook: map['sourceBook']?.toString() ?? map['source']?.toString() ?? '',
-      order: parseIndex(map['order']),
+      orderIndex: parseIndex(map['orderIndex'] ?? map['order']),
       matchingPairs: pairs,
       orderingItems: orderItems,
     );

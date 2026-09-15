@@ -42,20 +42,20 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _loadSecurityState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final created = prefs.getInt(AppConstants.prefCreatedAccounts) ?? 0;
-      final failed = prefs.getInt(AppConstants.prefFailedLoginAttempts) ?? 0;
-      final lockoutUntil = prefs.getInt(AppConstants.prefLoginLockoutUntil) ?? 0;
+      final createdAccountsCount = prefs.getInt(AppConstants.prefCreatedAccounts) ?? 0;
+      final failedAttemptsCount = prefs.getInt(AppConstants.prefFailedLoginAttempts) ?? 0;
+      final lockoutUntilTimestamp = prefs.getInt(AppConstants.prefLoginLockoutUntil) ?? 0;
       final nowInMilliseconds = DateTime.now().millisecondsSinceEpoch;
 
       if (mounted) {
         setState(() {
-          _createdAccountsOnDevice = created;
-          _failedAttemptsCount = failed;
+          _createdAccountsOnDevice = createdAccountsCount;
+          _failedAttemptsCount = failedAttemptsCount;
         });
       }
 
-      if (lockoutUntil > nowInMilliseconds) {
-        _startLockoutTimer((lockoutUntil - nowInMilliseconds) ~/ 1000);
+      if (lockoutUntilTimestamp > nowInMilliseconds) {
+        _startLockoutTimer((lockoutUntilTimestamp - nowInMilliseconds) ~/ 1000);
       }
     } catch (_) {}
   }

@@ -7,7 +7,8 @@ class CheatsheetModel {
   final String contentMarkdown;
   final List<String> keyPoints;
   final List<String> mnemonics;
-  final int readMinutes;
+  final int readDurationInMinutes;
+  int get readMinutes => readDurationInMinutes;
   final bool isPremium;
   final String sourceBook;
 
@@ -20,10 +21,11 @@ class CheatsheetModel {
     required this.contentMarkdown,
     this.keyPoints = const [],
     this.mnemonics = const [],
-    this.readMinutes = 2,
+    int? readMinutes,
+    int? readDurationInMinutes,
     this.isPremium = true,
     this.sourceBook = '',
-  });
+  }) : readDurationInMinutes = readDurationInMinutes ?? readMinutes ?? 2;
 
   factory CheatsheetModel.fromMap(Map<String, dynamic> map, String documentId) {
     List<String> parseStringList(dynamic rawList) {
@@ -49,7 +51,7 @@ class CheatsheetModel {
       contentMarkdown: map['contentMarkdown']?.toString() ?? map['content']?.toString() ?? '',
       keyPoints: parseStringList(map['keyPoints']),
       mnemonics: parseStringList(map['mnemonics']),
-      readMinutes: parseReadMinutes(map['readMinutes']),
+      readDurationInMinutes: parseReadMinutes(map['readDurationInMinutes'] ?? map['readMinutes']),
       isPremium: map['isPremium'] == true,
       sourceBook: map['sourceBook']?.toString() ?? map['source']?.toString() ?? map['reference']?.toString() ?? '',
     );
@@ -64,7 +66,8 @@ class CheatsheetModel {
       'contentMarkdown': contentMarkdown,
       'keyPoints': keyPoints,
       'mnemonics': mnemonics,
-      'readMinutes': readMinutes,
+      'readMinutes': readDurationInMinutes,
+      'readDurationInMinutes': readDurationInMinutes,
       'isPremium': isPremium,
       'sourceBook': sourceBook,
     };
