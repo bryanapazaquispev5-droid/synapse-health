@@ -44,12 +44,12 @@ class AuthTextField extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: AppColors.border, width: 0.8),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x06000000),
-                blurRadius: 6,
+                blurRadius: 8,
                 offset: Offset(0, 2),
               ),
             ],

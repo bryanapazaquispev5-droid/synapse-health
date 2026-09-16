@@ -6,9 +6,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/google_accounts_service.dart';
 import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/cupertino_google_account_sheet.dart';
+import '../widgets/google_logo_icon.dart';
 import '../widgets/password_strength_bar.dart';
 import '../widgets/recaptcha_card.dart';
 import 'complete_profile_screen.dart';
@@ -135,18 +138,38 @@ class _AuthScreenState extends State<AuthScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        content: Row(
+          children: [
+            Icon(
+              isError ? CupertinoIcons.exclamationmark_circle_fill : CupertinoIcons.checkmark_seal_fill,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: Colors.white,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ),
+          ],
         ),
-        backgroundColor: isError ? AppColors.primary : AppColors.accent,
+        backgroundColor: isError ? const Color(0xFFE11D48) : const Color(0xFF007AFF),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 6,
+        margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 
-  // 1. Recuperar Contraseña por Correo con validación de existencia en Firebase/Firestore
+  // 1. Recuperar Contraseña por Correo con validación de existencia en Firebase/Firestore (Cupertino Sheet)
   void _handleOpenForgotPasswordDialog() {
     final TextEditingController resetEmailController = TextEditingController(
       text: _loginEmailController.text.trim(),
@@ -154,163 +177,189 @@ class _AuthScreenState extends State<AuthScreen> {
     String? localError;
     bool isChecking = false;
 
-    showModalBottomSheet(
+    showCupertinoModalPopup<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
+      barrierDismissible: true,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            return Container(
+              decoration: const BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 44,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: AppColors.border,
-                        borderRadius: BorderRadius.circular(3),
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 12,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: SafeArea(
+                top: false,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD1D1D6),
+                            borderRadius: BorderRadius.circular(2.5),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'Recuperar Contraseña',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
-                      letterSpacing: -0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Ingresa tu correo registrado y verificaremos tu cuenta antes de enviarte el enlace.',
-                    style: TextStyle(fontSize: 13, color: AppColors.textMuted),
-                  ),
-                  const SizedBox(height: 18),
-                  AuthTextField(
-                    controller: resetEmailController,
-                    label: 'Correo Electrónico',
-                    hint: 'ej. estudiante@gmail.com',
-                    prefixIcon: CupertinoIcons.mail,
-                    keyboardType: TextInputType.emailAddress,
-                    onChanged: (_) {
-                      if (localError != null) {
-                        setModalState(() => localError = null);
-                      }
-                    },
-                  ),
-                  if (localError != null) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      const SizedBox(height: 18),
+                      const Text(
+                        'Recuperar Contraseña',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                          letterSpacing: -0.4,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(CupertinoIcons.exclamationmark_circle_fill, color: Color(0xFFDC2626), size: 18),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              localError!,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF991B1B),
-                                fontWeight: FontWeight.w600,
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Ingresa tu correo registrado y verificaremos tu cuenta antes de enviarte el enlace.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                      ),
+                      const SizedBox(height: 18),
+                      AuthTextField(
+                        controller: resetEmailController,
+                        label: 'Correo Electrónico',
+                        hint: 'ej. estudiante@gmail.com',
+                        prefixIcon: CupertinoIcons.mail,
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (_) {
+                          if (localError != null) {
+                            setModalState(() => localError = null);
+                          }
+                        },
+                      ),
+                      if (localError != null) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEE2E2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFFCA5A5)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(CupertinoIcons.exclamationmark_circle_fill, color: Color(0xFFDC2626), size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  localError!,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF991B1B),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        height: 50,
+                        child: CupertinoButton.filled(
+                          padding: EdgeInsets.zero,
+                          borderRadius: BorderRadius.circular(14),
+                          onPressed: isChecking
+                              ? null
+                              : () async {
+                                  final email = resetEmailController.text.trim().toLowerCase();
+                                  if (email.isEmpty) {
+                                    setModalState(() => localError = 'Ingresa un correo electrónico.');
+                                    return;
+                                  }
+                                  final bool validEmail = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+                                  if (!validEmail) {
+                                    setModalState(() => localError = 'Formato de correo no válido.');
+                                    return;
+                                  }
+
+                                  setModalState(() {
+                                    isChecking = true;
+                                    localError = null;
+                                  });
+
+                                  try {
+                                    final snapshot = await _firestore
+                                        .collection(AppConstants.firestoreUsers)
+                                        .where('email', isEqualTo: email)
+                                        .limit(1)
+                                        .get();
+
+                                    if (snapshot.docs.isEmpty) {
+                                      setModalState(() {
+                                        isChecking = false;
+                                        localError = 'Este correo no está registrado en el sistema.';
+                                      });
+                                      return;
+                                    }
+
+                                    // Si existe, enviar el correo de recuperación
+                                    await _auth.sendPasswordResetEmail(email: email);
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                      _showFeedback('¡Enlace enviado a $email! Revisa tu bandeja o spam.');
+                                    }
+                                  } on FirebaseAuthException catch (e) {
+                                    setModalState(() {
+                                      isChecking = false;
+                                      if (e.code == 'user-not-found') {
+                                        localError = 'Este correo no está registrado en Firebase.';
+                                      } else {
+                                        localError = 'Error: ${e.message}';
+                                      }
+                                    });
+                                  } catch (e) {
+                                    setModalState(() {
+                                      isChecking = false;
+                                      localError = 'Ocurrió un error al verificar: $e';
+                                    });
+                                  }
+                                },
+                          child: isChecking
+                              ? const CupertinoActivityIndicator(color: AppColors.surface)
+                              : const Text(
+                                  'Enviar Enlace de Recuperación',
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.surface),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 46,
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          color: const Color(0xFFE5E5EA),
+                          borderRadius: BorderRadius.circular(14),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 50,
-                    child: CupertinoButton.filled(
-                      padding: EdgeInsets.zero,
-                      borderRadius: BorderRadius.circular(14),
-                      onPressed: isChecking
-                          ? null
-                          : () async {
-                              final email = resetEmailController.text.trim().toLowerCase();
-                              if (email.isEmpty) {
-                                setModalState(() => localError = 'Ingresa un correo electrónico.');
-                                return;
-                              }
-                              final bool validEmail = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-                              if (!validEmail) {
-                                setModalState(() => localError = 'Formato de correo no válido.');
-                                return;
-                              }
-
-                              setModalState(() {
-                                isChecking = true;
-                                localError = null;
-                              });
-
-                              try {
-                                final snapshot = await _firestore
-                                    .collection(AppConstants.firestoreUsers)
-                                    .where('email', isEqualTo: email)
-                                    .limit(1)
-                                    .get();
-
-                                if (snapshot.docs.isEmpty) {
-                                  setModalState(() {
-                                    isChecking = false;
-                                    localError = 'Este correo no está registrado en el sistema.';
-                                  });
-                                  return;
-                                }
-
-                                // Si existe, enviar el correo de recuperación
-                                await _auth.sendPasswordResetEmail(email: email);
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                  _showFeedback('¡Enlace enviado a $email! Revisa tu bandeja o spam.');
-                                }
-                              } on FirebaseAuthException catch (e) {
-                                setModalState(() {
-                                  isChecking = false;
-                                  if (e.code == 'user-not-found') {
-                                    localError = 'Este correo no está registrado en Firebase.';
-                                  } else {
-                                    localError = 'Error: ${e.message}';
-                                  }
-                                });
-                              } catch (e) {
-                                setModalState(() {
-                                  isChecking = false;
-                                  localError = 'Ocurrió un error al verificar: $e';
-                                });
-                              }
-                            },
-                      child: isChecking
-                          ? const CupertinoActivityIndicator(color: AppColors.surface)
-                          : const Text(
-                              'Enviar Enlace de Recuperación',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.surface),
-                            ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             );
           },
@@ -517,33 +566,99 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  // Manejador del botón Google: despliega la hoja modal con todas las cuentas del dispositivo
+  Future<void> _handleGoogleSignInPressed() async {
+    if (!mounted) return;
+
+    await CupertinoGoogleAccountSheet.show(
+      context: context,
+      onSelectAccount: (String selectedEmail) async {
+        // Si seleccionó una cuenta específica, intentar sign-in silencioso con esa cuenta
+        await _handleSignInWithGoogle(hintEmail: selectedEmail);
+      },
+      onSelectOtherAccount: () async {
+        // Forzar selector nativo de Google para agregar/cambiar cuenta
+        try {
+          await GoogleSignIn().signOut();
+        } catch (_) {}
+        await _handleSignInWithGoogle();
+      },
+    );
+  }
+
+
   // Google Sign-In con sincronización a Firestore
-  Future<void> _handleSignInWithGoogle() async {
+  Future<void> _handleSignInWithGoogle({String? hintEmail}) async {
     setState(() => _isLoading = true);
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      await googleSignIn.signOut();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      late UserCredential userCredential;
 
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return;
+      if (hintEmail != null) {
+        // ── Ruta 1: Token directo via AccountManager (sin selector nativo) ──
+        bool authenticated = false;
+        try {
+          final String? token = await GoogleAccountsService.getGoogleAuthToken(hintEmail);
+          if (token != null && token.isNotEmpty) {
+            final credential = GoogleAuthProvider.credential(accessToken: token);
+            userCredential = await _auth.signInWithCredential(credential);
+            authenticated = true;
+          }
+        } catch (_) {}
+
+        if (!authenticated) {
+          // ── Ruta 2: Fallback — intento silencioso, luego selector nativo ──
+          final GoogleSignIn googleSignIn = GoogleSignIn();
+          GoogleSignInAccount? googleUser = await googleSignIn.signInSilently();
+
+          if (googleUser == null || googleUser.email != hintEmail) {
+            await googleSignIn.signOut();
+            googleUser = await googleSignIn.signIn();
+          }
+
+          if (googleUser == null) {
+            setState(() => _isLoading = false);
+            return;
+          }
+
+          final googleAuth = await googleUser.authentication;
+          final credential = GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken,
+          );
+          userCredential = await _auth.signInWithCredential(credential);
+        }
+      } else {
+        // ── Ruta 3: Selector nativo directo (botón "Usar otra cuenta") ──
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+        if (googleUser == null) {
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final googleAuth = await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCredential = await _auth.signInWithCredential(credential);
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user;
 
       // Limpiar bloqueos de login
       await _clearLoginLockout();
 
+
       if (user != null) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          if (user.email != null) await prefs.setString('last_google_email', user.email!);
+          if (user.displayName != null) await prefs.setString('last_google_name', user.displayName!);
+          if (user.photoURL != null) await prefs.setString('last_google_photo', user.photoURL!);
+        } catch (_) {}
+
         try {
           final docSnapshot = await _firestore
               .collection(AppConstants.firestoreUsers)
@@ -564,7 +679,6 @@ class _AuthScreenState extends State<AuthScreen> {
               return;
             }
           } else {
-            // Guardar perfil existente de Google en caché local para visualización offline
             await UserLocalProfileService().saveProfile(
               uid: user.uid,
               name: data?['name'] ?? user.displayName ?? '',
@@ -577,7 +691,7 @@ class _AuthScreenState extends State<AuthScreen> {
         } catch (_) {}
       }
 
-      _showFeedback('¡Conectado con Google: ${userCredential.user?.displayName}!');
+      _showFeedback('¡Conectado con Google: ${user?.displayName ?? user?.email}!');
     } catch (e) {
       _showFeedback('Error al acceder con Google: $e', isError: true);
     } finally {
@@ -585,7 +699,9 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+
   // 3. Modo Invitado Real (Firebase Anonymous Auth)
+
   Future<void> _handleSignInAsGuest() async {
     setState(() => _isLoading = true);
     try {
@@ -819,31 +935,40 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Botón de Google
+                  // Botón de Google Estilo Apple iOS
                   SizedBox(
-                    height: 50,
+                    height: 52,
                     child: CupertinoButton(
                       padding: EdgeInsets.zero,
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      onPressed: _isLoading ? null : _handleSignInWithGoogle,
+                      borderRadius: BorderRadius.circular(14),
+                      pressedOpacity: 0.6,
+                      onPressed: _isLoading ? null : _handleGoogleSignInPressed,
                       child: Container(
-                        height: 50,
+                        height: 52,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.border, width: 1.2),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.border, width: 1.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x06000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
-                            Icon(Icons.g_mobiledata_rounded, size: 28, color: AppColors.accent),
-                            SizedBox(width: 6),
+                            GoogleLogoIcon(size: 20),
+                            SizedBox(width: 10),
                             Text(
                               'Continuar con Google',
                               style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
                                 color: AppColors.primary,
+                                letterSpacing: -0.3,
                               ),
                             ),
                           ],
@@ -961,8 +1086,15 @@ class _AuthScreenState extends State<AuthScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1.2),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border, width: 0.8),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x06000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

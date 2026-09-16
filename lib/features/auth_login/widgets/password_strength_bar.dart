@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../core/theme/app_theme.dart';
 
 enum PasswordStrength { NONE, FORBIDDEN, WEAK, MEDIUM, STRONG }
@@ -112,7 +112,7 @@ class PasswordStrengthBar extends StatelessWidget {
           Row(
             children: [
               if (currentStrength == PasswordStrength.FORBIDDEN) ...[
-                const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFEF4444)),
+                const Icon(CupertinoIcons.exclamationmark_triangle_fill, size: 13, color: Color(0xFFEF4444)),
                 const SizedBox(width: 4),
               ],
               Expanded(
