@@ -48,3 +48,11 @@ desktop.ini
 # Logs y volcados de depuración
 *.log
 node_modules/
+.codebase-memory/
+
+# ==============================================================================
+# CONFIGURACIONES DE AGENTES IA / ASISTENTE (LOCALES)
+# ==============================================================================
+.agents/
+AGENTS.md
+GEMINI.md
