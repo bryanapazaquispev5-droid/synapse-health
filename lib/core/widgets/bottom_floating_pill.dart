@@ -2,7 +2,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import 'bottom_pill_indicator.dart';
 import 'bottom_pill_item.dart';
+import 'bottom_pill_nav_items.dart';
 
 export 'bottom_pill_item.dart';
 
@@ -27,6 +29,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
   late AnimationController _controller;
   int _previousIndex = 0;
   int _targetIndex = 0;
+  double _horizontalDragDistance = 0.0;
 
   @override
   void initState() {
@@ -59,9 +62,41 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
   }
 
   void _onItemTapped(int index) {
+    if (index < 0 || index >= widget.items.length) return;
     if (index == _targetIndex && !_controller.isAnimating) return;
     HapticFeedback.lightImpact();
     widget.onTap(index);
+  }
+
+  void _onHorizontalDragStart(DragStartDetails details) {
+    _horizontalDragDistance = 0.0;
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    _horizontalDragDistance += details.primaryDelta ?? 0.0;
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    final double velocity = details.primaryVelocity ?? 0.0;
+    const double velocityThreshold = 100.0;
+    const double distanceThreshold = 15.0;
+
+    if (velocity > velocityThreshold || _horizontalDragDistance > distanceThreshold) {
+      // Deslizar a la DERECHA -> Va al menú de la DERECHA
+      if (widget.currentIndex < widget.items.length - 1) {
+        _onItemTapped(widget.currentIndex + 1);
+      }
+    } else if (velocity < -velocityThreshold || _horizontalDragDistance < -distanceThreshold) {
+      // Deslizar a la IZQUIERDA -> Va al menú de la IZQUIERDA
+      if (widget.currentIndex > 0) {
+        _onItemTapped(widget.currentIndex - 1);
+      }
+    }
+    _horizontalDragDistance = 0.0;
+  }
+
+  void _onHorizontalDragCancel() {
+    _horizontalDragDistance = 0.0;
   }
 
   @override
@@ -69,173 +104,101 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.only(left: 18, right: 18, bottom: 16),
-        child: Container(
-          height: 66,
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(34),
-            border: Border.all(color: AppColors.border, width: 1.2),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-              BoxShadow(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final double totalWidth = constraints.maxWidth;
-              final double slotWidth = totalWidth / widget.items.length;
-              final double t = _controller.value;
+        child: GestureDetector(
+          onHorizontalDragStart: _onHorizontalDragStart,
+          onHorizontalDragUpdate: _onHorizontalDragUpdate,
+          onHorizontalDragEnd: _onHorizontalDragEnd,
+          onHorizontalDragCancel: _onHorizontalDragCancel,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            height: 66,
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(34),
+              border: Border.all(color: AppColors.border, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double totalWidth = constraints.maxWidth;
+                final double slotWidth = totalWidth / widget.items.length;
+                final double t = _controller.value;
 
-              final double startLeft = _previousIndex * slotWidth;
-              final double startRight = startLeft + slotWidth;
-              final double endLeft = _targetIndex * slotWidth;
-              final double endRight = endLeft + slotWidth;
+                final double startLeft = _previousIndex * slotWidth;
+                final double startRight = startLeft + slotWidth;
+                final double endLeft = _targetIndex * slotWidth;
+                final double endRight = endLeft + slotWidth;
 
-              double left;
-              double right;
+                double left;
+                double right;
 
-              if (_targetIndex == _previousIndex || !_controller.isAnimating) {
-                left = endLeft;
-                right = endRight;
-              } else if (_targetIndex > _previousIndex) {
-                final double headT = const Interval(0.0, 0.50, curve: Curves.easeOutCubic).transform(t);
-                final double tailT = const Interval(0.08, 0.58, curve: Curves.easeInOutCubic).transform(t);
-                left = startLeft + (endLeft - startLeft) * tailT;
-                right = startRight + (endRight - startRight) * headT;
-              } else {
-                final double headT = const Interval(0.0, 0.50, curve: Curves.easeOutCubic).transform(t);
-                final double tailT = const Interval(0.08, 0.58, curve: Curves.easeInOutCubic).transform(t);
-                left = startLeft + (endLeft - startLeft) * headT;
-                right = startRight + (endRight - startRight) * tailT;
-              }
-
-              final double currentWidth = (right - left).abs();
-              final double stretchRatio = (currentWidth / slotWidth).clamp(1.0, 1.9);
-              final double verticalSquash = (1.0 - (stretchRatio - 1.0) * 0.20).clamp(0.82, 1.0);
-
-              double scaleX = 1.0;
-              double scaleY = 1.0;
-
-              if (_controller.isAnimating && _targetIndex != _previousIndex) {
-                if (t <= 0.58) {
-                  // Fase 1: Desplazamiento y estiramiento líquido inicial
-                  scaleX = 1.0;
-                  scaleY = verticalSquash;
+                if (_targetIndex == _previousIndex || !_controller.isAnimating) {
+                  left = endLeft;
+                  right = endRight;
+                } else if (_targetIndex > _previousIndex) {
+                  final double headT = const Interval(0.0, 0.50, curve: Curves.easeOutCubic).transform(t);
+                  final double tailT = const Interval(0.08, 0.58, curve: Curves.easeInOutCubic).transform(t);
+                  left = startLeft + (endLeft - startLeft) * tailT;
+                  right = startRight + (endRight - startRight) * headT;
                 } else {
-                  // Fase 2: Rebote marcado tipo gelatina (deformación armónica elástica perceptible)
-                  final double settleT = (t - 0.58) / 0.42;
-                  final double decay = (1.0 - settleT) * (1.0 - settleT * 0.75);
-                  final double wave = math.sin(settleT * math.pi * 3.5);
-                  final double jelly = wave * decay * 0.16; // 16% de rebote elástico (más visible y jugoso)
-                  scaleX = 1.0 + jelly;
-                  scaleY = 1.0 - (jelly * 0.82);
+                  final double headT = const Interval(0.0, 0.50, curve: Curves.easeOutCubic).transform(t);
+                  final double tailT = const Interval(0.08, 0.58, curve: Curves.easeInOutCubic).transform(t);
+                  left = startLeft + (endLeft - startLeft) * headT;
+                  right = startRight + (endRight - startRight) * tailT;
                 }
-              }
 
-              return Stack(
-                children: [
-                  // CAPA 1 (BASE): LOGOS GIFS, ICONOS Y TEXTOS
-                  Positioned.fill(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: List.generate(widget.items.length, (index) {
-                        final item = widget.items[index];
-                        final bool isSelected = widget.currentIndex == index;
+                final double currentWidth = (right - left).abs();
+                final double stretchRatio = (currentWidth / slotWidth).clamp(1.0, 1.9);
+                final double verticalSquash = (1.0 - (stretchRatio - 1.0) * 0.20).clamp(0.82, 1.0);
 
-                        return Expanded(
-                          child: GestureDetector(
-                            onTap: () => _onItemTapped(index),
-                            behavior: HitTestBehavior.opaque,
-                            child: AnimatedScale(
-                              scale: isSelected ? 1.35 : 1.0,
-                              duration: const Duration(milliseconds: 350),
-                              curve: Curves.easeOutBack,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    item.assetPath != null
-                                        ? Image.asset(
-                                            item.assetPath!,
-                                            width: 23.5,
-                                            height: 23.5,
-                                            fit: BoxFit.contain,
-                                          )
-                                        : Icon(
-                                            item.icon ?? Icons.circle,
-                                            size: 20,
-                                            color: isSelected
-                                                ? const Color(0xFF0284C7)
-                                                : AppColors.textMuted,
-                                          ),
-                                    const SizedBox(height: 1.5),
-                                    AnimatedDefaultTextStyle(
-                                      duration: const Duration(milliseconds: 260),
-                                      style: TextStyle(
-                                        fontFamily: 'Roboto',
-                                        fontSize: 10.2,
-                                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                        color: isSelected
-                                            ? const Color(0xFF0284C7)
-                                            : AppColors.textMuted,
-                                        letterSpacing: -0.3,
-                                        height: 1.05,
-                                      ),
-                                      child: Text(
-                                        item.label,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
+                double scaleX = 1.0;
+                double scaleY = 1.0;
+
+                if (_controller.isAnimating && _targetIndex != _previousIndex) {
+                  if (t <= 0.58) {
+                    scaleX = 1.0;
+                    scaleY = verticalSquash;
+                  } else {
+                    final double settleT = (t - 0.58) / 0.42;
+                    final double decay = (1.0 - settleT) * (1.0 - settleT * 0.75);
+                    final double wave = math.sin(settleT * math.pi * 3.5);
+                    final double jelly = wave * decay * 0.16;
+                    scaleX = 1.0 + jelly;
+                    scaleY = 1.0 - (jelly * 0.82);
+                  }
+                }
+
+                return Stack(
+                  children: [
+                    BottomPillNavItems(
+                      items: widget.items,
+                      currentIndex: widget.currentIndex,
+                      onItemTapped: _onItemTapped,
                     ),
-                  ),
-
-                  // CAPA 2 (FRENTE): BORDE LED CELESTE CON 90% DE TRANSPARENCIA (CRISTALINO)
-                  Positioned(
-                    left: left + 3,
-                    width: (right - left - 6).clamp(slotWidth * 0.6, totalWidth),
-                    top: 0,
-                    bottom: 0,
-                    child: IgnorePointer(
-                      child: Center(
-                        child: Transform.scale(
-                          scaleX: scaleX,
-                          scaleY: scaleY,
-                          child: Container(
-                            height: 53.5,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.03), // ~97% transparente (ultra cristalino)
-                              borderRadius: BorderRadius.circular(27),
-                              border: Border.all(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.85), // Borde LED celeste definido
-                                width: 1.2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    BottomPillIndicator(
+                      left: left,
+                      right: right,
+                      slotWidth: slotWidth,
+                      totalWidth: totalWidth,
+                      scaleX: scaleX,
+                      scaleY: scaleY,
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
