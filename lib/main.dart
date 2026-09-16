@@ -4,8 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth_login/screens/auth_screen.dart';
-import 'features/navigation/screens/main_navigation_wrapper.dart';
+import 'features/auth_login/ui/auth_screen.dart';
+import 'features/navigation/ui/main_navigation_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

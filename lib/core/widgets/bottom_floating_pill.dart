@@ -2,18 +2,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import 'bottom_pill_item.dart';
 
-class BottomPillItem {
-  final IconData? icon;
-  final String? assetPath;
-  final String label;
-
-  const BottomPillItem({
-    this.icon,
-    this.assetPath,
-    required this.label,
-  });
-}
+export 'bottom_pill_item.dart';
 
 class BottomFloatingPill extends StatefulWidget {
   final int currentIndex;
