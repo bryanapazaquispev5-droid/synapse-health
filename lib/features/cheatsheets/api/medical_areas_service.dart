@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_constants.dart';
-import '../models/medical_area_model.dart';
-import '../models/topic_model.dart';
-import '../models/cheatsheet_model.dart';
+import '../model/medical_area_model.dart';
+import '../model/topic_model.dart';
+import '../model/cheatsheet_model.dart';
 
 /// Servicio de Dominio / Datos para Áreas Médicas, Temas y Chuletas.
 /// CERO persistencia local y CERO datos quemados en código:

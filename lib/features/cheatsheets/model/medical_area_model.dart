@@ -56,11 +56,9 @@ class MedicalAreaModel {
     return cachedBytes != null || (imageBase64 != null && imageBase64!.trim().isNotEmpty);
   }
 
-  // Retorna los bytes binarios de la imagen memoizados
   Uint8List? get decodedImageBytes => cachedBytes;
 
   factory MedicalAreaModel.fromMap(Map<String, dynamic> rawMap, String documentId) {
-    // Normalizar todas las claves para tolerar espacios accidentales o mayúsculas en Firebase
     final Map<String, dynamic> map = {};
     rawMap.forEach((key, value) {
       map[key.trim().toLowerCase()] = value;
@@ -127,12 +125,10 @@ class MedicalAreaModel {
     };
   }
 
-  // Renderiza únicamente la imagen si existe en Firebase; con gaplessPlayback para evitar parpadeos
   Widget buildLogoWidget({
     double size = 24,
     BoxFit fit = BoxFit.cover,
   }) {
-    // 1. Imagen desde texto Base64 de Firebase
     final bytes = decodedImageBytes;
     if (bytes != null && bytes.isNotEmpty) {
       return ClipRRect(
@@ -148,7 +144,6 @@ class MedicalAreaModel {
       );
     }
 
-    // 2. Soporte para URLs Web si aplica
     if (imageBase64 != null && imageBase64!.isNotEmpty) {
       if (imageBase64!.startsWith('http://') || imageBase64!.startsWith('https://')) {
         return ClipRRect(
@@ -165,7 +160,6 @@ class MedicalAreaModel {
       }
     }
 
-    // Si no hay imagen en Firebase, no muestra ningún icono
     return const SizedBox.shrink();
   }
 }
