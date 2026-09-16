@@ -9,7 +9,7 @@ class AuthActionButtons extends StatelessWidget {
   final int lockoutSeconds;
   final VoidCallback onSubmitEmailAuth;
   final VoidCallback onGoogleSignIn;
-  final VoidCallback onGuestSignIn;
+  final VoidCallback? onGuestSignIn;
 
   const AuthActionButtons({
     super.key,
@@ -19,7 +19,7 @@ class AuthActionButtons extends StatelessWidget {
     required this.lockoutSeconds,
     required this.onSubmitEmailAuth,
     required this.onGoogleSignIn,
-    required this.onGuestSignIn,
+    this.onGuestSignIn,
   });
 
   @override
@@ -113,30 +113,30 @@ class AuthActionButtons extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 18),
-
-        // Modo Invitado
-        Center(
-          child: CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            onPressed: isLoading ? null : onGuestSignIn,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(CupertinoIcons.person_crop_circle, size: 16, color: AppColors.textMuted),
-                SizedBox(width: 6),
-                Text(
-                  'Continuar como Invitado (Modo Prueba)',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textMuted,
+        if (onGuestSignIn != null) ...[
+          const SizedBox(height: 18),
+          Center(
+            child: CupertinoButton(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              onPressed: isLoading ? null : onGuestSignIn,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(CupertinoIcons.person_crop_circle, size: 16, color: AppColors.textMuted),
+                  SizedBox(width: 6),
+                  Text(
+                    'Continuar como Invitado (Modo Prueba)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMuted,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

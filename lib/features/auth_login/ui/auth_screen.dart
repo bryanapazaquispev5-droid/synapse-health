@@ -115,12 +115,6 @@ class _AuthScreenState extends State<AuthScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  Future<void> _handleSignInAsGuest() async {
-    setState(() => _isLoading = true);
-    await _flowHandler.handleGuestSignIn(context: context);
-    if (mounted) setState(() => _isLoading = false);
-  }
-
   @override
   void dispose() {
     _lockoutManager.dispose();
@@ -189,7 +183,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     lockoutSeconds: _lockoutManager.lockoutSeconds,
                     onSubmitEmailAuth: _handleSubmitEmailAuth,
                     onGoogleSignIn: _handleGoogleSignInPressed,
-                    onGuestSignIn: _handleSignInAsGuest,
                   ),
                 ],
               ),
