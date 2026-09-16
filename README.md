@@ -25,8 +25,9 @@
   - [5.1 Estructura del Código](#51-estructura-del-código)
   - [5.2 Principio Anti-God-File y Descomposición Atómica](#52-principio-anti-god-file-y-descomposición-atómica)
 - [6. Seguridad Industrial & Cero Persistencia (OWASP)](#6-seguridad-industrial--cero-persistencia-owasp)
-- [7. Esquema de Base de Datos (Cloud Firestore)](#7-esquema-de-base-de-datos-cloud-firestore)
-- [8. Requisitos y Guía de Instalación](#8-requisitos-y-guía-de-instalación)
+- [7. Observabilidad y Rendimiento en Tiempo Real](#7-observabilidad-y-rendimiento-en-tiempo-real)
+- [8. Esquema de Base de Datos (Cloud Firestore)](#8-esquema-de-base-de-datos-cloud-firestore)
+- [9. Requisitos y Guía de Instalación](#9-requisitos-y-guía-de-instalación)
 
 ---
 
@@ -219,7 +220,23 @@ Synapse Health cumple con las directivas de seguridad de **OWASP Mobile Applicat
 
 ---
 
-## 7. Esquema de Base de Datos (Cloud Firestore)
+## 7. Observabilidad y Rendimiento en Tiempo Real
+
+Para garantizar estabilidad a nivel empresarial en dispositivos de usuarios en producción, Synapse Health integra una capa desacoplada de observabilidad centralizada en `lib/core/services/`:
+
+1. **🔥 Firebase Crashlytics (`CrashlyticsService`):**
+   - **Captura Global de Excepciones:** Intercepta errores síncronos de la UI mediante `FlutterError.onError` y fallos asíncronos no controlados vía `PlatformDispatcher.instance.onError`.
+   - **Contexto Clínico en Vivo:** Registro de identificadores de usuario anónimos y logs de navegación para reconstruir el estado de la app previo a un fallo.
+   - **Desofuscación Automática:** Mapeo de stacktraces en producción mediante el plugin nativo de Crashlytics de Gradle y archivos de símbolos ProGuard/R8.
+
+2. **⚡ Firebase Performance Monitoring (`PerformanceService`):**
+   - **Métricas de Inicio (Cold/Warm Start):** Medición de los milisegundos de arranque del motor de Flutter e inicialización de servicios.
+   - **Trazas de Latencia en Consultas:** Medición del tiempo de respuesta y tasa de éxito en peticiones a la API REST de Firestore.
+   - **Monitoreo de Fluidez de Pantalla:** Detección de congelamientos o caídas de cuadros (*frozen frames / jank*) en minijuegos interactivos de anatomía.
+
+---
+
+## 8. Esquema de Base de Datos (Cloud Firestore)
 
 ```
 firestore/
@@ -267,7 +284,7 @@ firestore/
 
 ---
 
-## 8. Requisitos y Guía de Instalación
+## 9. Requisitos y Guía de Instalación
 
 ### Requisitos Previos
 * **Flutter SDK:** `>= 3.19.0`

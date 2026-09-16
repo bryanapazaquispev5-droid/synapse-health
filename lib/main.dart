@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'core/services/crashlytics_service.dart';
+import 'core/services/performance_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth_login/ui/auth_screen.dart';
 import 'features/navigation/ui/main_navigation_wrapper.dart';
@@ -12,6 +14,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Inicializar Observabilidad y Monitoreo en Tiempo Real
+  await CrashlyticsService.initialize();
+  await PerformanceService.initialize();
+
   // DESACTIVAR PERSISTENCIA EN DISCO (Seguridad y protección contra ingeniería inversa)
   // Todo el contenido médico y chuletas residen únicamente en memoria volátil (RAM)
   // y requieren conexión activa a internet para ser consultados.
