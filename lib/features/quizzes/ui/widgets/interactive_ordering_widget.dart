@@ -187,7 +187,9 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
           },
           itemBuilder: (context, index) {
             final item = _currentItems[index];
+            final int originIndex = _correctSequence.indexOf(item);
             return OrderingReorderableCard(
+              key: ValueKey('order_card_${item}_$originIndex'),
               item: item,
               index: index,
               totalItems: _currentItems.length,

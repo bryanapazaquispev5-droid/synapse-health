@@ -45,7 +45,6 @@ class OrderingReorderableCard extends StatelessWidget {
     }
 
     return Container(
-      key: ValueKey('$item-$index'),
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: bg,
