@@ -1,29 +1,8 @@
 import 'package:flutter/material.dart';
+import '../utils/quiz_fallback_parser.dart';
+import 'matching_pair_model.dart';
 
-/// Modelo de Par Estructurado para Quizzes de tipo 'Para Relacionar' (matching)
-class MatchingPair {
-  final String left;
-  final String right;
-
-  const MatchingPair({
-    required this.left,
-    required this.right,
-  });
-
-  factory MatchingPair.fromMap(Map<String, dynamic> map) {
-    return MatchingPair(
-      left: map['left']?.toString() ?? '',
-      right: map['right']?.toString() ?? '',
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'left': left,
-      'right': right,
-    };
-  }
-}
+export 'matching_pair_model.dart';
 
 /// Modelo de Dominio para los Quizzes Clínicos de Synapse Health
 /// Soporta preguntas de 3 alternativas con retroalimentación médica inmediata
@@ -96,9 +75,8 @@ class QuizModel {
     final parsedCorrectIndex = parseIndex(map['correctIndex']);
     var pairs = parseMatchingPairs(map['matchingPairs']);
 
-    // Fallback inteligente para preguntas de relacionar si aún no están estructuradas
     if (pairs.isEmpty && typeStr == 'matching') {
-      pairs = _extractFallbackPairs(
+      pairs = QuizFallbackParser.extractFallbackPairs(
         question: map['question']?.toString() ?? '',
         options: parsedOptions,
         correctIndex: parsedCorrectIndex,
@@ -106,9 +84,8 @@ class QuizModel {
     }
 
     var orderItems = parseOptions(map['orderingItems']);
-    // Fallback inteligente para preguntas de ordenar si aún no están estructuradas
     if (orderItems.isEmpty && typeStr == 'ordering') {
-      orderItems = _extractFallbackOrderingItems(
+      orderItems = QuizFallbackParser.extractFallbackOrderingItems(
         question: map['question']?.toString() ?? '',
         options: parsedOptions,
         correctIndex: parsedCorrectIndex,
@@ -131,94 +108,6 @@ class QuizModel {
     );
   }
 
-  static List<MatchingPair> _extractFallbackPairs({
-    required String question,
-    required List<String> options,
-    required int correctIndex,
-  }) {
-    try {
-      if (options.isEmpty || correctIndex < 0 || correctIndex >= options.length) {
-        return const [];
-      }
-
-      // 1. Extraer elementos de la izquierda del question
-      final leftItems = <String>[];
-      final lines = question.split('\n');
-      for (final line in lines) {
-        final trimmed = line.trim();
-        final match = RegExp(r'^\d+\.\s*(.+)$').firstMatch(trimmed);
-        if (match != null) {
-          leftItems.add(match.group(1)!.trim());
-        }
-      }
-
-      // 2. Extraer elementos de la derecha de la opción correcta
-      final rightItems = <String>[];
-      final correctOption = options[correctIndex];
-      final segments = correctOption.split('|');
-      for (final segment in segments) {
-        final trimmed = segment.trim();
-        final colonIdx = trimmed.indexOf(':');
-        if (colonIdx != -1) {
-          rightItems.add(trimmed.substring(colonIdx + 1).trim());
-        } else {
-          rightItems.add(trimmed);
-        }
-      }
-
-      final pairs = <MatchingPair>[];
-      final count = leftItems.length < rightItems.length ? leftItems.length : rightItems.length;
-      for (int i = 0; i < count; i++) {
-        pairs.add(MatchingPair(left: leftItems[i], right: rightItems[i]));
-      }
-      return pairs;
-    } catch (_) {
-      return const [];
-    }
-  }
-
-  static List<String> _extractFallbackOrderingItems({
-    required String question,
-    required List<String> options,
-    required int correctIndex,
-  }) {
-    try {
-      if (options.isNotEmpty && correctIndex >= 0 && correctIndex < options.length) {
-        final opt = options[correctIndex];
-        if (opt.contains('->')) {
-          final items = opt.split('->').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-          // Si los items son solo números '1 -> 2 -> 3', extraer el texto real de question
-          if (items.isNotEmpty && items.every((e) => RegExp(r'^\d+$').hasMatch(e))) {
-            final questionItems = <String>[];
-            for (final line in question.split('\n')) {
-              final m = RegExp(r'^\d+\.\s*(.+)$').firstMatch(line.trim());
-              if (m != null) questionItems.add(m.group(1)!.trim());
-            }
-            if (questionItems.isNotEmpty) {
-              return items.map((numStr) {
-                final idx = int.parse(numStr) - 1;
-                return (idx >= 0 && idx < questionItems.length) ? questionItems[idx] : numStr;
-              }).toList();
-            }
-          }
-          return items;
-        } else if (opt.contains('|')) {
-          return opt.split('|').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-        }
-      }
-
-      // Extraer desde el question si contiene 1., 2., etc.
-      final items = <String>[];
-      for (final line in question.split('\n')) {
-        final m = RegExp(r'^\d+\.\s*(.+)$').firstMatch(line.trim());
-        if (m != null) items.add(m.group(1)!.trim());
-      }
-      return items;
-    } catch (_) {
-      return const [];
-    }
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'areaId': areaId,
@@ -235,7 +124,6 @@ class QuizModel {
     };
   }
 
-  /// Devuelve el enunciado limpio sin los numerales 1., 2., 3. si es de tipo matching u ordering
   String get cleanQuestionPrompt {
     if (type == 'matching' || type == 'ordering') {
       final firstNum = question.indexOf(RegExp(r'\n\s*1\.'));
@@ -261,24 +149,24 @@ class QuizModel {
   Color get typeColor {
     switch (type) {
       case 'matching':
-        return const Color(0xFF2563EB); // Azul Zafiro
+        return const Color(0xFF2563EB);
       case 'ordering':
-        return const Color(0xFF7C3AED); // Morado / Púrpura
+        return const Color(0xFF7C3AED);
       case 'single_choice':
       default:
-        return const Color(0xFF059669); // Verde Esmeralda
+        return const Color(0xFF059669);
     }
   }
 
   Color get typeBackgroundColor {
     switch (type) {
       case 'matching':
-        return const Color(0xFFDBEAFE); // Fondo Azul Claro
+        return const Color(0xFFDBEAFE);
       case 'ordering':
-        return const Color(0xFFEDE9FE); // Fondo Morado Claro
+        return const Color(0xFFEDE9FE);
       case 'single_choice':
       default:
-        return const Color(0xFFD1FAE5); // Fondo Verde Claro
+        return const Color(0xFFD1FAE5);
     }
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../cheatsheets/models/medical_area_model.dart';
-import '../../cheatsheets/services/medical_areas_service.dart';
-import 'quiz_topics_screen.dart';
+import '../../cheatsheets/api/medical_areas_service.dart';
+import '../../cheatsheets/model/medical_area_model.dart';
+import 'widgets/quiz_course_card.dart';
 
 class QuizAreasScreen extends StatefulWidget {
   const QuizAreasScreen({super.key});
@@ -53,7 +53,6 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
             return CustomScrollView(
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
-                // Header estilo Apple Large Title
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 8),
@@ -79,8 +78,6 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
                           ),
                         ),
                         const SizedBox(height: 16),
-
-                        // Barra de búsqueda nativa estilo Cupertino
                         CupertinoSearchTextField(
                           controller: _searchController,
                           placeholder: 'Buscar curso o especialidad...',
@@ -91,17 +88,16 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
                     ),
                   ),
                 ),
-
                 if (isLoading)
                   const SliverFillRemaining(
                     child: Center(child: CupertinoActivityIndicator(radius: 14)),
                   )
                 else if (filteredAreas.isEmpty)
-                  SliverFillRemaining(
+                  const SliverFillRemaining(
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(CupertinoIcons.search, size: 44, color: AppColors.textMuted),
                           SizedBox(height: 10),
                           Text(
@@ -119,7 +115,7 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final area = filteredAreas[index];
-                          return _buildCourseCard(context, area);
+                          return QuizCourseCard(area: area);
                         },
                         childCount: filteredAreas.length,
                       ),
@@ -128,117 +124,6 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
               ],
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCourseCard(BuildContext context, MedicalAreaModel area) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: () {
-            Navigator.push(
-              context,
-              AppPageRoute(
-                child: QuizTopicsScreen(area: area),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.border, width: 0.8),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x06000000),
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                // Icono / Logo del Curso
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: area.hasImage
-                        ? area.buildLogoWidget(size: 28)
-                        : const Icon(CupertinoIcons.bolt_fill, color: AppColors.accent, size: 26),
-                  ),
-                ),
-                const SizedBox(width: 14),
-
-                // Información del Curso
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              area.name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primary,
-                                letterSpacing: -0.3,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.accent.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${area.quizzesCount} Quizzes',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.accent,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${area.topicsCount} Temas',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(CupertinoIcons.chevron_forward, size: 16, color: Color(0xFFC7C7CC)),
-              ],
-            ),
-          ),
         ),
       ),
     );

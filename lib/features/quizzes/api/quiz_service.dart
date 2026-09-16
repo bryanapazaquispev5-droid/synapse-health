@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_constants.dart';
-import '../models/quiz_model.dart';
+import '../model/quiz_model.dart';
 
 class QuizService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -39,7 +39,6 @@ class QuizService {
         quizzes.sort((a, b) => a.order.compareTo(b.order));
         return quizzes;
       }
-      // Fallback a la colección de área si los documentos están en ella
       final areaSnapshot = await _firestore
           .collection(AppConstants.firestoreMedicalAreas)
           .doc(areaId)
@@ -55,4 +54,3 @@ class QuizService {
     });
   }
 }
-
