@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import 'profile_notifications_tile.dart';
 
 class ProfileSettingsSheet {
   static void show({required BuildContext context}) {
@@ -12,6 +13,9 @@ class ProfileSettingsSheet {
       isScrollControlled: true,
       builder: (context) {
         return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.88,
+          ),
           decoration: const BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -19,20 +23,22 @@ class ProfileSettingsSheet {
           padding: const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 34),
           child: SafeArea(
             top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 38,
-                    height: 4.5,
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(3),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4.5,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
                   ),
-                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -134,11 +140,14 @@ class ProfileSettingsSheet {
                     },
                   ),
                 ),
+                const SizedBox(height: 20),
+                const ProfileNotificationsTile(),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 }

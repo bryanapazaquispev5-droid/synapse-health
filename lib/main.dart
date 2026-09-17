@@ -3,12 +3,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'core/notifications/services/push_notification_service.dart';
 import 'core/services/app_settings_service.dart';
 import 'core/services/crashlytics_service.dart';
 import 'core/services/performance_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth_login/ui/auth_screen.dart';
 import 'features/navigation/ui/main_navigation_wrapper.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +23,11 @@ void main() async {
   await CrashlyticsService.initialize();
   await PerformanceService.initialize();
   await AppSettingsService().init();
+
+  // Inicializar Orquestador de Notificaciones Push y Canales FCM
+  await PushNotificationService().initialize(
+    navigatorKey: appNavigatorKey,
+  );
 
   // DESACTIVAR PERSISTENCIA EN DISCO (Seguridad y protección contra ingeniería inversa)
   // Todo el contenido médico y chuletas residen únicamente en memoria volátil (RAM)
@@ -36,6 +44,7 @@ class SynapseHealthApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'Synapse Health',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

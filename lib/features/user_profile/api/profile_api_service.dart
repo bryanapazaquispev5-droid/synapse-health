@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/notifications/services/push_notification_service.dart';
 import '../../../core/services/user_local_profile_service.dart';
 
 class ProfileApiService {
@@ -70,6 +71,12 @@ class ProfileApiService {
   }
 
   Future<void> signOut() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        await PushNotificationService().handleLogout(uid);
+      }
+    } catch (_) {}
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
       await googleSignIn.signOut();
