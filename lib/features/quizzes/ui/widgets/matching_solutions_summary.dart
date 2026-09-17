@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: matching_solutions_summary.dart
+// Propósito: Componente interactivo [matching_solutions_summary] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/matching_pair_model.dart';
 
+// Definicion principal de la clase [MatchingSolutionsSummary]
 class MatchingSolutionsSummary extends StatelessWidget {
   final List<String> leftItems;
   final List<String> rightItems;
@@ -25,6 +31,7 @@ class MatchingSolutionsSummary extends StatelessWidget {
     return pair.right;
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(

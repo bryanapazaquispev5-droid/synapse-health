@@ -1,6 +1,12 @@
+// ============================================================================
+// Archivo: auth_text_field.dart
+// Propósito: Widget visual de soporte [auth_text_field] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Definicion principal de la clase [AuthTextField]
 class AuthTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -23,6 +29,7 @@ class AuthTextField extends StatelessWidget {
     this.onChanged,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(

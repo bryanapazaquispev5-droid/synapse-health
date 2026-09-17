@@ -1,8 +1,14 @@
+// ============================================================================
+// Archivo: welcome_profile_card.dart
+// Propósito: Widget visual de soporte [welcome_profile_card] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [WelcomeProfileCard]
 class WelcomeProfileCard extends StatelessWidget {
   final User user;
   final String name;
@@ -53,6 +59,7 @@ class WelcomeProfileCard extends StatelessWidget {
     );
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(

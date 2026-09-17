@@ -1,6 +1,12 @@
+// ============================================================================
+// Archivo: career_selector_modal.dart
+// Propósito: Widget visual de soporte [career_selector_modal] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Definicion principal de la clase [CareerSelectorModal]
 class CareerSelectorModal {
   static void show({
     required BuildContext context,

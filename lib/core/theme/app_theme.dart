@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: app_theme.dart
+// Propósito: Definicion del tema visual, paleta de colores medicos, tipografia y estilos globales basados en Apple Human Interface Guidelines.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -51,6 +56,7 @@ class AppColors {
   static const Color systemIndigo = SYSTEM_INDIGO;
 }
 
+// Definicion principal de la clase [AppTheme]
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(

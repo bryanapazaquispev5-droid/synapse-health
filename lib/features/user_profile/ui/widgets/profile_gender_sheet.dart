@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: profile_gender_sheet.dart
+// Propósito: Componente de interfaz modular [profile_gender_sheet] para la visualizacion de datos de usuario y ajustes.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'opaque_action_sheet.dart';
 
+// Componente visual modular [ProfileGenderSheet]
 class ProfileGenderSheet {
   static void show({
     required BuildContext context,

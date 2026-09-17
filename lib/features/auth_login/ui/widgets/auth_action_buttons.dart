@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: auth_action_buttons.dart
+// Propósito: Widget visual de soporte [auth_action_buttons] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'google_logo_icon.dart';
 
+// Definicion principal de la clase [AuthActionButtons]
 class AuthActionButtons extends StatelessWidget {
   final bool isLogin;
   final bool isLoading;
@@ -22,6 +28,7 @@ class AuthActionButtons extends StatelessWidget {
     this.onGuestSignIn,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(

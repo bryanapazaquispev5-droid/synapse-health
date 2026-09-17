@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: auth_service.dart
+// Propósito: Servicio de autenticacion con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
+// ============================================================================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -6,6 +11,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/services/google_accounts_service.dart';
 import '../../../core/services/user_local_profile_service.dart';
 
+// Servicio para la gestion de operaciones de [AuthService]
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

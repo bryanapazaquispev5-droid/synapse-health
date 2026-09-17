@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: main_navigation_wrapper.dart
+// Propósito: Controlador de navegacion principal [main_navigation_wrapper] con transiciones fluidas estilo liquid wave.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,6 +16,7 @@ import '../../user_profile/ui/profile_screen.dart';
 import 'widgets/liquid_wave_transition.dart';
 import 'widgets/navigation_placeholder_view.dart';
 
+// Definicion principal de la clase [MainNavigationWrapper]
 class MainNavigationWrapper extends StatefulWidget {
   final User user;
   final int initialIndex;
@@ -25,11 +31,13 @@ class MainNavigationWrapper extends StatefulWidget {
   State<MainNavigationWrapper> createState() => _MainNavigationWrapperState();
 }
 
+// Estado reactivo y control de ciclo de vida para [MainNavigationWrapper]
 class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   late int _currentIndex;
   late final Stream<DocumentSnapshot<Map<String, dynamic>>> _userStream;
   String _cachedGender = 'Hombre';
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
@@ -48,6 +56,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
     }
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -1,9 +1,15 @@
+// ============================================================================
+// Archivo: user_local_profile_service.dart
+// Propósito: Servicio de almacenamiento local en cache para la persistencia rapida de datos del perfil de usuario.
+// ============================================================================
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Definicion principal de la clase [LocalUserProfile]
 class LocalUserProfile {
   final String name;
   final String email;

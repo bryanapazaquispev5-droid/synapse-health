@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: welcome_screen.dart
+// Propósito: Pantalla principal de interfaz de usuario para el flujo de autenticacion [welcome_screen].
+// ============================================================================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,11 +13,13 @@ import '../../../core/theme/app_theme.dart';
 import 'widgets/email_verification_banner.dart';
 import 'widgets/welcome_profile_card.dart';
 
+// Pantalla de interfaz de usuario [WelcomeScreen]
 class WelcomeScreen extends StatelessWidget {
   final User user;
 
   const WelcomeScreen({super.key, required this.user});
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final bool isGoogleUser = user.providerData.any((info) => info.providerId == 'google.com');

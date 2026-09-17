@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: quiz_result_view.dart
+// Propósito: Componente interactivo [quiz_result_view] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Pantalla de interfaz de usuario [QuizResultView]
 class QuizResultView extends StatelessWidget {
   final int score;
   final int totalQuestions;
@@ -18,6 +24,7 @@ class QuizResultView extends StatelessWidget {
     required this.onExit,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final double percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;

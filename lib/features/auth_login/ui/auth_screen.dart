@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: auth_screen.dart
+// Propósito: Pantalla principal de interfaz de usuario para el flujo de autenticacion [auth_screen].
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../api/auth_lockout_manager.dart';
@@ -13,6 +18,7 @@ import 'widgets/auth_mode_selector.dart';
 import 'widgets/auth_register_form.dart';
 import 'widgets/cupertino_google_account_sheet.dart';
 
+// Pantalla de interfaz de usuario [AuthScreen]
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -20,6 +26,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [AuthScreen]
 class _AuthScreenState extends State<AuthScreen> {
   final AuthService _authService = AuthService();
   final AuthLockoutManager _lockoutManager = AuthLockoutManager();
@@ -44,6 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
     lockoutManager: _lockoutManager,
   );
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
@@ -115,6 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  // Liberacion de controladores y recursos para evitar fugas de memoria
   @override
   void dispose() {
     _lockoutManager.dispose();
@@ -128,6 +137,7 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final bool isLockoutActive = _isLogin && _lockoutManager.lockoutSeconds > 0;

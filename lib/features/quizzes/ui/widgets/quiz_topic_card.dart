@@ -1,9 +1,15 @@
+// ============================================================================
+// Archivo: quiz_topic_card.dart
+// Propósito: Componente interactivo [quiz_topic_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../cheatsheets/model/medical_area_model.dart';
 import '../../../cheatsheets/model/topic_model.dart';
 import '../topic_quizzes_screen.dart';
 
+// Componente visual modular [QuizTopicCard]
 class QuizTopicCard extends StatelessWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -16,6 +22,7 @@ class QuizTopicCard extends StatelessWidget {
     required this.number,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final int quizzesCount = topic.quizzesCount > 0 ? topic.quizzesCount : 20;

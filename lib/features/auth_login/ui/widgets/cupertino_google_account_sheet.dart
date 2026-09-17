@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: cupertino_google_account_sheet.dart
+// Propósito: Widget visual de soporte [cupertino_google_account_sheet] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/services/google_accounts_service.dart';
@@ -5,6 +10,7 @@ import '../../../../core/theme/app_theme.dart';
 import 'google_account_tile.dart';
 import 'google_logo_icon.dart';
 
+// Componente visual modular [CupertinoGoogleAccountSheet]
 class CupertinoGoogleAccountSheet extends StatefulWidget {
   final void Function(String email) onSelectAccount;
   final VoidCallback onSelectOtherAccount;
@@ -43,10 +49,12 @@ class CupertinoGoogleAccountSheet extends StatefulWidget {
   State<CupertinoGoogleAccountSheet> createState() => _CupertinoGoogleAccountSheetState();
 }
 
+// Estado reactivo y control de ciclo de vida para [CupertinoGoogleAccountSheet]
 class _CupertinoGoogleAccountSheetState extends State<CupertinoGoogleAccountSheet> {
   List<String> _accounts = [];
   bool _isLoading = true;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
@@ -76,6 +84,7 @@ class _CupertinoGoogleAccountSheetState extends State<CupertinoGoogleAccountShee
 
   Color _avatarColor(int index) => _avatarColors[index % _avatarColors.length];
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;

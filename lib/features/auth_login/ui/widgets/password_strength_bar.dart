@@ -1,8 +1,15 @@
+// ============================================================================
+// Archivo: password_strength_bar.dart
+// Propósito: Widget visual de soporte [password_strength_bar] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Enumerador que define las opciones y variantes de [PasswordStrength]
 enum PasswordStrength { NONE, FORBIDDEN, WEAK, MEDIUM, STRONG }
 
+// Componente visual modular [PasswordStrengthBar]
 class PasswordStrengthBar extends StatelessWidget {
   final String password;
   final String? email;
@@ -66,6 +73,7 @@ class PasswordStrengthBar extends StatelessWidget {
     }
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final currentStrength = strength;

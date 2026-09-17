@@ -1,9 +1,15 @@
+// ============================================================================
+// Archivo: auth_register_form.dart
+// Propósito: Widget visual de soporte [auth_register_form] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'auth_text_field.dart';
 import 'password_strength_bar.dart';
 import 'recaptcha_card.dart';
 
+// Definicion principal de la clase [AuthRegisterForm]
 class AuthRegisterForm extends StatefulWidget {
   final TextEditingController nameController;
   final TextEditingController emailController;
@@ -36,10 +42,12 @@ class AuthRegisterForm extends StatefulWidget {
   State<AuthRegisterForm> createState() => _AuthRegisterFormState();
 }
 
+// Estado reactivo y control de ciclo de vida para [AuthRegisterForm]
 class _AuthRegisterFormState extends State<AuthRegisterForm> {
   bool _isPasswordObscured = true;
   bool _isConfirmPasswordObscured = true;
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(

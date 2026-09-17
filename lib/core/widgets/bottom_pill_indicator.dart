@@ -1,5 +1,11 @@
+// ============================================================================
+// Archivo: bottom_pill_indicator.dart
+// Propósito: Componente transversal reutilizable [bottom_pill_indicator] para la barra de navegacion inferior flotante y elementos comunes.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 
+// Definicion principal de la clase [BottomPillIndicator]
 class BottomPillIndicator extends StatelessWidget {
   final double left;
   final double right;
@@ -18,6 +24,7 @@ class BottomPillIndicator extends StatelessWidget {
     required this.scaleY,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Positioned(

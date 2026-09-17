@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: quiz_areas_screen.dart
+// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [quiz_areas_screen].
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -5,6 +10,7 @@ import '../../cheatsheets/api/medical_areas_service.dart';
 import '../../cheatsheets/model/medical_area_model.dart';
 import 'widgets/quiz_course_card.dart';
 
+// Pantalla de interfaz de usuario [QuizAreasScreen]
 class QuizAreasScreen extends StatefulWidget {
   const QuizAreasScreen({super.key});
 
@@ -12,6 +18,7 @@ class QuizAreasScreen extends StatefulWidget {
   State<QuizAreasScreen> createState() => _QuizAreasScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [QuizAreasScreen]
 class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAliveClientMixin {
   final MedicalAreasService _medicalAreasService = MedicalAreasService();
   final TextEditingController _searchController = TextEditingController();
@@ -21,18 +28,21 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
   @override
   bool get wantKeepAlive => true;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
     _areasStream = _medicalAreasService.getAreasStream();
   }
 
+  // Liberacion de controladores y recursos para evitar fugas de memoria
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     super.build(context);

@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: interactive_matching_widget.dart
+// Propósito: Componente interactivo [interactive_matching_widget] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -25,6 +30,7 @@ class InteractiveMatchingWidget extends StatefulWidget {
   State<InteractiveMatchingWidget> createState() => _InteractiveMatchingWidgetState();
 }
 
+// Estado reactivo y control de ciclo de vida para [InteractiveMatchingWidget]
 class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
   late List<MatchingPair> _originalPairs;
   late List<String> _leftItems;

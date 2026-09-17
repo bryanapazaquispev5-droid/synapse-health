@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: quiz_rationale_card.dart
+// Propósito: Componente interactivo [quiz_rationale_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_model.dart';
 
+// Componente visual modular [QuizRationaleCard]
 class QuizRationaleCard extends StatelessWidget {
   final QuizModel quiz;
   final bool? isMatchingCorrect;
@@ -16,6 +22,7 @@ class QuizRationaleCard extends StatelessWidget {
     required this.selectedOptionIndex,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final bool isCorrect = quiz.type == 'matching'

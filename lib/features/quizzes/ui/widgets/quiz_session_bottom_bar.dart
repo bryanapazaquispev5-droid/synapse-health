@@ -1,5 +1,11 @@
+// ============================================================================
+// Archivo: quiz_session_bottom_bar.dart
+// Propósito: Controlador de estado y presentador de la sesion interactiva de evaluacion o examen medico.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 
+// Componente visual modular [QuizSessionBottomBar]
 class QuizSessionBottomBar extends StatelessWidget {
   final bool hasNext;
   final VoidCallback onNext;
@@ -10,6 +16,7 @@ class QuizSessionBottomBar extends StatelessWidget {
     required this.onNext,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(

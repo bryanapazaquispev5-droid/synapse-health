@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: matching_left_card.dart
+// Propósito: Componente interactivo [matching_left_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [MatchingLeftCard]
 class MatchingLeftCard extends StatelessWidget {
   final int index;
   final String text;
@@ -26,6 +32,7 @@ class MatchingLeftCard extends StatelessWidget {
     required this.onTap,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     Color bg = AppColors.surface;

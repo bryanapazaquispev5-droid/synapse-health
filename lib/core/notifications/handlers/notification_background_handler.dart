@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: notification_background_handler.dart
+// Propósito: Manejador top-level en segundo plano para procesar mensajes entrantes de Firebase Cloud Messaging con la app cerrada.
+// ============================================================================
+
 import 'dart:developer' as developer;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

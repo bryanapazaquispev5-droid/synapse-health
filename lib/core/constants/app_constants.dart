@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: app_constants.dart
+// Propósito: Definicion de constantes globales del sistema, rutas, nombres de colecciones y configuraciones inmutables.
+// ============================================================================
+
 /// Constantes globales de la aplicación Synapse Health
 /// Siguiendo los lineamientos de UPPER_SNAKE_CASE del Manual Maestro de Arquitectura (Sección 5.6)
 class AppConstants {

@@ -1,11 +1,18 @@
+// ============================================================================
+// Archivo: complete_profile_header.dart
+// Propósito: Widget visual de soporte [complete_profile_header] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Definicion principal de la clase [CompleteProfileHeader]
 class CompleteProfileHeader extends StatelessWidget {
   final VoidCallback onCancel;
 
   const CompleteProfileHeader({super.key, required this.onCancel});
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(

@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: bottom_floating_pill.dart
+// Propósito: Componente transversal reutilizable [bottom_floating_pill] para la barra de navegacion inferior flotante y elementos comunes.
+// ============================================================================
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +13,7 @@ import 'bottom_pill_nav_items.dart';
 
 export 'bottom_pill_item.dart';
 
+// Definicion principal de la clase [BottomFloatingPill]
 class BottomFloatingPill extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -24,6 +30,7 @@ class BottomFloatingPill extends StatefulWidget {
   State<BottomFloatingPill> createState() => _BottomFloatingPillState();
 }
 
+// Estado reactivo y control de ciclo de vida para [BottomFloatingPill]
 class _BottomFloatingPillState extends State<BottomFloatingPill>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;

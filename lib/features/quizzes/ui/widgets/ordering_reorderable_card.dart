@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: ordering_reorderable_card.dart
+// Propósito: Componente interactivo [ordering_reorderable_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [OrderingReorderableCard]
 class OrderingReorderableCard extends StatelessWidget {
   final String item;
   final int index;
@@ -22,6 +28,7 @@ class OrderingReorderableCard extends StatelessWidget {
     required this.onMoveItem,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     Color bg = AppColors.surface;

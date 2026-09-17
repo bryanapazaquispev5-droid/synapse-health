@@ -1,6 +1,12 @@
+// ============================================================================
+// Archivo: opaque_action_sheet.dart
+// Propósito: Componente de interfaz modular [opaque_action_sheet] para la visualizacion de datos de usuario y ajustes.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [OpaqueActionSheetActionItem]
 class OpaqueActionSheetActionItem {
   final Widget child;
   final VoidCallback onPressed;
@@ -11,6 +17,7 @@ class OpaqueActionSheetActionItem {
   });
 }
 
+// Componente visual modular [OpaqueActionSheet]
 class OpaqueActionSheet extends StatelessWidget {
   final Widget? title;
   final Widget? message;
@@ -23,6 +30,7 @@ class OpaqueActionSheet extends StatelessWidget {
     required this.actions,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;

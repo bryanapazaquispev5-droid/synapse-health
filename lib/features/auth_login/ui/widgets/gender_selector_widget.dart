@@ -1,6 +1,12 @@
+// ============================================================================
+// Archivo: gender_selector_widget.dart
+// Propósito: Widget visual de soporte [gender_selector_widget] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [GenderSelectorWidget]
 class GenderSelectorWidget extends StatelessWidget {
   final String selectedGender;
   final ValueChanged<String> onGenderChanged;
@@ -11,6 +17,7 @@ class GenderSelectorWidget extends StatelessWidget {
     required this.onGenderChanged,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(

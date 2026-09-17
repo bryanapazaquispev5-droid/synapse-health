@@ -1,8 +1,14 @@
+// ============================================================================
+// Archivo: liquid_wave_transition.dart
+// Propósito: Controlador de navegacion principal [liquid_wave_transition] con transiciones fluidas estilo liquid wave.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'liquid_wave_clipper.dart';
 
+// Definicion principal de la clase [LiquidWaveTransition]
 class LiquidWaveTransition extends StatefulWidget {
   final int currentIndex;
   final List<Widget> children;
@@ -19,6 +25,7 @@ class LiquidWaveTransition extends StatefulWidget {
   State<LiquidWaveTransition> createState() => _LiquidWaveTransitionState();
 }
 
+// Estado reactivo y control de ciclo de vida para [LiquidWaveTransition]
 class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
@@ -26,6 +33,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
   int _targetIndex = 0;
   bool _isForward = true;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
@@ -60,12 +68,14 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
     }
   }
 
+  // Liberacion de controladores y recursos para evitar fugas de memoria
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final effectiveWaveColor = widget.waveColor ?? AppColors.accent;

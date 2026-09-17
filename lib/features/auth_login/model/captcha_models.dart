@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: captcha_models.dart
+// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 
 /// Modelo de un mosaico individual dentro del desafío reCAPTCHA

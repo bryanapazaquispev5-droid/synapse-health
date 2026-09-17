@@ -1,9 +1,15 @@
+// ============================================================================
+// Archivo: cheatsheet_item_card.dart
+// Propósito: Componente visual atómico [cheatsheet_item_card] para la visualizacion estructurada de contenido medico y resumenes.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/cheatsheet_model.dart';
 import '../../model/medical_area_model.dart';
 import '../cheatsheet_detail_screen.dart';
 
+// Componente visual modular [CheatsheetItemCard]
 class CheatsheetItemCard extends StatelessWidget {
   final CheatsheetModel cheatsheet;
   final MedicalAreaModel area;
@@ -16,6 +22,7 @@ class CheatsheetItemCard extends StatelessWidget {
     required this.index,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: quiz_list_screen.dart
+// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [quiz_list_screen].
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -5,6 +10,7 @@ import '../api/quiz_service.dart';
 import '../model/quiz_model.dart';
 import 'widgets/quiz_list_tile.dart';
 
+// Pantalla de interfaz de usuario [QuizListScreen]
 class QuizListScreen extends StatefulWidget {
   const QuizListScreen({super.key});
 
@@ -12,6 +18,7 @@ class QuizListScreen extends StatefulWidget {
   State<QuizListScreen> createState() => _QuizListScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [QuizListScreen]
 class _QuizListScreenState extends State<QuizListScreen> with AutomaticKeepAliveClientMixin {
   final QuizService _quizService = QuizService();
   late final Stream<List<QuizModel>> _quizzesStream;
@@ -19,12 +26,14 @@ class _QuizListScreenState extends State<QuizListScreen> with AutomaticKeepAlive
   @override
   bool get wantKeepAlive => true;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
     _quizzesStream = _quizService.getQuizzesByAreaStream('anatomia');
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     super.build(context);

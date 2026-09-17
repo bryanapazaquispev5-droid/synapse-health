@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: main.dart
+// Propósito: Punto de entrada principal de la aplicacion Synapse Health, inicializacion de Firebase, servicios de monitoreo y arranque de la interfaz.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,9 +43,11 @@ void main() async {
   runApp(const SynapseHealthApp());
 }
 
+// Definicion principal de la clase [SynapseHealthApp]
 class SynapseHealthApp extends StatelessWidget {
   const SynapseHealthApp({super.key});
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

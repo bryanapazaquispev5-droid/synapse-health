@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: push_notification_service.dart
+// Propósito: Fachada orquestadora para inicializar y gestionar el ciclo de vida completo de notificaciones push y permisos del sistema.
+// ============================================================================
+
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';

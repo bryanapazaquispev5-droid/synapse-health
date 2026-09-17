@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: notification_router.dart
+// Propósito: Enrutador centralizado para procesar deep links y navegar a secciones especificas al interactuar con una notificacion.
+// ============================================================================
+
 import 'dart:developer' as developer;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

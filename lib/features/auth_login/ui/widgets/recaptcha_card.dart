@@ -1,8 +1,14 @@
+// ============================================================================
+// Archivo: recaptcha_card.dart
+// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'captcha_challenge_dialog.dart';
 
+// Componente visual modular [RecaptchaCard]
 class RecaptchaCard extends StatefulWidget {
   final ValueChanged<bool> onVerified;
   final bool isVerified;
@@ -17,10 +23,12 @@ class RecaptchaCard extends StatefulWidget {
   State<RecaptchaCard> createState() => _RecaptchaCardState();
 }
 
+// Estado reactivo y control de ciclo de vida para [RecaptchaCard]
 class _RecaptchaCardState extends State<RecaptchaCard> {
   bool _isChecking = false;
   late bool _isVerified;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
@@ -66,6 +74,7 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
     }
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(

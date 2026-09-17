@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: ordering_sequence_summary.dart
+// Propósito: Componente interactivo [ordering_sequence_summary] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Definicion principal de la clase [OrderingSequenceSummary]
 class OrderingSequenceSummary extends StatelessWidget {
   final List<String> correctSequence;
   final List<String> currentItems;
@@ -20,6 +26,7 @@ class OrderingSequenceSummary extends StatelessWidget {
     return true;
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final bool isAllCorrect = _areListsEqual(currentItems, correctSequence);

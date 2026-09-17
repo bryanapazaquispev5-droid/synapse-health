@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: quiz_session_screen.dart
+// Propósito: Controlador de estado y presentador de la sesion interactiva de evaluacion o examen medico.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -11,6 +16,7 @@ import 'widgets/quiz_result_view.dart';
 import 'widgets/quiz_session_bottom_bar.dart';
 import 'widgets/quiz_session_header.dart';
 
+// Pantalla de interfaz de usuario [QuizSessionScreen]
 class QuizSessionScreen extends StatefulWidget {
   final List<QuizModel> quizzes;
   final String areaTitle;
@@ -27,6 +33,7 @@ class QuizSessionScreen extends StatefulWidget {
   State<QuizSessionScreen> createState() => _QuizSessionScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [QuizSessionScreen]
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
   late int _currentIndex;
   int? _selectedOptionIndex;

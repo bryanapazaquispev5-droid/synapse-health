@@ -1,11 +1,18 @@
+// ============================================================================
+// Archivo: cheatsheet_mnemonics_card.dart
+// Propósito: Componente visual atómico [cheatsheet_mnemonics_card] para la visualizacion estructurada de contenido medico y resumenes.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [CheatsheetMnemonicsCard]
 class CheatsheetMnemonicsCard extends StatelessWidget {
   final List<String> mnemonics;
 
   const CheatsheetMnemonicsCard({super.key, required this.mnemonics});
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     if (mnemonics.isEmpty) return const SizedBox.shrink();

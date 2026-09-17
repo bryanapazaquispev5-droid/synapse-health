@@ -1,3 +1,9 @@
+// ============================================================================
+// Archivo: topic_model.dart
+// Propósito: Modelo de datos que representa la estructura inmutable de chuletas y areas clinicas [topic_model].
+// ============================================================================
+
+// Entidad inmutable que representa los datos de [TopicModel]
 class TopicModel {
   final String id;
   final String areaId;

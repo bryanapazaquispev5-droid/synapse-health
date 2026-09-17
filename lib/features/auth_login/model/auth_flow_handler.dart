@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: auth_flow_handler.dart
+// Propósito: Modelo de datos y entidades inmutables para el modulo de autenticacion [auth_flow_handler].
+// ============================================================================
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +13,7 @@ import '../api/auth_service.dart';
 import '../utils/auth_snackbar_helper.dart';
 import '../utils/auth_validators.dart';
 
+// Definicion principal de la clase [AuthFlowHandler]
 class AuthFlowHandler {
   final AuthService authService;
   final AuthLockoutManager lockoutManager;

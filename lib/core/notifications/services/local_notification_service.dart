@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: local_notification_service.dart
+// Propósito: Servicio de notificaciones locales para mostrar avisos heads-up en primer plano con soporte de sonido y vibracion.
+// ============================================================================
+
 import 'dart:developer' as developer;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../channels/notification_channels.dart';

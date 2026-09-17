@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: medical_areas_service.dart
+// Propósito: Servicio de consulta a Firestore para obtener areas medicas, temas y chuletas clinicas en tiempo real.
+// ============================================================================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_constants.dart';
 import '../model/medical_area_model.dart';

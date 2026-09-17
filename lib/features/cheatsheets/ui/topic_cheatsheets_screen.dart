@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: topic_cheatsheets_screen.dart
+// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [topic_cheatsheets_screen].
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/connectivity_service.dart';
@@ -10,6 +15,7 @@ import 'widgets/cheatsheet_empty_state.dart';
 import 'widgets/cheatsheet_item_card.dart';
 import 'widgets/cheatsheet_offline_state.dart';
 
+// Pantalla de interfaz de usuario [TopicCheatsheetsScreen]
 class TopicCheatsheetsScreen extends StatefulWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -24,17 +30,20 @@ class TopicCheatsheetsScreen extends StatefulWidget {
   State<TopicCheatsheetsScreen> createState() => _TopicCheatsheetsScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [TopicCheatsheetsScreen]
 class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
   final ConnectivityService _connectivityService = ConnectivityService();
   late final Stream<List<CheatsheetModel>> _cheatsheetsStream;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
     _cheatsheetsStream = _medicalService.getTopicCheatsheetsStream(widget.area.id, widget.topic.id);
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Scaffold(

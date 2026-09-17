@@ -1,9 +1,15 @@
+// ============================================================================
+// Archivo: topic_list_card.dart
+// Propósito: Componente visual atómico [topic_list_card] para la visualizacion estructurada de contenido medico y resumenes.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/medical_area_model.dart';
 import '../../model/topic_model.dart';
 import '../topic_cheatsheets_screen.dart';
 
+// Componente visual modular [TopicListCard]
 class TopicListCard extends StatelessWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -16,6 +22,7 @@ class TopicListCard extends StatelessWidget {
     required this.number,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

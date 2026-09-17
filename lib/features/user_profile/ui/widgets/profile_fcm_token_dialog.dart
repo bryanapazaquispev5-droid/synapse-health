@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: profile_fcm_token_dialog.dart
+// Propósito: Componente de interfaz modular [profile_fcm_token_dialog] para la visualizacion de datos de usuario y ajustes.
+// ============================================================================
+
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +36,7 @@ class ProfileFcmTokenDialog extends StatefulWidget {
   State<ProfileFcmTokenDialog> createState() => _ProfileFcmTokenDialogState();
 }
 
+// Estado reactivo y control de ciclo de vida para [ProfileFcmTokenDialog]
 class _ProfileFcmTokenDialogState extends State<ProfileFcmTokenDialog> {
   bool _isLoading = true;
   String? _token;

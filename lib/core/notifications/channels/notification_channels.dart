@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: notification_channels.dart
+// Propósito: Configuracion y declaracion de canales de notificaciones locales de Android para prioridades medicas y recordatorios.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/push_notification_payload.dart';

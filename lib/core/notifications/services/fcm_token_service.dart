@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: fcm_token_service.dart
+// Propósito: Gestion, sincronizacion y almacenamiento seguro del token de dispositivo FCM en Firestore y almacenamiento local.
+// ============================================================================
+
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';

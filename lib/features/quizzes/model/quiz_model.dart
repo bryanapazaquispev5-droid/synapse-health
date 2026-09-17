@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: quiz_model.dart
+// Propósito: Modelo de datos inmutable para preguntas medicas, opciones de respuesta y emparejamientos [quiz_model].
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import '../utils/quiz_fallback_parser.dart';
 import 'matching_pair_model.dart';

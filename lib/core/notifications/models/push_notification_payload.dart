@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: push_notification_payload.dart
+// Propósito: Entidad inmutable fuertemente tipada para parsear, representar y transferir cargas utiles de notificaciones remotas.
+// ============================================================================
+
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 

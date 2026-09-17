@@ -1,6 +1,12 @@
+// ============================================================================
+// Archivo: crashlytics_service.dart
+// Propósito: Servicio de telemetria y reporte automatico de errores no controlados hacia Firebase Crashlytics.
+// ============================================================================
+
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
+// Servicio para la gestion de operaciones de [CrashlyticsService]
 class CrashlyticsService {
   static final FirebaseCrashlytics _instance = FirebaseCrashlytics.instance;
 

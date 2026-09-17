@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: complete_profile_screen.dart
+// Propósito: Pantalla principal de interfaz de usuario para el flujo de autenticacion [complete_profile_screen].
+// ============================================================================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,6 +18,7 @@ import 'widgets/career_selector_modal.dart';
 import 'widgets/complete_profile_header.dart';
 import 'widgets/gender_selector_widget.dart';
 
+// Pantalla de interfaz de usuario [CompleteProfileScreen]
 class CompleteProfileScreen extends StatefulWidget {
   final User user;
 
@@ -22,6 +28,7 @@ class CompleteProfileScreen extends StatefulWidget {
   State<CompleteProfileScreen> createState() => _CompleteProfileScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [CompleteProfileScreen]
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final AuthService _authService = AuthService();
   late final TextEditingController _nameController;

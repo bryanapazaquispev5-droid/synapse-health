@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: interactive_ordering_widget.dart
+// Propósito: Componente interactivo [interactive_ordering_widget] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

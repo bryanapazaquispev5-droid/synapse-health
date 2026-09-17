@@ -1,6 +1,12 @@
+// ============================================================================
+// Archivo: matching_header_controls.dart
+// Propósito: Componente interactivo [matching_header_controls] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Definicion principal de la clase [MatchingHeaderControls]
 class MatchingHeaderControls extends StatelessWidget {
   final bool isSubmitted;
   final bool hasPairings;
@@ -13,6 +19,7 @@ class MatchingHeaderControls extends StatelessWidget {
     required this.onReset,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(

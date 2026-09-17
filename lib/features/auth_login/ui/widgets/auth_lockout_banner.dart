@@ -1,5 +1,11 @@
+// ============================================================================
+// Archivo: auth_lockout_banner.dart
+// Propósito: Gestor de seguridad para prevenir ataques de fuerza bruta mediante bloqueo temporal tras intentos fallidos.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 
+// Definicion principal de la clase [AuthLockoutBanner]
 class AuthLockoutBanner extends StatelessWidget {
   final int failedAttemptsCount;
   final int lockoutSeconds;
@@ -10,6 +16,7 @@ class AuthLockoutBanner extends StatelessWidget {
     required this.lockoutSeconds,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(

@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: topic_quizzes_screen.dart
+// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [topic_quizzes_screen].
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -8,6 +13,7 @@ import '../model/quiz_model.dart';
 import 'widgets/quiz_list_tile.dart';
 import 'widgets/quiz_topic_action_card.dart';
 
+// Pantalla de interfaz de usuario [TopicQuizzesScreen]
 class TopicQuizzesScreen extends StatefulWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -22,16 +28,19 @@ class TopicQuizzesScreen extends StatefulWidget {
   State<TopicQuizzesScreen> createState() => _TopicQuizzesScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [TopicQuizzesScreen]
 class _TopicQuizzesScreenState extends State<TopicQuizzesScreen> {
   final QuizService _quizService = QuizService();
   late final Stream<List<QuizModel>> _quizzesStream;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
     _quizzesStream = _quizService.getQuizzesByTopicStream(widget.area.id, widget.topic.id);
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Scaffold(

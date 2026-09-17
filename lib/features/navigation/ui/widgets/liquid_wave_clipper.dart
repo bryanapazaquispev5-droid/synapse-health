@@ -1,6 +1,12 @@
+// ============================================================================
+// Archivo: liquid_wave_clipper.dart
+// Propósito: Controlador de navegacion principal [liquid_wave_clipper] con transiciones fluidas estilo liquid wave.
+// ============================================================================
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+// Definicion principal de la clase [LiquidWaveClipper]
 class LiquidWaveClipper extends CustomClipper<Path> {
   final double progress;
   final bool fromRight;
@@ -94,6 +100,7 @@ class LiquidWaveClipper extends CustomClipper<Path> {
   }
 }
 
+// Definicion principal de la clase [LiquidWaveEdgePainter]
 class LiquidWaveEdgePainter extends CustomPainter {
   final double progress;
   final bool fromRight;

@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: cheatsheet_detail_screen.dart
+// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [cheatsheet_detail_screen].
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,6 +12,7 @@ import 'widgets/cheatsheet_key_points_card.dart';
 import 'widgets/cheatsheet_markdown_viewer.dart';
 import 'widgets/cheatsheet_mnemonics_card.dart';
 
+// Pantalla de interfaz de usuario [CheatsheetDetailScreen]
 class CheatsheetDetailScreen extends StatelessWidget {
   final CheatsheetModel cheatsheet;
   final MedicalAreaModel area;
@@ -17,6 +23,7 @@ class CheatsheetDetailScreen extends StatelessWidget {
     required this.area,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Scaffold(

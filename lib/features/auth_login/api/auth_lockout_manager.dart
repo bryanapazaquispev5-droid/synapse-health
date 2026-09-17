@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: auth_lockout_manager.dart
+// Propósito: Servicio de autenticacion con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
+// ============================================================================
+
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 
+// Definicion principal de la clase [AuthLockoutManager]
 class AuthLockoutManager {
   int failedAttemptsCount = 0;
   int lockoutSeconds = 0;
@@ -75,6 +81,7 @@ class AuthLockoutManager {
     } catch (_) {}
   }
 
+  // Liberacion de controladores y recursos para evitar fugas de memoria
   void dispose() {
     _lockoutTimer?.cancel();
   }

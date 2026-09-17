@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: area_topics_screen.dart
+// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [area_topics_screen].
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/connectivity_service.dart';
@@ -9,6 +14,7 @@ import 'widgets/cheatsheet_empty_state.dart';
 import 'widgets/cheatsheet_offline_state.dart';
 import 'widgets/topic_list_card.dart';
 
+// Pantalla de interfaz de usuario [AreaTopicsScreen]
 class AreaTopicsScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -18,17 +24,20 @@ class AreaTopicsScreen extends StatefulWidget {
   State<AreaTopicsScreen> createState() => _AreaTopicsScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [AreaTopicsScreen]
 class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
   final ConnectivityService _connectivityService = ConnectivityService();
   late final Stream<List<TopicModel>> _topicsStream;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
     _topicsStream = _medicalService.getTopicsStream(widget.area.id);
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Scaffold(

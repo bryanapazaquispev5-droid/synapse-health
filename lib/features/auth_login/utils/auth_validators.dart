@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: auth_validators.dart
+// Propósito: Funciones auxiliares y validadores de campos de texto (correo electronico, contrasenas seguras, etc.).
+// ============================================================================
+
 /// Validadores y utilidades de formato para autenticación
 class AuthValidators {
   static final RegExp _emailRegExp = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$');

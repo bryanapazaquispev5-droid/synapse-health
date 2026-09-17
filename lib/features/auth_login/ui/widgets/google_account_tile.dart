@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: google_account_tile.dart
+// Propósito: Widget visual de soporte [google_account_tile] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [GoogleAccountTile]
 class GoogleAccountTile extends StatelessWidget {
   final String email;
   final String initials;
@@ -16,6 +22,7 @@ class GoogleAccountTile extends StatelessWidget {
     required this.onTap,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -83,11 +90,13 @@ class GoogleAccountTile extends StatelessWidget {
   }
 }
 
+// Componente visual modular [OtherGoogleAccountTile]
 class OtherGoogleAccountTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const OtherGoogleAccountTile({super.key, required this.onTap});
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Container(

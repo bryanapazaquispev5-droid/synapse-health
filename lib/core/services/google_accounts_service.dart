@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: google_accounts_service.dart
+// Propósito: Servicio para la gestion y consulta de cuentas de Google vinculadas al dispositivo.
+// ============================================================================
+
 import 'package:flutter/services.dart';
 
 /// Servicio para interactuar con las cuentas Google del dispositivo

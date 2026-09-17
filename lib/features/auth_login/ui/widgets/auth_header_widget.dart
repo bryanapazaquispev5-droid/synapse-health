@@ -1,11 +1,18 @@
+// ============================================================================
+// Archivo: auth_header_widget.dart
+// Propósito: Widget visual de soporte [auth_header_widget] para el formulario y flujo de inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [AuthHeaderWidget]
 class AuthHeaderWidget extends StatelessWidget {
   final bool isLogin;
 
   const AuthHeaderWidget({super.key, required this.isLogin});
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(

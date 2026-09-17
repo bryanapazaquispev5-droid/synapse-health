@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: profile_notifications_tile_test.dart
+// Propósito: Componente de interfaz modular [profile_notifications_tile_test] para la visualizacion de datos de usuario y ajustes.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';

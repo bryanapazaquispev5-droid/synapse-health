@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: profile_notifications_tile.dart
+// Propósito: Componente de interfaz modular [profile_notifications_tile] para la visualizacion de datos de usuario y ajustes.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +20,7 @@ class ProfileNotificationsTile extends StatefulWidget {
   State<ProfileNotificationsTile> createState() => _ProfileNotificationsTileState();
 }
 
+// Estado reactivo y control de ciclo de vida para [ProfileNotificationsTile]
 class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
   bool _isTestingNotification = false;
 
@@ -83,6 +89,7 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
     }
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -130,6 +137,7 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
   }
 }
 
+// Componente visual modular [_NotificationItemTile]
 class _NotificationItemTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -149,6 +157,7 @@ class _NotificationItemTile extends StatelessWidget {
     required this.onTap,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Material(

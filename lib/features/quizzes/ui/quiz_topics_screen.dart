@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: quiz_topics_screen.dart
+// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [quiz_topics_screen].
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/connectivity_service.dart';
@@ -8,6 +13,7 @@ import '../../cheatsheets/model/topic_model.dart';
 import 'widgets/quiz_general_exam_card.dart';
 import 'widgets/quiz_topic_card.dart';
 
+// Pantalla de interfaz de usuario [QuizTopicsScreen]
 class QuizTopicsScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -17,6 +23,7 @@ class QuizTopicsScreen extends StatefulWidget {
   State<QuizTopicsScreen> createState() => _QuizTopicsScreenState();
 }
 
+// Estado reactivo y control de ciclo de vida para [QuizTopicsScreen]
 class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
   final ConnectivityService _connectivityService = ConnectivityService();

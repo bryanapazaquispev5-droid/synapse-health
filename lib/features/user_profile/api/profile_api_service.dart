@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: profile_api_service.dart
+// Propósito: Servicio de integracion con Firestore para actualizar informacion del perfil y cerrar sesion de forma segura.
+// ============================================================================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -5,6 +10,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/notifications/services/push_notification_service.dart';
 import '../../../core/services/user_local_profile_service.dart';
 
+// Servicio para la gestion de operaciones de [ProfileApiService]
 class ProfileApiService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 

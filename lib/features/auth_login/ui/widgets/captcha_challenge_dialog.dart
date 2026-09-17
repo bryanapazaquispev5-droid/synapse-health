@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: captcha_challenge_dialog.dart
+// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// ============================================================================
+
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +18,7 @@ class CaptchaChallengeDialog extends StatefulWidget {
   State<CaptchaChallengeDialog> createState() => _CaptchaChallengeDialogState();
 }
 
+// Estado reactivo y control de ciclo de vida para [CaptchaChallengeDialog]
 class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
   late int _currentChallengeIndex;
   final Set<int> _selectedIndices = {};
@@ -21,6 +27,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
 
   final List<CaptchaChallenge> _challenges = CaptchaChallengesData.challenges;
 
+  // Inicializacion de dependencias y estado local del componente
   @override
   void initState() {
     super.initState();
@@ -67,6 +74,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
     }
   }
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     final challenge = _challenges[_currentChallengeIndex];

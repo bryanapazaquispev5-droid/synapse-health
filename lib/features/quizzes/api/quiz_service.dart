@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: quiz_service.dart
+// Propósito: Servicio para la recuperacion de reactivos y guardado de calificaciones de cuestionarios en Firestore.
+// ============================================================================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_constants.dart';
 import '../model/quiz_model.dart';
 
+// Servicio para la gestion de operaciones de [QuizService]
 class QuizService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 

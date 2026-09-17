@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: widget_test.dart
+// Propósito: Suite de pruebas unitarias y de widgets para validar el funcionamiento correcto de [widget_test].
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';

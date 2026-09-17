@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: captcha_challenges_data.dart
+// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// ============================================================================
+
 import 'package:flutter/material.dart';
 import 'captcha_models.dart';
 

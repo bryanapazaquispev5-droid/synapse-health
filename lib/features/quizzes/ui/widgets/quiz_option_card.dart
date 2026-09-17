@@ -1,7 +1,13 @@
+// ============================================================================
+// Archivo: quiz_option_card.dart
+// Propósito: Componente interactivo [quiz_option_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// ============================================================================
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Componente visual modular [QuizOptionCard]
 class QuizOptionCard extends StatelessWidget {
   final int index;
   final String letter;
@@ -22,6 +28,7 @@ class QuizOptionCard extends StatelessWidget {
     required this.onSelected,
   });
 
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     Color cardBg = AppColors.surface;

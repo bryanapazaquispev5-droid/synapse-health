@@ -1,3 +1,8 @@
+// ============================================================================
+// Archivo: connectivity_service.dart
+// Propósito: Servicio reactivo para monitorear el estado de conexion a internet y detectar transiciones offline/online.
+// ============================================================================
+
 import 'dart:async';
 import 'dart:io';
 
@@ -46,6 +51,7 @@ class ConnectivityService {
     }
   }
 
+  // Liberacion de controladores y recursos para evitar fugas de memoria
   void dispose() {
     _timer?.cancel();
     _controller.close();
