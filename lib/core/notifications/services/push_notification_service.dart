@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: push_notification_service.dart
-// Propósito: Fachada orquestadora para inicializar listeners de FCM, solicitar permisos al sistema y gestionar el ciclo de vida de notificaciones.
+// Propósito: Fachada orquestadora para inicializar y gestionar el ciclo de vida completo de notificaciones push y permisos del sistema.
 // ============================================================================
 
 import 'dart:async';
@@ -14,7 +14,9 @@ import '../models/push_notification_payload.dart';
 import 'fcm_token_service.dart';
 import 'local_notification_service.dart';
 
-/// Servicio de arquitectura y lógica de negocio para [PushNotificationService].
+/// Fachada orquestadora para la gestión global de notificaciones Push (FCM).
+/// Controla permisos, handlers de ciclo de vida (primer plano, segundo plano, arranque en frío)
+/// y vinculación con la navegación de la app.
 class PushNotificationService {
   static final PushNotificationService _instance =
       PushNotificationService._internal();
@@ -32,6 +34,7 @@ class PushNotificationService {
 
   bool _isInitialized = false;
 
+  /// Inicializa permisos, canales nativos, listeners reactivos y deep links
   Future<void> initialize({
     required GlobalKey<NavigatorState> navigatorKey,
   }) async {
@@ -41,22 +44,29 @@ class PushNotificationService {
     try {
       NotificationRouter.setNavigatorKey(navigatorKey);
 
+      // Registrar el handler de background isolate
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+      // Inicializar adaptador de notificaciones locales y canales del sistema
       await _localNotifications.initialize();
 
+      // Solicitar permisos de notificación interactivos al usuario
       await _requestNotificationPermissions();
 
+      // Configurar presentación visual de notificaciones en primer plano
       await _messaging.setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
         sound: true,
       );
 
+      // Manejar arranque en frío (Cold Start: app terminada y abierta desde notificación)
       await _handleColdStartNotification();
 
+      // Configurar listeners reactivos en primer plano y reapertura
       _setupMessageListeners();
 
+      // Configurar sincronización del token FCM con Firestore
       _setupTokenSync();
 
       _isInitialized = true;
@@ -74,6 +84,7 @@ class PushNotificationService {
     }
   }
 
+  /// Solicita permisos de notificación Push
   Future<void> _requestNotificationPermissions() async {
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -91,6 +102,7 @@ class PushNotificationService {
     );
   }
 
+  /// Procesa notificaciones recibidas cuando la aplicación estaba totalmente cerrada
   Future<void> _handleColdStartNotification() async {
     // Bloque: Ejecución protegida de operación asíncrona
     try {
@@ -114,7 +126,9 @@ class PushNotificationService {
     }
   }
 
+  /// Configura los oyentes de mensajes en primer plano y en segundo plano
   void _setupMessageListeners() {
+    // 1. Mensaje recibido con la app abierta (Foreground) -> Heads-Up Banner
     _onMessageSub?.cancel();
     _onMessageSub = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       developer.log(
@@ -125,6 +139,7 @@ class PushNotificationService {
       _localNotifications.showNotification(payload);
     });
 
+    // 2. Mensaje abierto desde la bandeja con app en segundo plano (Background -> Foreground)
     _onMessageOpenedAppSub?.cancel();
     _onMessageOpenedAppSub =
         FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -137,6 +152,7 @@ class PushNotificationService {
     });
   }
 
+  /// Configura la sincronización de tokens y monitorea cambios de usuario
   void _setupTokenSync() {
     _tokenService.monitorTokenRefresh(
       () => FirebaseAuth.instance.currentUser?.uid,
@@ -155,11 +171,12 @@ class PushNotificationService {
     });
   }
 
+  /// Notifica cierre de sesión para purgar el token asociado al usuario
   Future<void> handleLogout(String uid) async {
     await _tokenService.deleteTokenOnLogout(uid);
   }
 
-  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
+  /// Cierra streams y libera observadores
   void dispose() {
     _onMessageSub?.cancel();
     _onMessageSub = null;

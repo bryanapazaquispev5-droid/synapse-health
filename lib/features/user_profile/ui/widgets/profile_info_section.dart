@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: profile_info_section.dart
-// Propósito: Componente de interfaz modular [profile_info_section] para la gestión y presentación de opciones de perfil.
+// Propósito: Componente de interfaz modular [profile_info_section] para la visualizacion de datos de usuario y ajustes.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [ProfileInfoSection].
+// Definicion principal de la clase [ProfileInfoSection]
 class ProfileInfoSection extends StatelessWidget {
   final String career;
   final String gender;
@@ -108,7 +108,7 @@ class ProfileInfoSection extends StatelessWidget {
     );
   }
 
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(

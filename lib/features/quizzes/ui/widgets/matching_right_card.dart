@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: matching_right_card.dart
-// Propósito: Componente interactivo [matching_right_card] para la resolución táctil de preguntas médicas.
+// Propósito: Componente interactivo [matching_right_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [MatchingRightCard].
+// Componente visual modular [MatchingRightCard]
 class MatchingRightCard extends StatelessWidget {
   final int rightIndex;
   final String text;
@@ -34,6 +34,7 @@ class MatchingRightCard extends StatelessWidget {
     required this.onTap,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

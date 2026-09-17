@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: bottom_floating_pill.dart
-// Propósito: Componente transversal reutilizable [bottom_floating_pill] para la barra de navegación flotante inferior.
+// Propósito: Componente transversal reutilizable [bottom_floating_pill] para la barra de navegacion inferior flotante y elementos comunes.
 // ============================================================================
 
 import 'dart:math' as math;
@@ -13,7 +13,7 @@ import 'bottom_pill_nav_items.dart';
 
 export 'bottom_pill_item.dart';
 
-/// Componente de interfaz de usuario reutilizable [BottomFloatingPill].
+// Definicion principal de la clase [BottomFloatingPill]
 class BottomFloatingPill extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -30,7 +30,7 @@ class BottomFloatingPill extends StatefulWidget {
   State<BottomFloatingPill> createState() => _BottomFloatingPillState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [BottomFloatingPill].
+// Estado reactivo y control de ciclo de vida para [BottomFloatingPill]
 class _BottomFloatingPillState extends State<BottomFloatingPill>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
@@ -38,7 +38,6 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
   int _targetIndex = 0;
   double _horizontalDragDistance = 0.0;
 
-  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -63,7 +62,6 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
     }
   }
 
-  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   @override
   void dispose() {
     _controller.dispose();
@@ -91,10 +89,12 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
     const double distanceThreshold = 15.0;
 
     if (velocity > velocityThreshold || _horizontalDragDistance > distanceThreshold) {
+      // Deslizar a la DERECHA -> Va al menú de la DERECHA
       if (widget.currentIndex < widget.items.length - 1) {
         _onItemTapped(widget.currentIndex + 1);
       }
     } else if (velocity < -velocityThreshold || _horizontalDragDistance < -distanceThreshold) {
+      // Deslizar a la IZQUIERDA -> Va al menú de la IZQUIERDA
       if (widget.currentIndex > 0) {
         _onItemTapped(widget.currentIndex - 1);
       }
@@ -106,7 +106,6 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
     _horizontalDragDistance = 0.0;
   }
 
-  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return SafeArea(

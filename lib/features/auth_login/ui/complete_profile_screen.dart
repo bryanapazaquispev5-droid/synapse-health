@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: complete_profile_screen.dart
-// Propósito: Pantalla de autenticación y flujo de acceso [complete_profile_screen] con soporte para credenciales y Google Sign-In.
+// Propósito: Pantalla principal de interfaz de usuario para el flujo de autenticacion [complete_profile_screen].
 // ============================================================================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,7 +18,7 @@ import 'widgets/career_selector_modal.dart';
 import 'widgets/complete_profile_header.dart';
 import 'widgets/gender_selector_widget.dart';
 
-/// Pantalla principal de interfaz de usuario [CompleteProfileScreen].
+// Pantalla de interfaz de usuario [CompleteProfileScreen]
 class CompleteProfileScreen extends StatefulWidget {
   final User user;
 
@@ -28,7 +28,7 @@ class CompleteProfileScreen extends StatefulWidget {
   State<CompleteProfileScreen> createState() => _CompleteProfileScreenState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [CompleteProfileScreen].
+// Estado reactivo y control de ciclo de vida para [CompleteProfileScreen]
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final AuthService _authService = AuthService();
   late final TextEditingController _nameController;
@@ -46,14 +46,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     'Fisioterapia',
   ];
 
-  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.user.displayName ?? '');
   }
 
-  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   @override
   void dispose() {
     _nameController.dispose();
@@ -150,7 +148,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
   }
 
-  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return PopScope(

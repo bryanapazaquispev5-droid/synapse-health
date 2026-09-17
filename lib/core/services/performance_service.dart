@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: performance_service.dart
-// Propósito: Medición de rendimiento, latencia de red y trazas personalizadas mediante Firebase Performance Monitoring.
+// Propósito: Monitoreo y medicion del rendimiento de red, latencia y trazas de la aplicacion con Firebase Performance.
 // ============================================================================
 
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart';
 
-/// Servicio de arquitectura y lógica de negocio para [PerformanceService].
+// Servicio para la gestion de operaciones de [PerformanceService]
 class PerformanceService {
   static final FirebasePerformance _instance = FirebasePerformance.instance;
 

@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: user_local_profile_service.dart
-// Propósito: Servicio de persistencia local en caché para la consulta instantánea de datos básicos del perfil de usuario.
+// Propósito: Servicio de almacenamiento local en cache para la persistencia rapida de datos del perfil de usuario.
 // ============================================================================
 
 import 'dart:convert';
@@ -9,7 +9,7 @@ import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Componente de interfaz de usuario reutilizable [LocalUserProfile].
+// Definicion principal de la clase [LocalUserProfile]
 class LocalUserProfile {
   final String name;
   final String email;
@@ -28,7 +28,8 @@ class LocalUserProfile {
   });
 }
 
-/// Servicio de arquitectura y lógica de negocio para [UserLocalProfileService].
+/// Servicio seguro para almacenar datos del usuario con cifrado por hardware (OWASP MASVS Sección 9.2).
+/// Utiliza Android Keystore (EncryptedSharedPreferences) e iOS Keychain.
 class UserLocalProfileService {
   static final UserLocalProfileService _instance = UserLocalProfileService._internal();
   factory UserLocalProfileService() => _instance;
@@ -88,6 +89,7 @@ class UserLocalProfileService {
   }) async {
     // Bloque: Ejecución protegida de operación asíncrona
     try {
+      // 1. Intentar lectura cifrada desde FlutterSecureStorage
       String? name = await _secureStorage.read(key: 'user_name_$uid');
       String? email = await _secureStorage.read(key: 'user_email_$uid');
       String? career = await _secureStorage.read(key: 'user_career_$uid');
@@ -95,6 +97,7 @@ class UserLocalProfileService {
       String? photoUrl = await _secureStorage.read(key: 'user_photo_url_$uid');
       String? photoBase64 = await _secureStorage.read(key: 'user_photo_base64_$uid');
 
+      // 2. Fallback de migración transparente desde SharedPreferences si aún no fue migrado
       if (name == null || email == null) {
         // Bloque: Ejecución protegida de operación asíncrona
         try {
@@ -106,6 +109,7 @@ class UserLocalProfileService {
           photoUrl ??= prefs.getString('user_photo_url_$uid');
           photoBase64 ??= prefs.getString('user_photo_base64_$uid');
 
+          // Migrar automáticamente al almacenamiento cifrado
           if (name != null) await _secureStorage.write(key: 'user_name_$uid', value: name);
           if (email != null) await _secureStorage.write(key: 'user_email_$uid', value: email);
           if (career != null) await _secureStorage.write(key: 'user_career_$uid', value: career);

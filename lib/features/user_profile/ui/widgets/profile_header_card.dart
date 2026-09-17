@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: profile_header_card.dart
-// Propósito: Componente de interfaz modular [profile_header_card] para la gestión y presentación de opciones de perfil.
+// Propósito: Componente de interfaz modular [profile_header_card] para la visualizacion de datos de usuario y ajustes.
 // ============================================================================
 
 import 'dart:typed_data';
@@ -8,7 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [ProfileHeaderCard].
+// Componente visual modular [ProfileHeaderCard]
 class ProfileHeaderCard extends StatelessWidget {
   final String name;
   final String email;
@@ -49,6 +49,7 @@ class ProfileHeaderCard extends StatelessWidget {
     return Image.asset(userGif, width: 72, height: 72, fit: BoxFit.cover);
   }
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

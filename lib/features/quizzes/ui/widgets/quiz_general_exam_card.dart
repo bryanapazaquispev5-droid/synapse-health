@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: quiz_general_exam_card.dart
-// Propósito: Componente interactivo [quiz_general_exam_card] para la resolución táctil de preguntas médicas.
+// Propósito: Componente interactivo [quiz_general_exam_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,12 +9,13 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../cheatsheets/model/medical_area_model.dart';
 import '../area_quizzes_screen.dart';
 
-/// Componente de interfaz de usuario reutilizable [QuizGeneralExamCard].
+// Componente visual modular [QuizGeneralExamCard]
 class QuizGeneralExamCard extends StatelessWidget {
   final MedicalAreaModel area;
 
   const QuizGeneralExamCard({super.key, required this.area});
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

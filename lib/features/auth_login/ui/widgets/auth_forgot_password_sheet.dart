@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: auth_forgot_password_sheet.dart
-// Propósito: Widget visual modular [auth_forgot_password_sheet] para el flujo y los formularios de inicio de sesión y registro.
+// Propósito: Widget visual de soporte [auth_forgot_password_sheet] para el formulario y flujo de inicio de sesion.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -11,7 +11,7 @@ import '../../api/auth_service.dart';
 import '../../utils/auth_validators.dart';
 import 'auth_text_field.dart';
 
-/// Componente modal interactivo [AuthForgotPasswordSheet] presentado como hoja o diálogo.
+// Componente visual modular [AuthForgotPasswordSheet]
 class AuthForgotPasswordSheet extends StatefulWidget {
   final String initialEmail;
   final ValueChanged<String> onSuccess;
@@ -41,7 +41,7 @@ class AuthForgotPasswordSheet extends StatefulWidget {
   State<AuthForgotPasswordSheet> createState() => _AuthForgotPasswordSheetState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [AuthForgotPasswordSheet].
+// Estado reactivo y control de ciclo de vida para [AuthForgotPasswordSheet]
 class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
   late final TextEditingController _resetEmailController;
   final AuthService _authService = AuthService();

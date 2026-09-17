@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: profile_notifications_tile.dart
-// Propósito: Componente de interfaz modular [profile_notifications_tile] para la gestión y presentación de opciones de perfil.
+// Propósito: Componente de interfaz modular [profile_notifications_tile] para la visualizacion de datos de usuario y ajustes.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -12,7 +12,7 @@ import '../../../../core/notifications/services/local_notification_service.dart'
 import '../../../../core/theme/app_theme.dart';
 import 'profile_fcm_token_dialog.dart';
 
-/// Componente de interfaz de usuario reutilizable [ProfileNotificationsTile].
+/// Sección atómica para gestión y prueba de notificaciones Push (FCM) y locales.
 class ProfileNotificationsTile extends StatefulWidget {
   const ProfileNotificationsTile({super.key});
 
@@ -20,7 +20,7 @@ class ProfileNotificationsTile extends StatefulWidget {
   State<ProfileNotificationsTile> createState() => _ProfileNotificationsTileState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [ProfileNotificationsTile].
+// Estado reactivo y control de ciclo de vida para [ProfileNotificationsTile]
 class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
   bool _isTestingNotification = false;
 
@@ -89,7 +89,7 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
     }
   }
 
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -137,7 +137,7 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
   }
 }
 
-/// Componente de interfaz de usuario reutilizable [_NotificationItemTile].
+// Componente visual modular [_NotificationItemTile]
 class _NotificationItemTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -157,7 +157,7 @@ class _NotificationItemTile extends StatelessWidget {
     required this.onTap,
   });
 
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Renderizado reactivo del arbol de widgets
   @override
   Widget build(BuildContext context) {
     return Material(

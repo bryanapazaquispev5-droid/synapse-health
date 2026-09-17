@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: area_topics_screen.dart
-// Propósito: Pantalla de visualización y consulta para chuletas y resúmenes médicos estructurados [area_topics_screen].
+// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [area_topics_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -14,7 +14,7 @@ import 'widgets/cheatsheet_empty_state.dart';
 import 'widgets/cheatsheet_offline_state.dart';
 import 'widgets/topic_list_card.dart';
 
-/// Pantalla principal de interfaz de usuario [AreaTopicsScreen].
+// Pantalla de interfaz de usuario [AreaTopicsScreen]
 class AreaTopicsScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -24,12 +24,13 @@ class AreaTopicsScreen extends StatefulWidget {
   State<AreaTopicsScreen> createState() => _AreaTopicsScreenState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [AreaTopicsScreen].
+// Estado reactivo y control de ciclo de vida para [AreaTopicsScreen]
 class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
   final ConnectivityService _connectivityService = ConnectivityService();
   late final Stream<List<TopicModel>> _topicsStream;
 
+  // Inicializacion de dependencias y estado local del componente
   // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
     _topicsStream = _medicalService.getTopicsStream(widget.area.id);
   }
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

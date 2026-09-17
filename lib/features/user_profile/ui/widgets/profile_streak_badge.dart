@@ -1,17 +1,18 @@
 // ============================================================================
 // Archivo: profile_streak_badge.dart
-// Propósito: Componente de interfaz modular [profile_streak_badge] para la gestión y presentación de opciones de perfil.
+// Propósito: Componente de interfaz modular [profile_streak_badge] para la visualizacion de datos de usuario y ajustes.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [ProfileStreakBadge].
+// Definicion principal de la clase [ProfileStreakBadge]
 class ProfileStreakBadge extends StatelessWidget {
   final int streakDays;
 
   const ProfileStreakBadge({super.key, required this.streakDays});
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

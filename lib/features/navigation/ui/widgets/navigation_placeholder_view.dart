@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: navigation_placeholder_view.dart
-// Propósito: Controlador de navegación principal [navigation_placeholder_view] con transiciones fluidas de página estilo liquid wave.
+// Propósito: Controlador de navegacion principal [navigation_placeholder_view] con transiciones fluidas estilo liquid wave.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [NavigationPlaceholderView].
+// Pantalla de interfaz de usuario [NavigationPlaceholderView]
 class NavigationPlaceholderView extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -23,6 +23,7 @@ class NavigationPlaceholderView extends StatelessWidget {
     required this.tag,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

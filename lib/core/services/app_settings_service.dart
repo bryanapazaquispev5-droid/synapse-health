@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: app_settings_service.dart
-// Propósito: Servicio de almacenamiento y lectura de preferencias y ajustes generales de la aplicación.
+// Propósito: Servicio para la lectura y persistencia de preferencias y ajustes generales de la aplicacion.
 // ============================================================================
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Servicio de arquitectura y lógica de negocio para [AppSettingsService].
+// Servicio para la gestion de operaciones de [AppSettingsService]
 class AppSettingsService {
   static final AppSettingsService _instance = AppSettingsService._internal();
   factory AppSettingsService() => _instance;

@@ -1,9 +1,9 @@
 // ============================================================================
 // Archivo: cheatsheet_model.dart
-// Propósito: Modelo de datos inmutable para representar chuletas médicas, temas y especialidades clínicas [cheatsheet_model].
+// Propósito: Modelo de datos que representa la estructura inmutable de chuletas y areas clinicas [cheatsheet_model].
 // ============================================================================
 
-/// Entidad de datos inmutable y serializable para [CheatsheetModel].
+// Entidad inmutable que representa los datos de [CheatsheetModel]
 class CheatsheetModel {
   final String id;
   final String areaId;

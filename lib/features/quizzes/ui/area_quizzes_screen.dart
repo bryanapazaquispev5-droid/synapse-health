@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: area_quizzes_screen.dart
-// Propósito: Pantalla de navegación y listado de cuestionarios clínicos organizados por área y tema [area_quizzes_screen].
+// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [area_quizzes_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -11,7 +11,7 @@ import '../api/quiz_service.dart';
 import '../model/quiz_model.dart';
 import 'widgets/quiz_list_tile.dart';
 
-/// Pantalla principal de interfaz de usuario [AreaQuizzesScreen].
+// Pantalla de interfaz de usuario [AreaQuizzesScreen]
 class AreaQuizzesScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -21,11 +21,12 @@ class AreaQuizzesScreen extends StatefulWidget {
   State<AreaQuizzesScreen> createState() => _AreaQuizzesScreenState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [AreaQuizzesScreen].
+// Estado reactivo y control de ciclo de vida para [AreaQuizzesScreen]
 class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
   final QuizService _quizService = QuizService();
   late final Stream<List<QuizModel>> _quizzesStream;
 
+  // Inicializacion de dependencias y estado local del componente
   // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
@@ -33,6 +34,7 @@ class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
     _quizzesStream = _quizService.getQuizzesByAreaStream(widget.area.id);
   }
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

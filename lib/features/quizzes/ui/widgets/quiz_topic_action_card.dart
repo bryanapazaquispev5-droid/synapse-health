@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: quiz_topic_action_card.dart
-// Propósito: Componente interactivo [quiz_topic_action_card] para la resolución táctil de preguntas médicas.
+// Propósito: Componente interactivo [quiz_topic_action_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +9,7 @@ import '../../../cheatsheets/model/medical_area_model.dart';
 import '../../model/quiz_model.dart';
 import '../quiz_session_screen.dart';
 
-/// Componente de interfaz de usuario reutilizable [QuizTopicActionCard].
+// Componente visual modular [QuizTopicActionCard]
 class QuizTopicActionCard extends StatelessWidget {
   final List<QuizModel> quizzes;
   final MedicalAreaModel area;
@@ -20,6 +20,7 @@ class QuizTopicActionCard extends StatelessWidget {
     required this.area,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: notification_router.dart
-// Propósito: Enrutador centralizado para navegación y Deep Linking activados por la interacción del usuario con notificaciones.
+// Propósito: Enrutador centralizado para procesar deep links y navegar a secciones especificas al interactuar con una notificacion.
 // ============================================================================
 
 import 'dart:developer' as developer;
@@ -11,11 +11,12 @@ import '../../../features/auth_login/ui/auth_screen.dart';
 import '../../../features/navigation/ui/main_navigation_wrapper.dart';
 import '../models/push_notification_payload.dart';
 
-/// Componente de interfaz de usuario reutilizable [NotificationRouter].
+/// Enrutador centralizado para navegación por deep links y notificaciones push
 class NotificationRouter {
   static GlobalKey<NavigatorState>? _navigatorKey;
   static PushNotificationPayload? _pendingPayload;
 
+  /// Asigna la clave global de navegación utilizada por MaterialApp
   static void setNavigatorKey(GlobalKey<NavigatorState> key) {
     _navigatorKey = key;
     if (_pendingPayload != null) {
@@ -27,6 +28,7 @@ class NotificationRouter {
     }
   }
 
+  /// Procesa la carga útil y realiza la transición de pantalla correspondiente
   static void routeFromPayload(PushNotificationPayload payload) {
     final state = _navigatorKey?.currentState;
     if (state == null) {
@@ -85,6 +87,7 @@ class NotificationRouter {
     }
   }
 
+  /// Conduce al usuario hacia la pestaña requerida del BottomPill
   static void _navigateToTab(
     NavigatorState state,
     User user, {
@@ -101,6 +104,7 @@ class NotificationRouter {
     );
   }
 
+  /// Maneja rutas string arbitrarias tipo deep link
   static void _handleCustomRoute(
     NavigatorState state,
     User user,
@@ -128,6 +132,7 @@ class NotificationRouter {
     }
   }
 
+  /// Diálogo modal para alertas médicas de alta prioridad
   static void _showMedicalAlertModal(
     BuildContext context,
     PushNotificationPayload payload,
@@ -168,6 +173,7 @@ class NotificationRouter {
     );
   }
 
+  /// Modal informativo para anuncios o novedades de la plataforma
   static void _showAnnouncementModal(
     BuildContext context,
     PushNotificationPayload payload,

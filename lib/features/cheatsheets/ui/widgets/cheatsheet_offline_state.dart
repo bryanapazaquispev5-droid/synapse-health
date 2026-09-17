@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: cheatsheet_offline_state.dart
-// Propósito: Componente visual atómico [cheatsheet_offline_state] para la presentación de resúmenes, mnemotecnias y puntos clave.
+// Propósito: Componente visual atómico [cheatsheet_offline_state] para la visualizacion estructurada de contenido medico y resumenes.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [CheatsheetOffline].
+// Estado reactivo y control de ciclo de vida para [CheatsheetOffline]
 class CheatsheetOfflineState extends StatelessWidget {
   final String message;
   final ConnectivityService _connectivityService = ConnectivityService();
@@ -18,6 +18,7 @@ class CheatsheetOfflineState extends StatelessWidget {
     this.message = 'Para proteger la seguridad médica y mantener la información actualizada, las chuletas se cargan exclusivamente en línea desde la nube.',
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: google_account_tile.dart
-// Propósito: Widget visual modular [google_account_tile] para el flujo y los formularios de inicio de sesión y registro.
+// Propósito: Widget visual de soporte [google_account_tile] para el formulario y flujo de inicio de sesion.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [GoogleAccountTile].
+// Componente visual modular [GoogleAccountTile]
 class GoogleAccountTile extends StatelessWidget {
   final String email;
   final String initials;
@@ -22,6 +22,7 @@ class GoogleAccountTile extends StatelessWidget {
     required this.onTap,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
@@ -90,12 +91,13 @@ class GoogleAccountTile extends StatelessWidget {
   }
 }
 
-/// Componente de interfaz de usuario reutilizable [OtherGoogleAccountTile].
+// Componente visual modular [OtherGoogleAccountTile]
 class OtherGoogleAccountTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const OtherGoogleAccountTile({super.key, required this.onTap});
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: quiz_model.dart
-// Propósito: Modelo de datos para preguntas médicas, opciones de respuesta y dinámicas de emparejamiento [quiz_model].
+// Propósito: Modelo de datos inmutable para preguntas medicas, opciones de respuesta y emparejamientos [quiz_model].
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -9,7 +9,8 @@ import 'matching_pair_model.dart';
 
 export 'matching_pair_model.dart';
 
-/// Entidad de datos inmutable y serializable para [QuizModel].
+/// Modelo de Dominio para los Quizzes Clínicos de Synapse Health
+/// Soporta preguntas de 3 alternativas con retroalimentación médica inmediata
 class QuizModel {
   final String id;
   final String areaId;

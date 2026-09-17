@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: profile_fcm_token_dialog.dart
-// Propósito: Componente de interfaz modular [profile_fcm_token_dialog] para la gestión y presentación de opciones de perfil.
+// Propósito: Componente de interfaz modular [profile_fcm_token_dialog] para la visualizacion de datos de usuario y ajustes.
 // ============================================================================
 
 import 'dart:math';
@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/notifications/services/fcm_token_service.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente modal interactivo [ProfileFcmTokenDialog] presentado como hoja o diálogo.
+/// Modal dialog Apple HIG para consultar y copiar el token FCM del dispositivo.
 class ProfileFcmTokenDialog extends StatefulWidget {
   const ProfileFcmTokenDialog({super.key});
 
@@ -36,13 +36,12 @@ class ProfileFcmTokenDialog extends StatefulWidget {
   State<ProfileFcmTokenDialog> createState() => _ProfileFcmTokenDialogState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [ProfileFcmTokenDialog].
+// Estado reactivo y control de ciclo de vida para [ProfileFcmTokenDialog]
 class _ProfileFcmTokenDialogState extends State<ProfileFcmTokenDialog> {
   bool _isLoading = true;
   String? _token;
   bool _isCopied = false;
 
-  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -83,7 +82,6 @@ class _ProfileFcmTokenDialogState extends State<ProfileFcmTokenDialog> {
     });
   }
 
-  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     final dialogWidth = min(MediaQuery.sizeOf(context).width - 36.0, 380.0);

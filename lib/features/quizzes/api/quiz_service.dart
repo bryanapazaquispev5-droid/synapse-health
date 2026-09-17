@@ -1,16 +1,17 @@
 // ============================================================================
 // Archivo: quiz_service.dart
-// Propósito: Servicio de backend para recuperar reactivos médicos y almacenar los puntajes obtenidos en Firestore.
+// Propósito: Servicio para la recuperacion de reactivos y guardado de calificaciones de cuestionarios en Firestore.
 // ============================================================================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_constants.dart';
 import '../model/quiz_model.dart';
 
-/// Servicio de arquitectura y lógica de negocio para [QuizService].
+// Servicio para la gestion de operaciones de [QuizService]
 class QuizService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  /// Obtiene en tiempo real los quizzes asociados a un área médica específica
   Stream<List<QuizModel>> getQuizzesByAreaStream(String areaId) {
     return _firestore
         .collection(AppConstants.firestoreMedicalAreas)
@@ -27,6 +28,7 @@ class QuizService {
     });
   }
 
+  /// Obtiene en tiempo real los quizzes asociados a un tema específico
   Stream<List<QuizModel>> getQuizzesByTopicStream(String areaId, String topicId) {
     return _firestore
         .collection(AppConstants.firestoreMedicalAreas)

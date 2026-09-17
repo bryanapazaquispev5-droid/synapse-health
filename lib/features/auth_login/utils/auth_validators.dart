@@ -1,16 +1,18 @@
 // ============================================================================
 // Archivo: auth_validators.dart
-// Propósito: Validadores estrictos para correo electrónico, contraseñas seguras y retroalimentación visual.
+// Propósito: Funciones auxiliares y validadores de campos de texto (correo electronico, contrasenas seguras, etc.).
 // ============================================================================
 
-/// Componente de interfaz de usuario reutilizable [AuthValidators].
+/// Validadores y utilidades de formato para autenticación
 class AuthValidators {
   static final RegExp _emailRegExp = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$');
 
+  /// Valida si una cadena cumple con el formato estándar de correo electrónico
   static bool isValidEmail(String email) {
     return _emailRegExp.hasMatch(email.trim().toLowerCase());
   }
 
+  /// Verifica si la contraseña es idéntica al correo o al prefijo de usuario
   static bool isPasswordEqualToEmail(String password, String email) {
     final String passwordLower = password.toLowerCase().trim();
     final String emailLower = email.toLowerCase().trim();
@@ -19,6 +21,7 @@ class AuthValidators {
     return passwordLower == emailLower || (emailPrefix.length >= 3 && passwordLower == emailPrefix);
   }
 
+  /// Mensaje de error para códigos de excepción de Firebase Auth
   static String getFirebaseAuthErrorMessage(String errorCode) {
     switch (errorCode) {
       case 'user-not-found':

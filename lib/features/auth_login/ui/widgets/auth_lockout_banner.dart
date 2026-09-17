@@ -5,7 +5,7 @@
 
 import 'package:flutter/cupertino.dart';
 
-/// Componente de interfaz de usuario reutilizable [AuthLockoutBanner].
+// Definicion principal de la clase [AuthLockoutBanner]
 class AuthLockoutBanner extends StatelessWidget {
   final int failedAttemptsCount;
   final int lockoutSeconds;
@@ -16,6 +16,7 @@ class AuthLockoutBanner extends StatelessWidget {
     required this.lockoutSeconds,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

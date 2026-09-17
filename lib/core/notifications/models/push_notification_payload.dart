@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: push_notification_payload.dart
-// Propósito: Entidad inmutable fuertemente tipada para parsear, representar y transferir cargas útiles de notificaciones push.
+// Propósito: Entidad inmutable fuertemente tipada para parsear, representar y transferir cargas utiles de notificaciones remotas.
 // ============================================================================
 
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-/// Enumeración de variantes y tipos de estado para [NotificationType].
+/// Tipos de notificaciones soportadas por Synapse Health
 enum NotificationType {
   medicalAlert,
   dailyQuiz,
@@ -49,7 +49,7 @@ enum NotificationType {
   }
 }
 
-/// Entidad de datos inmutable y serializable para [PushNotificationPayload].
+/// Entidad inmutable tipada que encapsula la carga útil de una notificación push
 class PushNotificationPayload {
   final String id;
   final String title;
@@ -73,6 +73,7 @@ class PushNotificationPayload {
     required this.receivedAt,
   });
 
+  /// Construye un payload tipado a partir de un RemoteMessage de Firebase
   factory PushNotificationPayload.fromRemoteMessage(RemoteMessage message) {
     final Map<String, dynamic> data = Map<String, dynamic>.from(message.data);
     final notification = message.notification;
@@ -116,7 +117,7 @@ class PushNotificationPayload {
     );
   }
 
-  /// Deserializa una instancia de la entidad a partir de un mapa clave-valor.
+  /// Deserializa desde un Map JSON
   factory PushNotificationPayload.fromJson(Map<String, dynamic> json) {
     final parsedType = NotificationType.fromString(json['type']?.toString());
     return PushNotificationPayload(
@@ -136,7 +137,7 @@ class PushNotificationPayload {
     );
   }
 
-  /// Serializa los atributos de la entidad hacia un mapa JSON compatible.
+  /// Serializa a Map JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -151,8 +152,10 @@ class PushNotificationPayload {
     };
   }
 
+  /// Serializa a String JSON codificado para flutter_local_notifications payload
   String toJsonString() => jsonEncode(toJson());
 
+  /// Deserializa desde un String JSON codificado
   static PushNotificationPayload? fromJsonString(String? source) {
     if (source == null || source.trim().isEmpty) return null;
     // Bloque: Ejecución protegida de operación asíncrona

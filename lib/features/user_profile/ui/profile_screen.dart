@@ -1,8 +1,6 @@
 // ============================================================================
-// Archivo: profile_screen.dart
-// Propósito: Pantalla principal de perfil de usuario donde se visualizan datos clínicos, racha de estudio y configuraciones.
+// Archivo: profile_screen.dart - Pantalla principal de perfil y configuraciones.
 // ============================================================================
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +17,6 @@ import 'widgets/profile_sign_out_button.dart';
 import 'widgets/profile_sign_out_dialog.dart';
 import 'widgets/profile_streak_badge.dart';
 
-/// Pantalla principal de interfaz de usuario [ProfileScreen].
 class ProfileScreen extends StatefulWidget {
   final User user;
 
@@ -29,12 +26,10 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [ProfileScreen].
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileApiService _profileApi = ProfileApiService();
   LocalUserProfile? _localProfile;
 
-  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -68,6 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // Bloque: Manejo del diálogo de confirmación y cierre de sesión seguro
   Future<void> _handleSignOut() async {
     final bool? confirm = await ProfileSignOutDialog.show(context);
     if (confirm != true) return;
@@ -79,7 +75,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(

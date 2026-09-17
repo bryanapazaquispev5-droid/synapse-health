@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: local_notification_service.dart
-// Propósito: Servicio de notificaciones locales para desplegar alertas heads-up en primer plano con canales de alta prioridad.
+// Propósito: Servicio de notificaciones locales para mostrar avisos heads-up en primer plano con soporte de sonido y vibracion.
 // ============================================================================
 
 import 'dart:developer' as developer;
@@ -9,7 +9,8 @@ import '../channels/notification_channels.dart';
 import '../handlers/notification_router.dart';
 import '../models/push_notification_payload.dart';
 
-/// Servicio de arquitectura y lógica de negocio para [LocalNotificationService].
+/// Servicio responsable de crear los canales nativos de Android
+/// y mostrar banners de notificación (heads-up) cuando la app está en primer plano.
 class LocalNotificationService {
   static final LocalNotificationService _instance =
       LocalNotificationService._internal();
@@ -23,6 +24,7 @@ class LocalNotificationService {
 
   bool _isInitialized = false;
 
+  /// Inicializa los adaptadores nativos y registra los canales de Android
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -63,6 +65,7 @@ class LocalNotificationService {
     }
   }
 
+  /// Crea en el sistema operativo Android todos los canales configurados
   Future<void> _createAndroidChannels() async {
     final androidImpl = _plugin
         .resolvePlatformSpecificImplementation<
@@ -75,6 +78,7 @@ class LocalNotificationService {
     }
   }
 
+  /// Muestra una notificación local emergente con banner Heads-Up
   Future<void> showNotification(PushNotificationPayload payload) async {
     // Bloque: Ejecución protegida de operación asíncrona
     try {
@@ -107,6 +111,7 @@ class LocalNotificationService {
     }
   }
 
+  /// Maneja el toque sobre el banner de notificación local
   void _onNotificationTapped(NotificationResponse response) {
     developer.log(
       'Usuario presionó notificación local: ${response.id}',
@@ -122,10 +127,12 @@ class LocalNotificationService {
     }
   }
 
+  /// Cancela una notificación específica
   Future<void> cancel(int id) async {
     await _plugin.cancel(id: id);
   }
 
+  /// Limpia todas las notificaciones emitidas por la app
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
   }

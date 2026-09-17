@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: profile_settings_sheet.dart
-// Propósito: Componente de interfaz modular [profile_settings_sheet] para la gestión y presentación de opciones de perfil.
+// Propósito: Componente de interfaz modular [profile_settings_sheet] para la visualizacion de datos de usuario y ajustes.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -10,7 +10,7 @@ import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'profile_notifications_tile.dart';
 
-/// Componente modal interactivo [ProfileSettingsSheet] presentado como hoja o diálogo.
+// Componente visual modular [ProfileSettingsSheet]
 class ProfileSettingsSheet {
   static void show({required BuildContext context}) {
     showModalBottomSheet<void>(

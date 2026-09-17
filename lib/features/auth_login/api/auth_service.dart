@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: auth_service.dart
-// Propósito: Servicio de autenticación con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
+// Propósito: Servicio de autenticacion con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
 // ============================================================================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,7 +11,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/services/google_accounts_service.dart';
 import '../../../core/services/user_local_profile_service.dart';
 
-/// Servicio de arquitectura y lógica de negocio para [AuthService].
+// Servicio para la gestion de operaciones de [AuthService]
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -19,6 +19,7 @@ class AuthService {
   FirebaseAuth get auth => _auth;
   FirebaseFirestore get firestore => _firestore;
 
+  /// Inicia sesión con correo y contraseña
   Future<UserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -49,6 +50,7 @@ class AuthService {
     return userCredential;
   }
 
+  /// Registra una nueva cuenta médica
   Future<UserCredential> registerWithEmailAndPassword({
     required String name,
     required String email,
@@ -102,6 +104,7 @@ class AuthService {
     return userCredential;
   }
 
+  /// Verifica si el correo está registrado en Firestore antes de enviar reset
   Future<bool> isEmailRegisteredInFirestore(String email) async {
     final snapshot = await _firestore
         .collection(AppConstants.FIRESTORE_USERS)
@@ -111,10 +114,12 @@ class AuthService {
     return snapshot.docs.isNotEmpty;
   }
 
+  /// Envía correo para recuperar contraseña
   Future<void> sendPasswordResetEmail(String email) async {
     await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
   }
 
+  /// Flujo OAuth2 Google Sign-In (Token directo via AccountManager / Fallback / Nativo)
   Future<UserCredential?> signInWithGoogle({String? hintEmail}) async {
     UserCredential? userCredential;
 
@@ -175,6 +180,7 @@ class AuthService {
     return userCredential;
   }
 
+  /// Inicia sesión como Invitado temporal (Anonymous)
   Future<UserCredential> signInAnonymously() async {
     final userCredential = await _auth.signInAnonymously();
     final user = userCredential.user;
@@ -194,6 +200,7 @@ class AuthService {
     return userCredential;
   }
 
+  /// Cancela el registro y elimina la cuenta temporal
   Future<void> cancelAndRollbackAccount(User user) async {
     try {
       await user.delete();

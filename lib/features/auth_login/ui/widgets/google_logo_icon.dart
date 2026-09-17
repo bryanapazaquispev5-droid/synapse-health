@@ -1,16 +1,17 @@
 // ============================================================================
 // Archivo: google_logo_icon.dart
-// Propósito: Widget visual modular [google_logo_icon] para el flujo y los formularios de inicio de sesión y registro.
+// Propósito: Widget visual de soporte [google_logo_icon] para el formulario y flujo de inicio de sesion.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
-/// Componente de interfaz de usuario reutilizable [GoogleLogoIcon].
+// Definicion principal de la clase [GoogleLogoIcon]
 class GoogleLogoIcon extends StatelessWidget {
   final double size;
 
   const GoogleLogoIcon({super.key, this.size = 20});
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: matching_header_controls.dart
-// Propósito: Componente interactivo [matching_header_controls] para la resolución táctil de preguntas médicas.
+// Propósito: Componente interactivo [matching_header_controls] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [MatchingHeaderControls].
+// Definicion principal de la clase [MatchingHeaderControls]
 class MatchingHeaderControls extends StatelessWidget {
   final bool isSubmitted;
   final bool hasPairings;
@@ -19,6 +19,7 @@ class MatchingHeaderControls extends StatelessWidget {
     required this.onReset,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

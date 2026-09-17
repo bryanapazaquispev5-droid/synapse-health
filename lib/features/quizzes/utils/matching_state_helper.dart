@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: matching_state_helper.dart
-// Propósito: Componente interactivo [matching_state_helper] para la resolución táctil de preguntas médicas.
+// Propósito: Componente interactivo [matching_state_helper] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../model/quiz_model.dart';
 
-/// Servicio de arquitectura y lógica de negocio para [MatchingStateHelper].
+// Definicion principal de la clase [MatchingStateHelper]
 class MatchingStateHelper {
   static const List<Color> pairColors = [
     Color(0xFF007AFF), // iOS Blue

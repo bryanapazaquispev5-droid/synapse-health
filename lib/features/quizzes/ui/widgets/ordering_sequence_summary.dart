@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: ordering_sequence_summary.dart
-// Propósito: Componente interactivo [ordering_sequence_summary] para la resolución táctil de preguntas médicas.
+// Propósito: Componente interactivo [ordering_sequence_summary] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [OrderingSequenceSummary].
+// Definicion principal de la clase [OrderingSequenceSummary]
 class OrderingSequenceSummary extends StatelessWidget {
   final List<String> correctSequence;
   final List<String> currentItems;
@@ -26,6 +26,7 @@ class OrderingSequenceSummary extends StatelessWidget {
     return true;
   }
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

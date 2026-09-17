@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: interactive_ordering_widget.dart
-// Propósito: Componente interactivo [interactive_ordering_widget] para la resolución táctil de preguntas médicas.
+// Propósito: Componente interactivo [interactive_ordering_widget] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
 // ============================================================================
 
 import 'dart:math';
@@ -11,6 +11,7 @@ import '../../model/quiz_model.dart';
 import 'ordering_reorderable_card.dart';
 import 'ordering_sequence_summary.dart';
 
+/// Widget táctil de reordenamiento para preguntas de tipo "Para Ordenar"
 class InteractiveOrderingWidget extends StatefulWidget {
   final QuizModel quiz;
   final bool isAnswered;

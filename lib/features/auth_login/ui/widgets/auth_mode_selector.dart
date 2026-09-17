@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: auth_mode_selector.dart
-// Propósito: Widget visual modular [auth_mode_selector] para el flujo y los formularios de inicio de sesión y registro.
+// Propósito: Widget visual de soporte [auth_mode_selector] para el formulario y flujo de inicio de sesion.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente de interfaz de usuario reutilizable [AuthModeSelector].
+// Definicion principal de la clase [AuthModeSelector]
 class AuthModeSelector extends StatelessWidget {
   final bool isLogin;
   final ValueChanged<bool> onModeChanged;
@@ -17,6 +17,7 @@ class AuthModeSelector extends StatelessWidget {
     required this.onModeChanged,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

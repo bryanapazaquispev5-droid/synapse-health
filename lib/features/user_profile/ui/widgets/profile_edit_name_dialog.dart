@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: profile_edit_name_dialog.dart
-// Propósito: Componente de interfaz modular [profile_edit_name_dialog] para la gestión y presentación de opciones de perfil.
+// Propósito: Componente de interfaz modular [profile_edit_name_dialog] para la visualizacion de datos de usuario y ajustes.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Componente modal interactivo [ProfileEditNameDialog] presentado como hoja o diálogo.
+// Componente visual modular [ProfileEditNameDialog]
 class ProfileEditNameDialog {
   static Future<void> show({
     required BuildContext context,

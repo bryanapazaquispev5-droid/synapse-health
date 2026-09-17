@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: topic_list_card.dart
-// Propósito: Componente visual atómico [topic_list_card] para la presentación de resúmenes, mnemotecnias y puntos clave.
+// Propósito: Componente visual atómico [topic_list_card] para la visualizacion estructurada de contenido medico y resumenes.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +9,7 @@ import '../../model/medical_area_model.dart';
 import '../../model/topic_model.dart';
 import '../topic_cheatsheets_screen.dart';
 
-/// Componente de interfaz de usuario reutilizable [TopicListCard].
+// Componente visual modular [TopicListCard]
 class TopicListCard extends StatelessWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -22,6 +22,7 @@ class TopicListCard extends StatelessWidget {
     required this.number,
   });
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {

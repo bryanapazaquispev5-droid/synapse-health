@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: auth_register_form.dart
-// Propósito: Widget visual modular [auth_register_form] para el flujo y los formularios de inicio de sesión y registro.
+// Propósito: Widget visual de soporte [auth_register_form] para el formulario y flujo de inicio de sesion.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +9,7 @@ import 'auth_text_field.dart';
 import 'password_strength_bar.dart';
 import 'recaptcha_card.dart';
 
-/// Componente de interfaz de usuario reutilizable [AuthRegisterForm].
+// Definicion principal de la clase [AuthRegisterForm]
 class AuthRegisterForm extends StatefulWidget {
   final TextEditingController nameController;
   final TextEditingController emailController;
@@ -42,11 +42,12 @@ class AuthRegisterForm extends StatefulWidget {
   State<AuthRegisterForm> createState() => _AuthRegisterFormState();
 }
 
-/// Estado mutable y controlador del ciclo de vida reactivo para [AuthRegisterForm].
+// Estado reactivo y control de ciclo de vida para [AuthRegisterForm]
 class _AuthRegisterFormState extends State<AuthRegisterForm> {
   bool _isPasswordObscured = true;
   bool _isConfirmPasswordObscured = true;
 
+  // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
@@ -76,6 +77,7 @@ class _AuthRegisterFormState extends State<AuthRegisterForm> {
           prefixIcon: CupertinoIcons.book,
         ),
         const SizedBox(height: 14),
+        // Selector de Género
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
