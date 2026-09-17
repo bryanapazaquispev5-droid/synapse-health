@@ -8,6 +8,7 @@ import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../cheatsheets/ui/cheatsheet_list_screen.dart';
 import '../../quizzes/ui/quiz_areas_screen.dart';
 import '../../user_profile/ui/profile_screen.dart';
+import 'widgets/liquid_wave_transition.dart';
 import 'widgets/navigation_placeholder_view.dart';
 
 class MainNavigationWrapper extends StatefulWidget {
@@ -54,8 +55,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          IndexedStack(
-            index: _currentIndex,
+          LiquidWaveTransition(
+            currentIndex: _currentIndex,
             children: [
               const CheatsheetListScreen(),
               const QuizAreasScreen(),

@@ -19,8 +19,10 @@ class NavigationPlaceholderView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
+    return Container(
+      color: AppColors.background,
+      child: SafeArea(
+        child: Center(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.only(left: 28, right: 28, top: 40, bottom: 110),
@@ -124,6 +126,7 @@ class NavigationPlaceholderView extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

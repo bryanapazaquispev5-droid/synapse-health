@@ -39,7 +39,7 @@ class _BottomFloatingPillState extends State<BottomFloatingPill>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 640),
+      duration: const Duration(milliseconds: 850),
     )..addListener(() {
         setState(() {});
       });

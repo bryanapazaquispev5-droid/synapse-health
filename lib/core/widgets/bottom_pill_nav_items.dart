@@ -29,7 +29,7 @@ class BottomPillNavItems extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               child: AnimatedScale(
                 scale: isSelected ? 1.35 : 1.0,
-                duration: const Duration(milliseconds: 350),
+                duration: const Duration(milliseconds: 550),
                 curve: Curves.easeOutBack,
                 child: Center(
                   child: Column(
@@ -52,7 +52,7 @@ class BottomPillNavItems extends StatelessWidget {
                             ),
                       const SizedBox(height: 1.5),
                       AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 260),
+                        duration: const Duration(milliseconds: 450),
                         style: TextStyle(
                           fontFamily: 'Roboto',
                           fontSize: 10.2,
