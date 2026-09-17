@@ -13,6 +13,7 @@ class ProfileInfoSection extends StatelessWidget {
   final VoidCallback onEditCareer;
   final VoidCallback onEditGender;
   final VoidCallback onResendEmail;
+  final VoidCallback onOpenSettings;
   final ValueChanged<String> onShowFeedback;
 
   const ProfileInfoSection({
@@ -26,6 +27,7 @@ class ProfileInfoSection extends StatelessWidget {
     required this.onEditCareer,
     required this.onEditGender,
     required this.onResendEmail,
+    required this.onOpenSettings,
     required this.onShowFeedback,
   });
 
@@ -179,6 +181,14 @@ class ProfileInfoSection extends StatelessWidget {
                   iconBgColor: const Color(0xFF636366),
                   title: 'Proveedor',
                   value: isGoogle ? 'Google' : isAnonymous ? 'Invitado' : 'Correo',
+                ),
+                const Divider(height: 0.5, indent: 54, color: AppColors.border),
+                _buildAppleListTile(
+                  icon: CupertinoIcons.gear_alt_fill,
+                  iconBgColor: const Color(0xFF8E8E93),
+                  title: 'Ajustes',
+                  value: 'Personalizar',
+                  onTap: onOpenSettings,
                 ),
               ],
             ),

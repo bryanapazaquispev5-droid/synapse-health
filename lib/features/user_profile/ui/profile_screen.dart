@@ -10,6 +10,7 @@ import 'widgets/profile_edit_name_dialog.dart';
 import 'widgets/profile_gender_sheet.dart';
 import 'widgets/profile_header_card.dart';
 import 'widgets/profile_info_section.dart';
+import 'widgets/profile_settings_sheet.dart';
 import 'widgets/profile_sign_out_button.dart';
 import 'widgets/profile_streak_badge.dart';
 
@@ -119,12 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final String g = data['gender'] ?? '';
           if (n.isNotEmpty || c.isNotEmpty || g.isNotEmpty) {
             UserLocalProfileService().saveProfile(
-              uid: widget.user.uid,
-              name: n,
-              email: e,
-              career: c,
-              gender: g,
-              photoUrl: widget.user.photoURL,
+              uid: widget.user.uid, name: n, email: e, career: c, gender: g, photoUrl: widget.user.photoURL,
             );
           }
         }
@@ -233,6 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _showFeedback('Error: $e', isError: true);
                       }
                     },
+                    onOpenSettings: () => ProfileSettingsSheet.show(context: context),
                     onShowFeedback: (msg) => _showFeedback(msg),
                   ),
                 ),
