@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: widget_test.dart
-// Propósito: Suite de pruebas unitarias y de widgets para validar el funcionamiento correcto de [widget_test].
+// Propósito: Suite de pruebas automatizadas para verificar el comportamiento y renderizado correcto de [widget_test].
 // ============================================================================
 
 import 'package:flutter/material.dart';

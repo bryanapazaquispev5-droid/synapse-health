@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: cupertino_google_account_sheet.dart
-// Propósito: Widget visual de soporte [cupertino_google_account_sheet] para el formulario y flujo de inicio de sesion.
+// Propósito: Widget visual modular [cupertino_google_account_sheet] para el flujo y los formularios de inicio de sesión y registro.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -10,7 +10,7 @@ import '../../../../core/theme/app_theme.dart';
 import 'google_account_tile.dart';
 import 'google_logo_icon.dart';
 
-// Componente visual modular [CupertinoGoogleAccountSheet]
+/// Componente modal interactivo [CupertinoGoogleAccountSheet] presentado como hoja o diálogo.
 class CupertinoGoogleAccountSheet extends StatefulWidget {
   final void Function(String email) onSelectAccount;
   final VoidCallback onSelectOtherAccount;
@@ -49,12 +49,12 @@ class CupertinoGoogleAccountSheet extends StatefulWidget {
   State<CupertinoGoogleAccountSheet> createState() => _CupertinoGoogleAccountSheetState();
 }
 
-// Estado reactivo y control de ciclo de vida para [CupertinoGoogleAccountSheet]
+/// Estado mutable y controlador del ciclo de vida reactivo para [CupertinoGoogleAccountSheet].
 class _CupertinoGoogleAccountSheetState extends State<CupertinoGoogleAccountSheet> {
   List<String> _accounts = [];
   bool _isLoading = true;
 
-  // Inicializacion de dependencias y estado local del componente
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -64,6 +64,7 @@ class _CupertinoGoogleAccountSheetState extends State<CupertinoGoogleAccountShee
   Future<void> _loadAccounts() async {
     final accounts = await GoogleAccountsService.getDeviceGoogleAccounts();
     if (mounted) {
+      // Bloque: Notificación reactiva y redibujado de la interfaz
       setState(() {
         _accounts = accounts;
         _isLoading = false;
@@ -84,7 +85,7 @@ class _CupertinoGoogleAccountSheetState extends State<CupertinoGoogleAccountShee
 
   Color _avatarColor(int index) => _avatarColors[index % _avatarColors.length];
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;

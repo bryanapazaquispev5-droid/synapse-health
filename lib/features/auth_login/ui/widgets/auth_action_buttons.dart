@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: auth_action_buttons.dart
-// Propósito: Widget visual de soporte [auth_action_buttons] para el formulario y flujo de inicio de sesion.
+// Propósito: Widget visual modular [auth_action_buttons] para el flujo y los formularios de inicio de sesión y registro.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'google_logo_icon.dart';
 
-// Definicion principal de la clase [AuthActionButtons]
+/// Componente de interfaz de usuario reutilizable [AuthActionButtons].
 class AuthActionButtons extends StatelessWidget {
   final bool isLogin;
   final bool isLoading;
@@ -28,13 +28,12 @@ class AuthActionButtons extends StatelessWidget {
     this.onGuestSignIn,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Botón Principal iOS
         SizedBox(
           height: 50,
           child: CupertinoButton.filled(
@@ -79,7 +78,6 @@ class AuthActionButtons extends StatelessWidget {
         ),
         const SizedBox(height: 14),
 
-        // Botón de Google Estilo Apple iOS
         SizedBox(
           height: 52,
           child: CupertinoButton(

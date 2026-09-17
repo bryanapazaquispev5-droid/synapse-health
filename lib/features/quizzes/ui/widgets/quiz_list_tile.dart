@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: quiz_list_tile.dart
-// Propósito: Componente interactivo [quiz_list_tile] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// Propósito: Componente interactivo [quiz_list_tile] para la resolución táctil de preguntas médicas.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -8,7 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_model.dart';
 import '../quiz_session_screen.dart';
 
-// Componente visual modular [QuizListTile]
+/// Componente de interfaz de usuario reutilizable [QuizListTile].
 class QuizListTile extends StatelessWidget {
   final QuizModel quiz;
   final int index;
@@ -23,7 +23,7 @@ class QuizListTile extends StatelessWidget {
     required this.areaTitle,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -33,6 +33,7 @@ class QuizListTile extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
+            // Bloque: Navegación y transición fluida hacia la siguiente pantalla
             Navigator.push(
               context,
               AppPageRoute(

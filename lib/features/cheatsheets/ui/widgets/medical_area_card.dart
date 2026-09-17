@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: medical_area_card.dart
-// Propósito: Componente visual atómico [medical_area_card] para la visualizacion estructurada de contenido medico y resumenes.
+// Propósito: Componente visual atómico [medical_area_card] para la presentación de resúmenes, mnemotecnias y puntos clave.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -8,18 +8,19 @@ import '../../../../core/theme/app_theme.dart';
 import '../../model/medical_area_model.dart';
 import '../area_topics_screen.dart';
 
-// Componente visual modular [MedicalAreaCard]
+/// Componente de interfaz de usuario reutilizable [MedicalAreaCard].
 class MedicalAreaCard extends StatelessWidget {
   final MedicalAreaModel area;
 
   const MedicalAreaCard({super.key, required this.area});
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       key: ValueKey(area.id),
       onTap: () {
+        // Bloque: Navegación y transición fluida hacia la siguiente pantalla
         Navigator.push(
           context,
           AppPageRoute(

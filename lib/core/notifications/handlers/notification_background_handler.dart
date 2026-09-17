@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: notification_background_handler.dart
-// Propósito: Manejador top-level en segundo plano para procesar mensajes entrantes de Firebase Cloud Messaging con la app cerrada.
+// Propósito: Manejador aislado en segundo plano para procesar mensajes remotos de FCM cuando la aplicación está cerrada o en segundo plano.
 // ============================================================================
 
 import 'dart:developer' as developer;
@@ -10,13 +10,12 @@ import '../../../firebase_options.dart';
 import '../models/push_notification_payload.dart';
 import '../services/local_notification_service.dart';
 
-/// Handler de ejecución en segundo plano para Firebase Cloud Messaging.
-/// Debe ser una función de nivel superior obligatoriamente anotada con @pragma('vm:entry-point').
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Bloque: Ejecución protegida de operación asíncrona
   try {
-    // Inicializar el core de Firebase si el isolate en background no lo ha hecho
     if (Firebase.apps.isEmpty) {
+      // Bloque: Inicialización de la infraestructura Firebase
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
@@ -29,8 +28,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       name: 'NotificationBackgroundHandler',
     );
 
-    // Si el mensaje viene sin bloque notification (data-only payload),
-    // creamos la notificación local para que el usuario no pierda el evento
     if (message.notification == null && payload.body.isNotEmpty) {
       final localService = LocalNotificationService();
       await localService.initialize();

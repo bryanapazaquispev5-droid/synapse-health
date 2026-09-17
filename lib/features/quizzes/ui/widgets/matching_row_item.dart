@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: matching_row_item.dart
-// Propósito: Componente interactivo [matching_row_item] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// Propósito: Componente interactivo [matching_row_item] para la resolución táctil de preguntas médicas.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'matching_left_card.dart';
 import 'matching_right_card.dart';
 
-// Definicion principal de la clase [MatchingRowItem]
+/// Componente de interfaz de usuario reutilizable [MatchingRowItem].
 class MatchingRowItem extends StatelessWidget {
   final int index;
   final String leftText;
@@ -53,7 +53,7 @@ class MatchingRowItem extends StatelessWidget {
     required this.onRightTap,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Padding(

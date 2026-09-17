@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: auth_screen.dart
-// Propósito: Pantalla principal de interfaz de usuario para el flujo de autenticacion [auth_screen].
+// Propósito: Pantalla de autenticación y flujo de acceso [auth_screen] con soporte para credenciales y Google Sign-In.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -18,7 +18,7 @@ import 'widgets/auth_mode_selector.dart';
 import 'widgets/auth_register_form.dart';
 import 'widgets/cupertino_google_account_sheet.dart';
 
-// Pantalla de interfaz de usuario [AuthScreen]
+/// Pantalla principal de interfaz de usuario [AuthScreen].
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -26,7 +26,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [AuthScreen]
+/// Estado mutable y controlador del ciclo de vida reactivo para [AuthScreen].
 class _AuthScreenState extends State<AuthScreen> {
   final AuthService _authService = AuthService();
   final AuthLockoutManager _lockoutManager = AuthLockoutManager();
@@ -51,7 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
     lockoutManager: _lockoutManager,
   );
 
-  // Inicializacion de dependencias y estado local del componente
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -123,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   @override
   void dispose() {
     _lockoutManager.dispose();
@@ -137,7 +137,7 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     final bool isLockoutActive = _isLogin && _lockoutManager.lockoutSeconds > 0;

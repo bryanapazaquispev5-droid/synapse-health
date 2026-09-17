@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: fcm_token_service.dart
-// Propósito: Gestion, sincronizacion y almacenamiento seguro del token de dispositivo FCM en Firestore y almacenamiento local.
+// Propósito: Gestión del token FCM, almacenamiento en caché y sincronización segura con la subcolección de usuarios en Firestore.
 // ============================================================================
 
 import 'dart:async';
@@ -12,8 +12,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_constants.dart';
 
-/// Servicio para administración, almacenamiento seguro y sincronización
-/// de tokens FCM con Firestore (users/{uid}/fcm_tokens/{token}).
+/// Servicio de arquitectura y lógica de negocio para [FcmTokenService].
 class FcmTokenService {
   static final FcmTokenService _instance = FcmTokenService._internal();
   factory FcmTokenService() => _instance;
@@ -28,8 +27,8 @@ class FcmTokenService {
 
   StreamSubscription<String>? _tokenRefreshSub;
 
-  /// Obtiene el token FCM actual del dispositivo
   Future<String?> getFcmToken() async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final token = await _messaging.getToken().timeout(
         const Duration(seconds: 10),
@@ -39,25 +38,27 @@ class FcmTokenService {
         await saveTokenLocally(token);
       }
       return token ?? await getCachedToken();
+    // Bloque: Captura de excepciones y gestión de retroalimentación
     } catch (e) {
       developer.log('Error obteniendo token FCM: $e', name: 'FcmTokenService');
       return await getCachedToken();
     }
   }
 
-  /// Guarda el token en almacenamiento seguro y SharedPreferences de respaldo
   Future<void> saveTokenLocally(String token) async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       await _secureStorage.write(key: _secureKey, value: token);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefsKey, token);
+    // Bloque: Captura de excepciones y gestión de retroalimentación
     } catch (e) {
       developer.log('Error guardando token local: $e', name: 'FcmTokenService');
     }
   }
 
-  /// Recupera el último token cacheado localmente
   Future<String?> getCachedToken() async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final secureVal = await _secureStorage.read(key: _secureKey);
       if (secureVal != null && secureVal.isNotEmpty) return secureVal;
@@ -69,8 +70,8 @@ class FcmTokenService {
     }
   }
 
-  /// Sincroniza el token con la subcolección users/{uid}/fcm_tokens/{token}
   Future<void> syncTokenToFirestore(String uid, [String? explicitToken]) async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final token = explicitToken ?? await getFcmToken();
       if (token == null || token.trim().isEmpty) {
@@ -109,7 +110,6 @@ class FcmTokenService {
     }
   }
 
-  /// Observa la rotación automática de tokens FCM y actualiza Firestore
   void monitorTokenRefresh(String? Function() getCurrentUid) {
     _tokenRefreshSub?.cancel();
     _tokenRefreshSub = _messaging.onTokenRefresh.listen((newToken) async {
@@ -125,12 +125,11 @@ class FcmTokenService {
     });
   }
 
-  /// Limpia el token al cerrar sesión del usuario para evitar notificaciones huérfanas
   Future<void> deleteTokenOnLogout(String uid) async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final token = await getCachedToken();
       if (token != null && token.isNotEmpty) {
-        // Eliminar registro del token en la subcolección del usuario
         await _firestore
             .collection(AppConstants.FIRESTORE_USERS)
             .doc(uid)
@@ -140,13 +139,11 @@ class FcmTokenService {
             .timeout(const Duration(seconds: 5), onTimeout: () {});
       }
 
-      // Desregistrar token en FCM
       await _messaging.deleteToken().timeout(
             const Duration(seconds: 5),
             onTimeout: () {},
           );
 
-      // Limpiar memoria local
       await _secureStorage.delete(key: _secureKey);
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_prefsKey);
@@ -155,6 +152,7 @@ class FcmTokenService {
         'Token FCM purgado satisfactoriamente en logout para: $uid',
         name: 'FcmTokenService',
       );
+    // Bloque: Captura de excepciones y gestión de retroalimentación
     } catch (e) {
       developer.log(
         'Aviso al purgar token en logout (no crítico): $e',
@@ -163,7 +161,7 @@ class FcmTokenService {
     }
   }
 
-  /// Libera recursos y cancela suscripciones activas
+  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   void dispose() {
     _tokenRefreshSub?.cancel();
     _tokenRefreshSub = null;

@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: captcha_challenge_dialog.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// Propósito: Módulo de verificación humana con Captcha interactivo para mitigar accesos automatizados no autorizados.
 // ============================================================================
 
 import 'dart:math';
@@ -10,7 +10,7 @@ import '../../model/captcha_challenges_data.dart';
 import '../../model/captcha_models.dart';
 import 'captcha_tile_widget.dart';
 
-/// Diálogo interactivo del desafío de selección de imágenes (reCAPTCHA Grid Challenge)
+/// Componente modal interactivo [CaptchaChallengeDialog] presentado como hoja o diálogo.
 class CaptchaChallengeDialog extends StatefulWidget {
   const CaptchaChallengeDialog({super.key});
 
@@ -18,7 +18,7 @@ class CaptchaChallengeDialog extends StatefulWidget {
   State<CaptchaChallengeDialog> createState() => _CaptchaChallengeDialogState();
 }
 
-// Estado reactivo y control de ciclo de vida para [CaptchaChallengeDialog]
+/// Estado mutable y controlador del ciclo de vida reactivo para [CaptchaChallengeDialog].
 class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
   late int _currentChallengeIndex;
   final Set<int> _selectedIndices = {};
@@ -27,7 +27,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
 
   final List<CaptchaChallenge> _challenges = CaptchaChallengesData.challenges;
 
-  // Inicializacion de dependencias y estado local del componente
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -74,7 +74,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
     }
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     final challenge = _challenges[_currentChallengeIndex];

@@ -1,19 +1,20 @@
 // ============================================================================
 // Archivo: auth_lockout_manager.dart
-// Propósito: Servicio de autenticacion con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
+// Propósito: Servicio de autenticación con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
 // ============================================================================
 
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 
-// Definicion principal de la clase [AuthLockoutManager]
+/// Servicio de arquitectura y lógica de negocio para [AuthLockoutManager].
 class AuthLockoutManager {
   int failedAttemptsCount = 0;
   int lockoutSeconds = 0;
   Timer? _lockoutTimer;
 
   Future<void> loadSecurityState({required Function(int created, int failed) onStateLoaded, required Function(int seconds) onLockoutUpdate}) async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final prefs = await SharedPreferences.getInstance();
       final created = prefs.getInt(AppConstants.PREF_CREATED_ACCOUNTS) ?? 0;
@@ -49,6 +50,7 @@ class AuthLockoutManager {
 
   Future<int?> recordFailedLogin(Function(int seconds) onLockoutUpdate) async {
     failedAttemptsCount++;
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(AppConstants.PREF_FAILED_LOGIN_ATTEMPTS, failedAttemptsCount);
@@ -74,6 +76,7 @@ class AuthLockoutManager {
     failedAttemptsCount = 0;
     lockoutSeconds = 0;
     _lockoutTimer?.cancel();
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(AppConstants.PREF_FAILED_LOGIN_ATTEMPTS);
@@ -81,7 +84,7 @@ class AuthLockoutManager {
     } catch (_) {}
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   void dispose() {
     _lockoutTimer?.cancel();
   }

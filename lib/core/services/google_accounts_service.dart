@@ -1,17 +1,16 @@
 // ============================================================================
 // Archivo: google_accounts_service.dart
-// Propósito: Servicio para la gestion y consulta de cuentas de Google vinculadas al dispositivo.
+// Propósito: Servicio de consulta y selección de cuentas de Google autenticadas en el dispositivo.
 // ============================================================================
 
 import 'package:flutter/services.dart';
 
-/// Servicio para interactuar con las cuentas Google del dispositivo
-/// mediante el AccountManager nativo de Android.
+/// Servicio de arquitectura y lógica de negocio para [GoogleAccountsService].
 class GoogleAccountsService {
   static const _channel = MethodChannel('com.synapse_health/google_accounts');
 
-  /// Retorna la lista de emails de cuentas Google en el dispositivo.
   static Future<List<String>> getDeviceGoogleAccounts() async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final List<dynamic> result = await _channel.invokeMethod('getGoogleAccounts');
       return result.cast<String>();
@@ -22,12 +21,8 @@ class GoogleAccountsService {
     }
   }
 
-  /// Obtiene un token OAuth2 de Google para el [email] indicado
-  /// directamente desde el AccountManager de Android — sin abrir el
-  /// selector nativo de Google si la cuenta ya está en el dispositivo.
-  ///
-  /// Retorna el token, o `null` si falla (en ese caso usar el flujo normal).
   static Future<String?> getGoogleAuthToken(String email) async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final String? token = await _channel.invokeMethod(
         'getGoogleAuthToken',

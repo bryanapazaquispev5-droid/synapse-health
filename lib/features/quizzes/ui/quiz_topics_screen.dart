@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: quiz_topics_screen.dart
-// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [quiz_topics_screen].
+// Propósito: Pantalla de navegación y listado de cuestionarios clínicos organizados por área y tema [quiz_topics_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -13,7 +13,7 @@ import '../../cheatsheets/model/topic_model.dart';
 import 'widgets/quiz_general_exam_card.dart';
 import 'widgets/quiz_topic_card.dart';
 
-// Pantalla de interfaz de usuario [QuizTopicsScreen]
+/// Pantalla principal de interfaz de usuario [QuizTopicsScreen].
 class QuizTopicsScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -23,7 +23,7 @@ class QuizTopicsScreen extends StatefulWidget {
   State<QuizTopicsScreen> createState() => _QuizTopicsScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [QuizTopicsScreen]
+/// Estado mutable y controlador del ciclo de vida reactivo para [QuizTopicsScreen].
 class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
   final ConnectivityService _connectivityService = ConnectivityService();
@@ -31,18 +31,21 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
   late final Stream<List<TopicModel>> _topicsStream;
   String _searchQuery = '';
 
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
     _topicsStream = _medicalService.getTopicsStream(widget.area.id);
   }
 
+  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Scaffold(

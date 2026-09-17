@@ -1,9 +1,10 @@
 // ============================================================================
-// Archivo: profile_screen.dart - Pantalla principal de perfil y configuraciones.
+// Archivo: profile_screen.dart
+// Propósito: Pantalla principal de perfil de usuario donde se visualizan datos clínicos, racha de estudio y configuraciones.
 // ============================================================================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -15,8 +16,10 @@ import 'widgets/profile_header_card.dart';
 import 'widgets/profile_info_section.dart';
 import 'widgets/profile_settings_sheet.dart';
 import 'widgets/profile_sign_out_button.dart';
+import 'widgets/profile_sign_out_dialog.dart';
 import 'widgets/profile_streak_badge.dart';
 
+/// Pantalla principal de interfaz de usuario [ProfileScreen].
 class ProfileScreen extends StatefulWidget {
   final User user;
 
@@ -26,10 +29,12 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
+/// Estado mutable y controlador del ciclo de vida reactivo para [ProfileScreen].
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileApiService _profileApi = ProfileApiService();
   LocalUserProfile? _localProfile;
 
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -64,43 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleSignOut() async {
-    final bool? confirm = await showGeneralDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      barrierLabel: 'Dismiss',
-      barrierColor: const Color(0x33000000),
-      transitionDuration: const Duration(milliseconds: 520),
-      pageBuilder: (context, animation, secondaryAnimation) => Opacity(
-        opacity: 0.90,
-        child: CupertinoAlertDialog(
-          title: const Text('Cerrar Sesión', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          content: const Padding(
-            padding: EdgeInsets.only(top: 4.0),
-            child: Text('¿Estás seguro de que deseas salir de tu cuenta médica?', style: TextStyle(fontSize: 13)),
-          ),
-          actions: [
-            CupertinoDialogAction(
-              isDefaultAction: true,
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar', style: TextStyle(fontSize: 15)),
-            ),
-            CupertinoDialogAction(
-              isDestructiveAction: true,
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Cerrar Sesión', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-            ),
-          ],
-        ),
-      ),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curvedAnimation = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-        return ScaleTransition(
-          scale: Tween<double>(begin: 0.90, end: 1.0).animate(curvedAnimation),
-          child: FadeTransition(opacity: curvedAnimation, child: child),
-        );
-      },
-    );
-
+    final bool? confirm = await ProfileSignOutDialog.show(context);
     if (confirm != true) return;
 
     try {
@@ -110,6 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(

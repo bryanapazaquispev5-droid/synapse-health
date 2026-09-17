@@ -1,11 +1,11 @@
 // ============================================================================
 // Archivo: bottom_pill_item.dart
-// Propósito: Componente transversal reutilizable [bottom_pill_item] para la barra de navegacion inferior flotante y elementos comunes.
+// Propósito: Componente transversal reutilizable [bottom_pill_item] para la barra de navegación flotante inferior.
 // ============================================================================
 
 import 'package:flutter/widgets.dart';
 
-// Definicion principal de la clase [BottomPillItem]
+/// Componente de interfaz de usuario reutilizable [BottomPillItem].
 class BottomPillItem {
   final IconData? icon;
   final String? assetPath;

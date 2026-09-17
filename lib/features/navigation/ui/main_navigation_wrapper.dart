@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: main_navigation_wrapper.dart
-// Propósito: Controlador de navegacion principal [main_navigation_wrapper] con transiciones fluidas estilo liquid wave.
+// Propósito: Controlador de navegación principal [main_navigation_wrapper] con transiciones fluidas de página estilo liquid wave.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ import '../../user_profile/ui/profile_screen.dart';
 import 'widgets/liquid_wave_transition.dart';
 import 'widgets/navigation_placeholder_view.dart';
 
-// Definicion principal de la clase [MainNavigationWrapper]
+/// Componente de interfaz de usuario reutilizable [MainNavigationWrapper].
 class MainNavigationWrapper extends StatefulWidget {
   final User user;
   final int initialIndex;
@@ -31,13 +31,13 @@ class MainNavigationWrapper extends StatefulWidget {
   State<MainNavigationWrapper> createState() => _MainNavigationWrapperState();
 }
 
-// Estado reactivo y control de ciclo de vida para [MainNavigationWrapper]
+/// Estado mutable y controlador del ciclo de vida reactivo para [MainNavigationWrapper].
 class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   late int _currentIndex;
   late final Stream<DocumentSnapshot<Map<String, dynamic>>> _userStream;
   String _cachedGender = 'Hombre';
 
-  // Inicializacion de dependencias y estado local del componente
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -52,11 +52,12 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   Future<void> _loadCachedGender() async {
     final p = await UserLocalProfileService().getProfile(uid: widget.user.uid);
     if (mounted) {
+      // Bloque: Notificación reactiva y redibujado de la interfaz
       setState(() => _cachedGender = p.gender);
     }
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Scaffold(

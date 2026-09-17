@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: liquid_wave_clipper.dart
-// Propósito: Controlador de navegacion principal [liquid_wave_clipper] con transiciones fluidas estilo liquid wave.
+// Propósito: Controlador de navegación principal [liquid_wave_clipper] con transiciones fluidas de página estilo liquid wave.
 // ============================================================================
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-// Definicion principal de la clase [LiquidWaveClipper]
+/// Componente de interfaz de usuario reutilizable [LiquidWaveClipper].
 class LiquidWaveClipper extends CustomClipper<Path> {
   final double progress;
   final bool fromRight;
@@ -28,8 +28,6 @@ class LiquidWaveClipper extends CustomClipper<Path> {
     final double w = size.width;
     final double h = size.height;
 
-    // Fase 1 (0.0 -> 0.38): Se asoma al ~28% de la pantalla con oleaje orgánico
-    // Fase 2 (0.38 -> 1.0): Expansión fluida y rápida hasta cubrir el 100%
     double baseFraction;
     if (progress <= 0.38) {
       final double p1 = Curves.easeOutCubic.transform(progress / 0.38);
@@ -39,7 +37,6 @@ class LiquidWaveClipper extends CustomClipper<Path> {
       baseFraction = 0.28 + p2 * 0.80;
     }
 
-    // Amplitud de la ola orgánica
     final double waveDecay = (1.0 - progress).clamp(0.0, 1.0);
     final double amplitude = math.sin(progress * math.pi) * 44.0 * waveDecay;
     final double waveOffset = progress * math.pi * 4.5;
@@ -100,7 +97,7 @@ class LiquidWaveClipper extends CustomClipper<Path> {
   }
 }
 
-// Definicion principal de la clase [LiquidWaveEdgePainter]
+/// Componente de interfaz de usuario reutilizable [LiquidWaveEdgePainter].
 class LiquidWaveEdgePainter extends CustomPainter {
   final double progress;
   final bool fromRight;
@@ -153,21 +150,18 @@ class LiquidWaveEdgePainter extends CustomPainter {
       edgePath.quadraticBezierTo(controlX, midY, targetX, y);
     }
 
-    // Sombra de elevación líquida suave y sutil
     final Paint shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.10 * (1.0 - progress))
       ..strokeWidth = 6.0
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
 
-    // Resplandor LED celeste claro difuso
     final Paint glowPaint = Paint()
       ..color = waveColor.withValues(alpha: 0.28 * (1.0 - progress))
       ..strokeWidth = 2.8
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5);
 
-    // Línea fina y elegante de la ola
     final Paint linePaint = Paint()
       ..color = waveColor.withValues(alpha: 0.72 * (1.0 - progress))
       ..strokeWidth = 1.1

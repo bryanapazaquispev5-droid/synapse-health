@@ -1,15 +1,14 @@
 // ============================================================================
 // Archivo: captcha_challenges_data.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// Propósito: Módulo de verificación humana con Captcha interactivo para mitigar accesos automatizados no autorizados.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'captcha_models.dart';
 
-/// Lista predefinida de desafíos visuales para reCAPTCHA
+/// Componente de interfaz de usuario reutilizable [CaptchaChallengesData].
 class CaptchaChallengesData {
   static final List<CaptchaChallenge> challenges = [
-    // 1. Desafío: Semáforos
     CaptchaChallenge(
       keyword: 'semáforos',
       subtitle: 'Haz clic en todas las imágenes que contengan semáforos.',
@@ -63,7 +62,6 @@ class CaptchaChallengesData {
       ],
     ),
 
-    // 2. Desafío: Ambulancias
     CaptchaChallenge(
       keyword: 'ambulancias',
       subtitle: 'Haz clic en todas las imágenes que contengan ambulancias.',
@@ -117,7 +115,6 @@ class CaptchaChallengesData {
       ],
     ),
 
-    // 3. Desafío: Bicicletas
     CaptchaChallenge(
       keyword: 'bicicletas',
       subtitle: 'Haz clic en todas las imágenes que contengan bicicletas.',
@@ -171,7 +168,6 @@ class CaptchaChallengesData {
       ],
     ),
 
-    // 4. Desafío: Instrumental Médico
     CaptchaChallenge(
       keyword: 'instrumentos médicos',
       subtitle: 'Haz clic en todas las imágenes relacionadas a salud y medicina.',

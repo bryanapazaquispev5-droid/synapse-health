@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: quiz_session_screen.dart
-// Propósito: Controlador de estado y presentador de la sesion interactiva de evaluacion o examen medico.
+// Propósito: Controlador de estado y presentador de la sesión activa de evaluación o simulación de examen médico.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -16,7 +16,7 @@ import 'widgets/quiz_result_view.dart';
 import 'widgets/quiz_session_bottom_bar.dart';
 import 'widgets/quiz_session_header.dart';
 
-// Pantalla de interfaz de usuario [QuizSessionScreen]
+/// Pantalla principal de interfaz de usuario [QuizSessionScreen].
 class QuizSessionScreen extends StatefulWidget {
   final List<QuizModel> quizzes;
   final String areaTitle;
@@ -33,7 +33,7 @@ class QuizSessionScreen extends StatefulWidget {
   State<QuizSessionScreen> createState() => _QuizSessionScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [QuizSessionScreen]
+/// Estado mutable y controlador del ciclo de vida reactivo para [QuizSessionScreen].
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
   late int _currentIndex;
   int? _selectedOptionIndex;
@@ -43,6 +43,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   int _score = 0;
   bool _isCompleted = false;
 
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -114,6 +115,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     });
   }
 
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     if (widget.quizzes.isEmpty) {

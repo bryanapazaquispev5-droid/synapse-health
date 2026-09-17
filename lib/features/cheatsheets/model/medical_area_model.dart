@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: medical_area_model.dart
-// Propósito: Modelo de datos que representa la estructura inmutable de chuletas y areas clinicas [medical_area_model].
+// Propósito: Modelo de datos inmutable para representar chuletas médicas, temas y especialidades clínicas [medical_area_model].
 // ============================================================================
 
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
-// Entidad inmutable que representa los datos de [MedicalAreaModel]
+/// Entidad de datos inmutable y serializable para [MedicalAreaModel].
 class MedicalAreaModel {
   final String id;
   final String name;
@@ -44,6 +44,7 @@ class MedicalAreaModel {
     if (_bytesCache.containsKey(clean)) {
       return _bytesCache[clean];
     }
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       String raw = clean;
       if (raw.contains(',')) {

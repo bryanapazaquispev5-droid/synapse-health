@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: bottom_pill_nav_items.dart
-// Propósito: Componente transversal reutilizable [bottom_pill_nav_items] para la barra de navegacion inferior flotante y elementos comunes.
+// Propósito: Componente transversal reutilizable [bottom_pill_nav_items] para la barra de navegación flotante inferior.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'bottom_pill_item.dart';
 
-// Definicion principal de la clase [BottomPillNavItems]
+/// Componente de interfaz de usuario reutilizable [BottomPillNavItems].
 class BottomPillNavItems extends StatelessWidget {
   final List<BottomPillItem> items;
   final int currentIndex;
@@ -20,7 +20,7 @@ class BottomPillNavItems extends StatelessWidget {
     required this.onItemTapped,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(

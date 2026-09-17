@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: auth_oauth_helper.dart
-// Propósito: Servicio de autenticacion con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
+// Propósito: Servicio de autenticación con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
 // ============================================================================
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,7 +10,7 @@ import '../../../core/services/user_local_profile_service.dart';
 import '../ui/complete_profile_screen.dart';
 import 'auth_service.dart';
 
-// Definicion principal de la clase [AuthOAuthHelper]
+/// Servicio de arquitectura y lógica de negocio para [AuthOAuthHelper].
 class AuthOAuthHelper {
   static Future<void> syncGoogleUserAndNavigate({
     required BuildContext context,
@@ -23,6 +23,7 @@ class AuthOAuthHelper {
 
     if (career == null || career.trim().isEmpty) {
       if (context.mounted) {
+        // Bloque: Navegación y transición fluida hacia la siguiente pantalla
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => CompleteProfileScreen(user: user)),

@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: app_settings_service.dart
-// Propósito: Servicio para la lectura y persistencia de preferencias y ajustes generales de la aplicacion.
+// Propósito: Servicio de almacenamiento y lectura de preferencias y ajustes generales de la aplicación.
 // ============================================================================
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Servicio para la gestion de operaciones de [AppSettingsService]
+/// Servicio de arquitectura y lógica de negocio para [AppSettingsService].
 class AppSettingsService {
   static final AppSettingsService _instance = AppSettingsService._internal();
   factory AppSettingsService() => _instance;
@@ -17,6 +17,7 @@ class AppSettingsService {
   final ValueNotifier<bool> isLiquidWaveEnabled = ValueNotifier<bool>(false);
 
   Future<void> init() async {
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final prefs = await SharedPreferences.getInstance();
       isLiquidWaveEnabled.value = prefs.getBool(_keyLiquidWave) ?? false;
@@ -27,6 +28,7 @@ class AppSettingsService {
 
   Future<void> setLiquidWaveEnabled(bool enabled) async {
     isLiquidWaveEnabled.value = enabled;
+    // Bloque: Ejecución protegida de operación asíncrona
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_keyLiquidWave, enabled);

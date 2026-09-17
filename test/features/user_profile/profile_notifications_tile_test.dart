@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: profile_notifications_tile_test.dart
-// Propósito: Componente de interfaz modular [profile_notifications_tile_test] para la visualizacion de datos de usuario y ajustes.
+// Propósito: Componente de interfaz modular [profile_notifications_tile_test] para la gestión y presentación de opciones de perfil.
 // ============================================================================
 
 import 'package:flutter/material.dart';

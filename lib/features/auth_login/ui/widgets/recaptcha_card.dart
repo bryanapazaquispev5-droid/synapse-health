@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: recaptcha_card.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// Propósito: Módulo de verificación humana con Captcha interactivo para mitigar accesos automatizados no autorizados.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'captcha_challenge_dialog.dart';
 
-// Componente visual modular [RecaptchaCard]
+/// Componente de interfaz de usuario reutilizable [RecaptchaCard].
 class RecaptchaCard extends StatefulWidget {
   final ValueChanged<bool> onVerified;
   final bool isVerified;
@@ -23,12 +23,12 @@ class RecaptchaCard extends StatefulWidget {
   State<RecaptchaCard> createState() => _RecaptchaCardState();
 }
 
-// Estado reactivo y control de ciclo de vida para [RecaptchaCard]
+/// Estado mutable y controlador del ciclo de vida reactivo para [RecaptchaCard].
 class _RecaptchaCardState extends State<RecaptchaCard> {
   bool _isChecking = false;
   late bool _isVerified;
 
-  // Inicializacion de dependencias y estado local del componente
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -39,6 +39,7 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
   void didUpdateWidget(covariant RecaptchaCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isVerified != _isVerified) {
+      // Bloque: Notificación reactiva y redibujado de la interfaz
       setState(() => _isVerified = widget.isVerified);
     }
   }
@@ -46,6 +47,7 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
   Future<void> _handleTriggerCaptcha() async {
     if (_isVerified || _isChecking) return;
 
+    // Bloque: Notificación reactiva y redibujado de la interfaz
     setState(() => _isChecking = true);
     await Future.delayed(const Duration(milliseconds: 350));
     if (!mounted) return;
@@ -60,12 +62,14 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
 
     if (result == true) {
       HapticFeedback.mediumImpact();
+      // Bloque: Notificación reactiva y redibujado de la interfaz
       setState(() {
         _isChecking = false;
         _isVerified = true;
       });
       widget.onVerified(true);
     } else {
+      // Bloque: Notificación reactiva y redibujado de la interfaz
       setState(() {
         _isChecking = false;
         _isVerified = false;
@@ -74,7 +78,7 @@ class _RecaptchaCardState extends State<RecaptchaCard> {
     }
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Container(

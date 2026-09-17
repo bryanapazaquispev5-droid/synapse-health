@@ -1,19 +1,19 @@
 // ============================================================================
 // Archivo: email_verification_banner.dart
-// Propósito: Widget visual de soporte [email_verification_banner] para el formulario y flujo de inicio de sesion.
+// Propósito: Widget visual modular [email_verification_banner] para el flujo y los formularios de inicio de sesión y registro.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// Definicion principal de la clase [EmailVerificationBanner]
+/// Componente de interfaz de usuario reutilizable [EmailVerificationBanner].
 class EmailVerificationBanner extends StatelessWidget {
   final User user;
 
   const EmailVerificationBanner({super.key, required this.user});
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -52,6 +52,7 @@ class EmailVerificationBanner extends StatelessWidget {
             onPressed: () async {
               await user.sendEmailVerification();
               if (context.mounted) {
+                // Bloque: Despliegue de notificación visual o SnackBar
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Correo de verificación reenviado.'),

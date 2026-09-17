@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: auth_login_form.dart
-// Propósito: Widget visual de soporte [auth_login_form] para el formulario y flujo de inicio de sesion.
+// Propósito: Widget visual modular [auth_login_form] para el flujo y los formularios de inicio de sesión y registro.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'auth_text_field.dart';
 
-// Definicion principal de la clase [AuthLoginForm]
+/// Componente de interfaz de usuario reutilizable [AuthLoginForm].
 class AuthLoginForm extends StatefulWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
@@ -24,11 +24,11 @@ class AuthLoginForm extends StatefulWidget {
   State<AuthLoginForm> createState() => _AuthLoginFormState();
 }
 
-// Estado reactivo y control de ciclo de vida para [AuthLoginForm]
+/// Estado mutable y controlador del ciclo de vida reactivo para [AuthLoginForm].
 class _AuthLoginFormState extends State<AuthLoginForm> {
   bool _isPasswordObscured = true;
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Column(

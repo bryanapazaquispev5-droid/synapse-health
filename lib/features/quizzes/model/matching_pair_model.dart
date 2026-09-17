@@ -1,9 +1,9 @@
 // ============================================================================
 // Archivo: matching_pair_model.dart
-// Propósito: Modelo de datos inmutable para preguntas medicas, opciones de respuesta y emparejamientos [matching_pair_model].
+// Propósito: Modelo de datos para preguntas médicas, opciones de respuesta y dinámicas de emparejamiento [matching_pair_model].
 // ============================================================================
 
-/// Modelo de Par Estructurado para Quizzes de tipo 'Para Relacionar' (matching)
+/// Componente de interfaz de usuario reutilizable [MatchingPair].
 class MatchingPair {
   final String left;
   final String right;

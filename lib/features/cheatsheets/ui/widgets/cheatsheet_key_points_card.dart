@@ -1,18 +1,18 @@
 // ============================================================================
 // Archivo: cheatsheet_key_points_card.dart
-// Propósito: Componente visual atómico [cheatsheet_key_points_card] para la visualizacion estructurada de contenido medico y resumenes.
+// Propósito: Componente visual atómico [cheatsheet_key_points_card] para la presentación de resúmenes, mnemotecnias y puntos clave.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [CheatsheetKeyPointsCard]
+/// Componente de interfaz de usuario reutilizable [CheatsheetKeyPointsCard].
 class CheatsheetKeyPointsCard extends StatelessWidget {
   final List<String> keyPoints;
 
   const CheatsheetKeyPointsCard({super.key, required this.keyPoints});
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     if (keyPoints.isEmpty) return const SizedBox.shrink();

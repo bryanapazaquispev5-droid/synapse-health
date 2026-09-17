@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: captcha_tile_widget.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// Propósito: Módulo de verificación humana con Captcha interactivo para mitigar accesos automatizados no autorizados.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../model/captcha_models.dart';
 
-// Componente visual modular [CaptchaTileWidget]
+/// Componente de interfaz de usuario reutilizable [CaptchaTileWidget].
 class CaptchaTileWidget extends StatelessWidget {
   final CaptchaTile tile;
   final bool isSelected;
@@ -19,7 +19,7 @@ class CaptchaTileWidget extends StatelessWidget {
     required this.onTap,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

@@ -1,15 +1,17 @@
 // ============================================================================
 // Archivo: auth_snackbar_helper.dart
-// Propósito: Funciones auxiliares y validadores de campos de texto (correo electronico, contrasenas seguras, etc.).
+// Propósito: Validadores estrictos para correo electrónico, contraseñas seguras y retroalimentación visual.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-// Definicion principal de la clase [AuthSnackbarHelper]
+/// Servicio de arquitectura y lógica de negocio para [AuthSnackbarHelper].
 class AuthSnackbarHelper {
   static void show(BuildContext context, String message, {bool isError = false}) {
+    // Bloque: Despliegue de notificación visual o SnackBar
     ScaffoldMessenger.of(context).clearSnackBars();
+    // Bloque: Despliegue de notificación visual o SnackBar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

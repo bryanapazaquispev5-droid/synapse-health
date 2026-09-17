@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: cheatsheet_list_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [cheatsheet_list_screen].
+// Propósito: Pantalla de visualización y consulta para chuletas y resúmenes médicos estructurados [cheatsheet_list_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -13,7 +13,7 @@ import 'widgets/cheatsheet_empty_state.dart';
 import 'widgets/cheatsheet_offline_state.dart';
 import 'widgets/medical_area_card.dart';
 
-// Pantalla de interfaz de usuario [CheatsheetListScreen]
+/// Pantalla principal de interfaz de usuario [CheatsheetListScreen].
 class CheatsheetListScreen extends StatefulWidget {
   const CheatsheetListScreen({super.key});
 
@@ -21,7 +21,7 @@ class CheatsheetListScreen extends StatefulWidget {
   State<CheatsheetListScreen> createState() => _CheatsheetListScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [CheatsheetListScreen]
+/// Estado mutable y controlador del ciclo de vida reactivo para [CheatsheetListScreen].
 class _CheatsheetListScreenState extends State<CheatsheetListScreen> with AutomaticKeepAliveClientMixin {
   final MedicalAreasService _service = MedicalAreasService();
   final ConnectivityService _connectivityService = ConnectivityService();
@@ -32,21 +32,21 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen> with Automa
   @override
   bool get wantKeepAlive => true;
 
-  // Inicializacion de dependencias y estado local del componente
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
     _areasStream = _service.getAreasStream();
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     super.build(context);

@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: profile_career_sheet.dart
-// Propósito: Componente de interfaz modular [profile_career_sheet] para la visualizacion de datos de usuario y ajustes.
+// Propósito: Componente de interfaz modular [profile_career_sheet] para la gestión y presentación de opciones de perfil.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'opaque_action_sheet.dart';
 
-// Componente visual modular [ProfileCareerSheet]
+/// Componente modal interactivo [ProfileCareerSheet] presentado como hoja o diálogo.
 class ProfileCareerSheet {
   static const List<Map<String, dynamic>> careers = [
     {'title': 'Medicina Humana', 'icon': CupertinoIcons.heart_fill, 'color': AppColors.systemRed},

@@ -1,12 +1,12 @@
 // ============================================================================
 // Archivo: cheatsheet_empty_state.dart
-// Propósito: Componente visual atómico [cheatsheet_empty_state] para la visualizacion estructurada de contenido medico y resumenes.
+// Propósito: Componente visual atómico [cheatsheet_empty_state] para la presentación de resúmenes, mnemotecnias y puntos clave.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Estado reactivo y control de ciclo de vida para [CheatsheetEmpty]
+/// Estado mutable y controlador del ciclo de vida reactivo para [CheatsheetEmpty].
 class CheatsheetEmptyState extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -19,7 +19,7 @@ class CheatsheetEmptyState extends StatelessWidget {
     this.icon = CupertinoIcons.folder_badge_minus,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Center(

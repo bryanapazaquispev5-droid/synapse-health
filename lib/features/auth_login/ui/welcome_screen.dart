@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: welcome_screen.dart
-// Propósito: Pantalla principal de interfaz de usuario para el flujo de autenticacion [welcome_screen].
+// Propósito: Pantalla de autenticación y flujo de acceso [welcome_screen] con soporte para credenciales y Google Sign-In.
 // ============================================================================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,13 +13,13 @@ import '../../../core/theme/app_theme.dart';
 import 'widgets/email_verification_banner.dart';
 import 'widgets/welcome_profile_card.dart';
 
-// Pantalla de interfaz de usuario [WelcomeScreen]
+/// Pantalla principal de interfaz de usuario [WelcomeScreen].
 class WelcomeScreen extends StatelessWidget {
   final User user;
 
   const WelcomeScreen({super.key, required this.user});
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     final bool isGoogleUser = user.providerData.any((info) => info.providerId == 'google.com');
@@ -104,6 +104,7 @@ class WelcomeScreen extends StatelessWidget {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(14),
                       onPressed: () async {
+                        // Bloque: Ejecución protegida de operación asíncrona
                         try {
                           await GoogleSignIn().signOut();
                         } catch (_) {}

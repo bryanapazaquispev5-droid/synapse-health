@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: liquid_wave_transition.dart
-// Propósito: Controlador de navegacion principal [liquid_wave_transition] con transiciones fluidas estilo liquid wave.
+// Propósito: Controlador de navegación principal [liquid_wave_transition] con transiciones fluidas de página estilo liquid wave.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -8,7 +8,7 @@ import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'liquid_wave_clipper.dart';
 
-// Definicion principal de la clase [LiquidWaveTransition]
+/// Componente de interfaz de usuario reutilizable [LiquidWaveTransition].
 class LiquidWaveTransition extends StatefulWidget {
   final int currentIndex;
   final List<Widget> children;
@@ -25,7 +25,7 @@ class LiquidWaveTransition extends StatefulWidget {
   State<LiquidWaveTransition> createState() => _LiquidWaveTransitionState();
 }
 
-// Estado reactivo y control de ciclo de vida para [LiquidWaveTransition]
+/// Estado mutable y controlador del ciclo de vida reactivo para [LiquidWaveTransition].
 class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
@@ -33,7 +33,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
   int _targetIndex = 0;
   bool _isForward = true;
 
-  // Inicializacion de dependencias y estado local del componente
+  // Bloque: Inicialización de controladores, listeners y estado local
   @override
   void initState() {
     super.initState();
@@ -45,6 +45,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
       duration: const Duration(milliseconds: 850),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
+          // Bloque: Notificación reactiva y redibujado de la interfaz
           setState(() {
             _previousIndex = _targetIndex;
           });
@@ -68,14 +69,14 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
     }
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     final effectiveWaveColor = widget.waveColor ?? AppColors.accent;
@@ -100,7 +101,6 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
             final Widget outgoingWidget = widget.children[_previousIndex];
             final Widget incomingWidget = widget.children[_targetIndex];
 
-        // Parallax suave para que el contenido de la pantalla entrante se aprecie dentro de la ola
         final double screenWidth = MediaQuery.of(context).size.width;
         final double incomingSlide = _isForward
             ? (1.0 - progress) * (screenWidth * 0.35)
@@ -112,7 +112,6 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
         return Stack(
           fit: StackFit.expand,
           children: [
-            // CAPA 1: Pantalla saliente con parallax sutil
             Transform.translate(
               offset: Offset(outgoingSlide, 0),
               child: Material(
@@ -121,7 +120,6 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
               ),
             ),
 
-            // CAPA 2: Pantalla entrante con máscara de ola líquida y deslizamiento coordinado
             ClipPath(
               clipper: LiquidWaveClipper(
                 progress: progress,
@@ -136,7 +134,6 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
               ),
             ),
 
-            // CAPA 3: Resplandor LED, sombra de elevación y cresta de ola líquida
             if (isAnimating)
               Positioned.fill(
                 child: IgnorePointer(

@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: interactive_matching_widget.dart
-// Propósito: Componente interactivo [interactive_matching_widget] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// Propósito: Componente interactivo [interactive_matching_widget] para la resolución táctil de preguntas médicas.
 // ============================================================================
 
 import 'dart:math';
@@ -13,7 +13,7 @@ import 'matching_row_item.dart';
 import 'matching_solutions_summary.dart';
 import 'matching_submit_button.dart';
 
-/// Widget interactivo de dos columnas para Quizzes anatómicos de tipo "Para Relacionar"
+/// Componente de interfaz de usuario reutilizable [InteractiveMatchingWidget].
 class InteractiveMatchingWidget extends StatefulWidget {
   final QuizModel quiz;
   final bool isAnswered;
@@ -30,7 +30,7 @@ class InteractiveMatchingWidget extends StatefulWidget {
   State<InteractiveMatchingWidget> createState() => _InteractiveMatchingWidgetState();
 }
 
-// Estado reactivo y control de ciclo de vida para [InteractiveMatchingWidget]
+/// Estado mutable y controlador del ciclo de vida reactivo para [InteractiveMatchingWidget].
 class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
   late List<MatchingPair> _originalPairs;
   late List<String> _leftItems;

@@ -1,20 +1,18 @@
 // ============================================================================
 // Archivo: crashlytics_service.dart
-// Propósito: Servicio de telemetria y reporte automatico de errores no controlados hacia Firebase Crashlytics.
+// Propósito: Servicio de telemetría y reporte automático de fallos no controlados y errores fatales hacia Firebase Crashlytics.
 // ============================================================================
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
-// Servicio para la gestion de operaciones de [CrashlyticsService]
+/// Servicio de arquitectura y lógica de negocio para [CrashlyticsService].
 class CrashlyticsService {
   static final FirebaseCrashlytics _instance = FirebaseCrashlytics.instance;
 
   static Future<void> initialize() async {
-    // Enable crashlytics collection (always enabled in release, optionally enabled in debug)
     await _instance.setCrashlyticsCollectionEnabled(!kDebugMode);
 
-    // Capture Flutter framework errors
     FlutterError.onError = (FlutterErrorDetails details) {
       if (kDebugMode) {
         FlutterError.dumpErrorToConsole(details);
@@ -23,7 +21,6 @@ class CrashlyticsService {
       }
     };
 
-    // Capture uncaught asynchronous errors
     PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
       if (kDebugMode) {
         debugPrint('Uncaught async error: $error\n$stack');

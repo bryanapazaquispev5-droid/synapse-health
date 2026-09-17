@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: matching_submit_button.dart
-// Propósito: Componente interactivo [matching_submit_button] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// Propósito: Componente interactivo [matching_submit_button] para la resolución táctil de preguntas médicas.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [MatchingSubmitButton]
+/// Componente de interfaz de usuario reutilizable [MatchingSubmitButton].
 class MatchingSubmitButton extends StatelessWidget {
   final bool isAllPaired;
   final int pairedCount;
@@ -22,7 +22,7 @@ class MatchingSubmitButton extends StatelessWidget {
     required this.onCheckAnswers,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Padding(

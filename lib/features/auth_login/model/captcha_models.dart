@@ -1,11 +1,11 @@
 // ============================================================================
 // Archivo: captcha_models.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// Propósito: Módulo de verificación humana con Captcha interactivo para mitigar accesos automatizados no autorizados.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
-/// Modelo de un mosaico individual dentro del desafío reCAPTCHA
+/// Componente de interfaz de usuario reutilizable [CaptchaTile].
 class CaptchaTile {
   final String imageUrl;
   final IconData fallbackIcon;
@@ -18,7 +18,7 @@ class CaptchaTile {
   });
 }
 
-/// Modelo de un desafío de imágenes (ej. "semáforos", "ambulancias", "bicicletas")
+/// Componente de interfaz de usuario reutilizable [CaptchaChallenge].
 class CaptchaChallenge {
   final String keyword;
   final String subtitle;

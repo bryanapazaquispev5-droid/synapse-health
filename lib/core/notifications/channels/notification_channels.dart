@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: notification_channels.dart
-// Propósito: Configuracion y declaracion de canales de notificaciones locales de Android para prioridades medicas y recordatorios.
+// Propósito: Configuración y declaración de canales de notificación locales de Android para prioridades médicas y alertas.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/push_notification_payload.dart';
 
-/// Canales de notificación Android oficiales de Synapse Health
+/// Componente de interfaz de usuario reutilizable [NotificationChannels].
 class NotificationChannels {
   static const String medicalAlertsId = 'synapse_medical_alerts';
   static const String dailyQuizzesId = 'synapse_daily_quizzes';
@@ -15,7 +15,6 @@ class NotificationChannels {
 
   static const Color accentColor = Color(0xFF0052CC);
 
-  /// Canal de máxima prioridad para emergencias médicas y guías críticas
   static const AndroidNotificationChannel medicalAlerts =
       AndroidNotificationChannel(
     medicalAlertsId,
@@ -28,7 +27,6 @@ class NotificationChannels {
     showBadge: true,
   );
 
-  /// Canal de alta prioridad para quizzes diarios y recordatorio de rachas
   static const AndroidNotificationChannel dailyQuizzes =
       AndroidNotificationChannel(
     dailyQuizzesId,
@@ -41,7 +39,6 @@ class NotificationChannels {
     showBadge: true,
   );
 
-  /// Canal de prioridad estándar para novedades, chuletas y anuncios de la plataforma
   static const AndroidNotificationChannel announcements =
       AndroidNotificationChannel(
     announcementsId,
@@ -53,14 +50,12 @@ class NotificationChannels {
     showBadge: true,
   );
 
-  /// Lista de todos los canales que deben crearse en el sistema Android
   static List<AndroidNotificationChannel> get allChannels => [
         medicalAlerts,
         dailyQuizzes,
         announcements,
       ];
 
-  /// Devuelve el canal apropiado según el ID solicitado con fallback seguro
   static AndroidNotificationChannel getChannelById(String? channelId) {
     switch (channelId) {
       case medicalAlertsId:
@@ -74,7 +69,6 @@ class NotificationChannels {
     }
   }
 
-  /// Devuelve el canal apropiado según el tipo de notificación
   static AndroidNotificationChannel getChannelForType(NotificationType type) {
     switch (type) {
       case NotificationType.medicalAlert:
@@ -88,7 +82,6 @@ class NotificationChannels {
     }
   }
 
-  /// Construye los NotificationDetails para mostrar heads-up banners en primer plano
   static NotificationDetails buildDetails({
     required PushNotificationPayload payload,
   }) {

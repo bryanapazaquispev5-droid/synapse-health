@@ -1,13 +1,13 @@
 // ============================================================================
 // Archivo: quiz_session_header.dart
-// Propósito: Controlador de estado y presentador de la sesion interactiva de evaluacion o examen medico.
+// Propósito: Controlador de estado y presentador de la sesión activa de evaluación o simulación de examen médico.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [QuizSessionHeader]
+/// Componente de interfaz de usuario reutilizable [QuizSessionHeader].
 class QuizSessionHeader extends StatelessWidget {
   final int currentIndex;
   final int totalQuestions;
@@ -20,7 +20,7 @@ class QuizSessionHeader extends StatelessWidget {
     required this.onExit,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     final double progress = totalQuestions > 0 ? (currentIndex + 1) / totalQuestions : 0.0;

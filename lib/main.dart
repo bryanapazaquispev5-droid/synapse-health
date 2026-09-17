@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: main.dart
-// Propósito: Punto de entrada principal de la aplicacion Synapse Health, inicializacion de Firebase, servicios de monitoreo y arranque de la interfaz.
+// Propósito: Punto de entrada principal de Synapse Health. Inicializa Firebase, Crashlytics, Performance, FCM y orquesta el árbol de widgets raíz.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -20,34 +20,36 @@ final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Bloque: Inicialización de la infraestructura Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Inicializar Observabilidad y Monitoreo en Tiempo Real
+  // Bloque: Inicialización de servicios de telemetría y observabilidad en tiempo real
   await CrashlyticsService.initialize();
   await PerformanceService.initialize();
   await AppSettingsService().init();
 
-  // Inicializar Orquestador de Notificaciones Push y Canales FCM
+  // Bloque: Inicialización de canales FCM y orquestador de notificaciones push
   await PushNotificationService().initialize(
     navigatorKey: appNavigatorKey,
   );
 
-  // DESACTIVAR PERSISTENCIA EN DISCO (Seguridad y protección contra ingeniería inversa)
-  // Todo el contenido médico y chuletas residen únicamente en memoria volátil (RAM)
-  // y requieren conexión activa a internet para ser consultados.
+  // Bloque: Configuración de seguridad volátil (desactivación de persistencia en disco)
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,
   );
+
+  // Bloque: Lanzamiento de la aplicación raíz en el framework
   runApp(const SynapseHealthApp());
 }
 
-// Definicion principal de la clase [SynapseHealthApp]
+/// Componente de interfaz de usuario reutilizable [SynapseHealthApp].
 class SynapseHealthApp extends StatelessWidget {
   const SynapseHealthApp({super.key});
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -71,7 +73,6 @@ class SynapseHealthApp extends StatelessWidget {
             return const AuthScreen();
           }
 
-          // Usuario autenticado (con persistencia de sesión segura en Firebase Auth)
           return MainNavigationWrapper(user: user);
         },
       ),

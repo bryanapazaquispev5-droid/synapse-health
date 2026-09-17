@@ -1,19 +1,19 @@
 // ============================================================================
 // Archivo: quiz_prompt_card.dart
-// Propósito: Componente interactivo [quiz_prompt_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// Propósito: Componente interactivo [quiz_prompt_card] para la resolución táctil de preguntas médicas.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_model.dart';
 
-// Componente visual modular [QuizPromptCard]
+/// Componente de interfaz de usuario reutilizable [QuizPromptCard].
 class QuizPromptCard extends StatelessWidget {
   final QuizModel quiz;
 
   const QuizPromptCard({super.key, required this.quiz});
 
-  // Renderizado reactivo del arbol de widgets
+  // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
     return Column(
