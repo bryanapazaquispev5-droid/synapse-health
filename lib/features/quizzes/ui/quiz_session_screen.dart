@@ -1,22 +1,17 @@
-// ============================================================================
-// Archivo: quiz_session_screen.dart
-// Propósito: Controlador de estado y presentador de la sesion interactiva de evaluacion o examen medico.
-// ============================================================================
-
+// Bloque: Controlador de estado y presentador de la sesión interactiva de evaluación o examen médico
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../api/quiz_progress_service.dart';
 import '../model/quiz_model.dart';
-import 'widgets/interactive_matching_widget.dart';
-import 'widgets/interactive_ordering_widget.dart';
-import 'widgets/quiz_option_card.dart';
-import 'widgets/quiz_prompt_card.dart';
-import 'widgets/quiz_rationale_card.dart';
+import '../utils/quiz_scoring_helper.dart';
+import 'widgets/quiz_question_body.dart';
 import 'widgets/quiz_result_view.dart';
 import 'widgets/quiz_session_bottom_bar.dart';
 import 'widgets/quiz_session_header.dart';
 
-// Pantalla de interfaz de usuario [QuizSessionScreen]
+// Bloque: Pantalla principal [QuizSessionScreen]
 class QuizSessionScreen extends StatefulWidget {
   final List<QuizModel> quizzes;
   final String areaTitle;
@@ -33,7 +28,6 @@ class QuizSessionScreen extends StatefulWidget {
   State<QuizSessionScreen> createState() => _QuizSessionScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [QuizSessionScreen]
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
   late int _currentIndex;
   int? _selectedOptionIndex;
@@ -41,77 +35,145 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   bool? _isOrderingCorrect;
   bool _isAnswered = false;
   int _score = 0;
+  int _totalEarnedStars = 0;
+  late int _totalMaxStars;
+  int _currentEarnedStars = 0;
+  int _currentMaxStars = 1;
+  int _currentQuestionSeconds = 0;
+  int _elapsedSessionSeconds = 0;
+  late DateTime _sessionStartTime;
+  late DateTime _questionStartTime;
+  Timer? _tickerTimer;
   bool _isCompleted = false;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = (widget.initialIndex >= 0 && widget.initialIndex < widget.quizzes.length)
-        ? widget.initialIndex
-        : 0;
+    _currentIndex = (widget.initialIndex >= 0 && widget.initialIndex < widget.quizzes.length) ? widget.initialIndex : 0;
+    _totalMaxStars = QuizScoringHelper.calculateTotalMaxStars(widget.quizzes);
+    _sessionStartTime = DateTime.now();
+    _questionStartTime = DateTime.now();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _tickerTimer?.cancel();
+    _tickerTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && !_isCompleted) {
+        setState(() => _elapsedSessionSeconds = DateTime.now().difference(_sessionStartTime).inSeconds);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tickerTimer?.cancel();
+    super.dispose();
+  }
+
+  // Bloque: Helper común para reiniciar campos de la pregunta activa
+  void _resetQuestionFields() {
+    _selectedOptionIndex = null;
+    _isMatchingCorrect = null;
+    _isOrderingCorrect = null;
+    _isAnswered = false;
+    _currentEarnedStars = 0;
+    _currentMaxStars = 1;
+    _currentQuestionSeconds = 0;
+    _questionStartTime = DateTime.now();
+  }
+
+  // Bloque: Registro en segundo plano del progreso en Firestore
+  void _recordProgress({
+    required bool isCorrect,
+    required int earnedStars,
+    required int maxStars,
+    int? selectedOptionIndex,
+  }) {
+    final quiz = widget.quizzes[_currentIndex];
+    QuizProgressService().recordQuestionAnswer(
+      areaId: quiz.areaId,
+      topicId: quiz.topicId,
+      quizId: quiz.id,
+      isCorrect: isCorrect,
+      earnedStars: earnedStars,
+      maxStars: maxStars,
+      selectedOptionIndex: selectedOptionIndex,
+      topicTotalMaxStars: _totalMaxStars,
+    );
   }
 
   void _handleOptionSelected(int index) {
     if (_isAnswered) return;
-
     final currentQuiz = widget.quizzes[_currentIndex];
     final bool isCorrect = index == currentQuiz.correctIndex;
+    final int spent = DateTime.now().difference(_questionStartTime).inSeconds;
 
     setState(() {
       _selectedOptionIndex = index;
       _isAnswered = true;
+      _currentQuestionSeconds = spent;
+      _currentMaxStars = 1;
+      _currentEarnedStars = isCorrect ? 1 : 0;
       if (isCorrect) {
         _score++;
+        _totalEarnedStars += 1;
       }
     });
+
+    _recordProgress(isCorrect: isCorrect, earnedStars: isCorrect ? 1 : 0, maxStars: 1, selectedOptionIndex: index);
   }
 
-  void _handleMatchingCompleted(bool isCorrect) {
+  void _handleMatchingCompleted(bool isCorrect, int earnedStars, int maxStars) {
+    final int spent = DateTime.now().difference(_questionStartTime).inSeconds;
     setState(() {
       _isAnswered = true;
       _isMatchingCorrect = isCorrect;
-      if (isCorrect) {
-        _score++;
-      }
+      _currentQuestionSeconds = spent;
+      _currentMaxStars = maxStars;
+      _currentEarnedStars = earnedStars;
+      _totalEarnedStars += earnedStars;
+      if (isCorrect) _score++;
     });
+
+    _recordProgress(isCorrect: isCorrect, earnedStars: earnedStars, maxStars: maxStars);
   }
 
-  void _handleOrderingCompleted(bool isCorrect) {
+  void _handleOrderingCompleted(bool isCorrect, int earnedStars, int maxStars) {
+    final int spent = DateTime.now().difference(_questionStartTime).inSeconds;
     setState(() {
       _isAnswered = true;
       _isOrderingCorrect = isCorrect;
-      if (isCorrect) {
-        _score++;
-      }
+      _currentQuestionSeconds = spent;
+      _currentMaxStars = maxStars;
+      _currentEarnedStars = earnedStars;
+      _totalEarnedStars += earnedStars;
+      if (isCorrect) _score++;
     });
+
+    _recordProgress(isCorrect: isCorrect, earnedStars: earnedStars, maxStars: maxStars);
   }
 
   void _handleNextQuestion() {
     if (_currentIndex < widget.quizzes.length - 1) {
-      setState(() {
-        _currentIndex++;
-        _selectedOptionIndex = null;
-        _isMatchingCorrect = null;
-        _isOrderingCorrect = null;
-        _isAnswered = false;
-      });
+      setState(() { _currentIndex++; _resetQuestionFields(); });
     } else {
-      setState(() {
-        _isCompleted = true;
-      });
+      _tickerTimer?.cancel();
+      setState(() => _isCompleted = true);
     }
   }
 
   void _restartQuizSession() {
     setState(() {
       _currentIndex = 0;
-      _selectedOptionIndex = null;
-      _isMatchingCorrect = null;
-      _isOrderingCorrect = null;
-      _isAnswered = false;
       _score = 0;
+      _totalEarnedStars = 0;
+      _elapsedSessionSeconds = 0;
       _isCompleted = false;
+      _sessionStartTime = DateTime.now();
+      _resetQuestionFields();
     });
+    _startTimer();
   }
 
   @override
@@ -119,12 +181,8 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     if (widget.quizzes.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: CupertinoNavigationBar(
-          middle: Text(widget.areaTitle),
-        ),
-        body: const Center(
-          child: Text('No hay preguntas disponibles en este momento.'),
-        ),
+        appBar: CupertinoNavigationBar(middle: Text(widget.areaTitle)),
+        body: const Center(child: Text('No hay preguntas disponibles en este momento.')),
       );
     }
 
@@ -132,6 +190,9 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       return QuizResultView(
         score: _score,
         totalQuestions: widget.quizzes.length,
+        earnedStars: _totalEarnedStars,
+        totalMaxStars: _totalMaxStars,
+        totalDurationSeconds: _elapsedSessionSeconds,
         areaTitle: widget.areaTitle,
         onRestart: _restartQuizSession,
         onExit: () => Navigator.pop(context),
@@ -139,7 +200,6 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     }
 
     final quiz = widget.quizzes[_currentIndex];
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -148,54 +208,24 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
             QuizSessionHeader(
               currentIndex: _currentIndex,
               totalQuestions: widget.quizzes.length,
+              earnedStars: _totalEarnedStars,
+              elapsedSeconds: _elapsedSessionSeconds,
               onExit: () => Navigator.pop(context),
             ),
             Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(18, 16, 18, 100),
-                children: [
-                  QuizPromptCard(quiz: quiz),
-                  const SizedBox(height: 18),
-                  if (quiz.type == 'matching') ...[
-                    InteractiveMatchingWidget(
-                      key: ValueKey('${quiz.id}_$_currentIndex'),
-                      quiz: quiz,
-                      isAnswered: _isAnswered,
-                      onCompleted: _handleMatchingCompleted,
-                    ),
-                  ] else if (quiz.type == 'ordering') ...[
-                    InteractiveOrderingWidget(
-                      key: ValueKey('${quiz.id}_$_currentIndex'),
-                      quiz: quiz,
-                      isAnswered: _isAnswered,
-                      onCompleted: _handleOrderingCompleted,
-                    ),
-                  ] else ...[
-                    ...List.generate(quiz.options.length, (index) {
-                      final optionText = quiz.options[index];
-                      final optionLetter = String.fromCharCode(65 + index);
-                      return QuizOptionCard(
-                        index: index,
-                        letter: optionLetter,
-                        text: optionText,
-                        correctIndex: quiz.correctIndex,
-                        selectedOptionIndex: _selectedOptionIndex,
-                        isAnswered: _isAnswered,
-                        onSelected: _handleOptionSelected,
-                      );
-                    }),
-                  ],
-                  if (_isAnswered) ...[
-                    const SizedBox(height: 16),
-                    QuizRationaleCard(
-                      quiz: quiz,
-                      isMatchingCorrect: _isMatchingCorrect,
-                      isOrderingCorrect: _isOrderingCorrect,
-                      selectedOptionIndex: _selectedOptionIndex,
-                    ),
-                  ],
-                ],
+              child: QuizQuestionBody(
+                quiz: quiz,
+                currentIndex: _currentIndex,
+                isAnswered: _isAnswered,
+                selectedOptionIndex: _selectedOptionIndex,
+                isMatchingCorrect: _isMatchingCorrect,
+                isOrderingCorrect: _isOrderingCorrect,
+                currentEarnedStars: _currentEarnedStars,
+                currentMaxStars: _currentMaxStars,
+                currentQuestionSeconds: _currentQuestionSeconds,
+                onOptionSelected: _handleOptionSelected,
+                onMatchingCompleted: _handleMatchingCompleted,
+                onOrderingCompleted: _handleOrderingCompleted,
               ),
             ),
           ],
