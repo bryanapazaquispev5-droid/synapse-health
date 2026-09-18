@@ -17,7 +17,7 @@ import 'matching_submit_button.dart';
 class InteractiveMatchingWidget extends StatefulWidget {
   final QuizModel quiz;
   final bool isAnswered;
-  final ValueChanged<bool> onCompleted;
+  final void Function(bool isCorrect, int earnedStars, int maxStars) onCompleted;
 
   const InteractiveMatchingWidget({
     super.key,
@@ -123,7 +123,7 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
   void _checkAnswers() {
     if (_userPairings.length < _leftItems.length || _isSubmitted) return;
 
-    bool isAllCorrect = true;
+    int correctCount = 0;
     for (final entry in _userPairings.entries) {
       final leftText = _leftItems[entry.key];
       final userRightText = _rightItems[entry.value];
@@ -133,17 +133,19 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
         orElse: () => const MatchingPair(left: '', right: ''),
       );
 
-      if (pair.right != userRightText) {
-        isAllCorrect = false;
+      if (pair.right == userRightText) {
+        correctCount++;
       }
     }
+
+    final bool isAllCorrect = (correctCount == _originalPairs.length);
 
     setState(() {
       _isSubmitted = true;
       _selectedLeftIndex = null;
     });
 
-    widget.onCompleted(isAllCorrect);
+    widget.onCompleted(isAllCorrect, correctCount, _originalPairs.length);
   }
 
   bool _isPairCorrect(int? leftIndex) {

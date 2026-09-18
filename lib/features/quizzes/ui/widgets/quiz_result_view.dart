@@ -6,11 +6,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../utils/quiz_scoring_helper.dart';
 
 // Pantalla de interfaz de usuario [QuizResultView]
 class QuizResultView extends StatelessWidget {
   final int score;
   final int totalQuestions;
+  final int earnedStars;
+  final int totalMaxStars;
+  final int totalDurationSeconds;
   final String areaTitle;
   final VoidCallback onRestart;
   final VoidCallback onExit;
@@ -19,6 +23,9 @@ class QuizResultView extends StatelessWidget {
     super.key,
     required this.score,
     required this.totalQuestions,
+    this.earnedStars = 0,
+    this.totalMaxStars = 0,
+    this.totalDurationSeconds = 0,
     required this.areaTitle,
     required this.onRestart,
     required this.onExit,
@@ -76,8 +83,9 @@ class QuizResultView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
+                // Bloque: Tarjeta de resultados detallada con estrellas y tiempos
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(20),
@@ -85,23 +93,99 @@ class QuizResultView extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      Text(
-                        '$score / $totalQuestions',
-                        style: const TextStyle(
-                          fontSize: 38,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.accent,
-                          letterSpacing: -1,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(CupertinoIcons.star_fill, size: 28, color: Color(0xFFFFA000)),
+                          const SizedBox(width: 8),
+                          Text(
+                            '$earnedStars',
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFB78103),
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          Text(
+                            ' / $totalMaxStars',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${percentage.toStringAsFixed(0)}% de precisión médica',
+                        'Estrellas obtenidas ($score de $totalQuestions preguntas acertadas)',
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textMuted,
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      Divider(height: 1, color: AppColors.border.withValues(alpha: 0.6)),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(CupertinoIcons.stopwatch, size: 15, color: AppColors.accent),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      QuizScoringHelper.formatDuration(totalDurationSeconds),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Tiempo total',
+                                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(width: 1, height: 30, color: AppColors.border),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(CupertinoIcons.chart_bar_alt_fill, size: 15, color: AppColors.systemGreen),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${percentage.toStringAsFixed(0)}%',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Precisión',
+                                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -11,14 +11,24 @@ import '../../../../core/theme/app_theme.dart';
 class QuizSessionHeader extends StatelessWidget {
   final int currentIndex;
   final int totalQuestions;
+  final int earnedStars;
+  final int elapsedSeconds;
   final VoidCallback onExit;
 
   const QuizSessionHeader({
     super.key,
     required this.currentIndex,
     required this.totalQuestions,
+    this.earnedStars = 0,
+    this.elapsedSeconds = 0,
     required this.onExit,
   });
+
+  String _formatTime(int totalSecs) {
+    final m = (totalSecs ~/ 60).toString().padLeft(2, '0');
+    final s = (totalSecs % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
 
   // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
@@ -54,14 +64,65 @@ class QuizSessionHeader extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              // Bloque: Chip de estrellas acumuladas
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8E1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFFD54F), width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(CupertinoIcons.star_fill, size: 13, color: Color(0xFFFFA000)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$earnedStars',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFB78103),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              // Bloque: Chip de tiempo transcurrido
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border, width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(CupertinoIcons.stopwatch, size: 13, color: AppColors.textMuted),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatTime(elapsedSeconds),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              // Bloque: Chip de progreso numérico
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${currentIndex + 1} de $totalQuestions',
+                  '${currentIndex + 1}/$totalQuestions',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,

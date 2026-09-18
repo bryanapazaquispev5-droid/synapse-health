@@ -10,12 +10,13 @@ import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_model.dart';
 import 'ordering_reorderable_card.dart';
 import 'ordering_sequence_summary.dart';
+import 'ordering_submit_button.dart';
 
 /// Widget táctil de reordenamiento para preguntas de tipo "Para Ordenar"
 class InteractiveOrderingWidget extends StatefulWidget {
   final QuizModel quiz;
   final bool isAnswered;
-  final ValueChanged<bool> onCompleted;
+  final void Function(bool isCorrect, int earnedStars, int maxStars) onCompleted;
 
   const InteractiveOrderingWidget({
     super.key,
@@ -92,13 +93,20 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
   void _checkOrder() {
     if (_isSubmitted) return;
 
-    final isCorrect = _areListsEqual(_currentItems, _correctSequence);
+    int correctCount = 0;
+    for (int i = 0; i < _currentItems.length; i++) {
+      if (i < _correctSequence.length && _currentItems[i] == _correctSequence[i]) {
+        correctCount++;
+      }
+    }
+
+    final isCorrect = (correctCount == _correctSequence.length);
 
     setState(() {
       _isSubmitted = true;
     });
 
-    widget.onCompleted(isCorrect);
+    widget.onCompleted(isCorrect, correctCount, _correctSequence.length);
   }
 
   bool _isItemInCorrectPosition(int index) {
@@ -213,31 +221,7 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
           ),
         ],
         if (!_isSubmitted) ...[
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: CupertinoButton(
-              color: AppColors.accent,
-              borderRadius: BorderRadius.circular(14),
-              onPressed: _checkOrder,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(CupertinoIcons.checkmark_alt_circle_fill, size: 18, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(
-                    'Comprobar Secuencia',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          OrderingSubmitButton(onCheckOrder: _checkOrder),
         ],
       ],
     );
