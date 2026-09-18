@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../cheatsheets/model/medical_area_model.dart';
+import '../../api/quiz_progress_service.dart';
 import '../quiz_topics_screen.dart';
 
 // Componente visual modular [QuizCourseCard]
@@ -80,33 +81,65 @@ class QuizCourseCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.accent.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${area.quizzesCount} Quizzes',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.accent,
+                      StreamBuilder<int>(
+                        stream: QuizProgressService().getAreaTotalStarsStream(area.id),
+                        builder: (context, starsSnap) {
+                          final int areaStars = starsSnap.data ?? 0;
+                          return Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '${area.quizzesCount} Quizzes',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.accent,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${area.topicsCount} Temas',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                              if (areaStars > 0) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFFBEB),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: const Color(0xFFFDE68A), width: 0.6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('⭐', style: TextStyle(fontSize: 10)),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        '$areaStars estrellas',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFFD97706),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(width: 8),
+                              Text(
+                                '${area.topicsCount} Temas',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),

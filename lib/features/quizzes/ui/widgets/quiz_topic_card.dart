@@ -7,19 +7,23 @@ import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../cheatsheets/model/medical_area_model.dart';
 import '../../../cheatsheets/model/topic_model.dart';
+import '../../model/quiz_topic_progress_model.dart';
 import '../topic_quizzes_screen.dart';
+import 'quiz_topic_progress_badge.dart';
 
-// Componente visual modular [QuizTopicCard]
+// Bloque: Componente visual modular [QuizTopicCard]
 class QuizTopicCard extends StatelessWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
   final int number;
+  final QuizTopicProgressModel? progress;
 
   const QuizTopicCard({
     super.key,
     required this.area,
     required this.topic,
     required this.number,
+    this.progress,
   });
 
   // Renderizado reactivo del arbol de widgets
@@ -91,20 +95,9 @@ class QuizTopicCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF2F2F7),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          '$quizzesCount Quizzes',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.accent,
-                          ),
-                        ),
+                      QuizTopicProgressBadge(
+                        progress: progress,
+                        fallbackCount: quizzesCount,
                       ),
                       if (topic.description.isNotEmpty) ...[
                         const SizedBox(width: 6),
