@@ -32,6 +32,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
   int _previousIndex = 0;
   int _targetIndex = 0;
   bool _isForward = true;
+  late List<GlobalKey> _tabKeys;
 
   // Inicializacion de dependencias y estado local del componente
   // Bloque: Inicialización de controladores, listeners y estado local
@@ -40,16 +41,22 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
     super.initState();
     _previousIndex = widget.currentIndex;
     _targetIndex = widget.currentIndex;
+    _tabKeys = List.generate(
+      widget.children.length,
+      (i) => GlobalKey(debugLabel: 'liquid_wave_tab_$i'),
+    );
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 850),
+      duration: const Duration(milliseconds: 700),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           // Bloque: Notificación reactiva y redibujado de la interfaz
-          setState(() {
-            _previousIndex = _targetIndex;
-          });
+          if (mounted) {
+            setState(() {
+              _previousIndex = _targetIndex;
+            });
+          }
         }
       });
   }
@@ -57,13 +64,19 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
   @override
   void didUpdateWidget(covariant LiquidWaveTransition oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.children.length != _tabKeys.length) {
+      _tabKeys = List.generate(
+        widget.children.length,
+        (i) => GlobalKey(debugLabel: 'liquid_wave_tab_$i'),
+      );
+    }
     if (oldWidget.currentIndex != widget.currentIndex) {
       if (!AppSettingsService().isLiquidWaveEnabled.value) {
         _previousIndex = widget.currentIndex;
         _targetIndex = widget.currentIndex;
         return;
       }
-      _isForward = widget.currentIndex > _previousIndex;
+      _isForward = widget.currentIndex > _targetIndex;
       _previousIndex = _targetIndex;
       _targetIndex = widget.currentIndex;
       _controller.forward(from: 0.0);
@@ -88,75 +101,104 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
       valueListenable: AppSettingsService().isLiquidWaveEnabled,
       builder: (context, isWaveEnabled, _) {
         if (!isWaveEnabled) {
-          return widget.children[widget.currentIndex];
+          return IndexedStack(
+            index: widget.currentIndex,
+            children: List.generate(
+              widget.children.length,
+              (i) => KeyedSubtree(
+                key: _tabKeys[i],
+                child: widget.children[i],
+              ),
+            ),
+          );
         }
 
         return AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
             final bool isAnimating = _controller.isAnimating;
-
-            if (!isAnimating && _previousIndex == _targetIndex) {
-              return widget.children[_targetIndex];
-            }
-
             final double progress = _controller.value;
-            final Widget outgoingWidget = widget.children[_previousIndex];
-            final Widget incomingWidget = widget.children[_targetIndex];
+            final double screenWidth = MediaQuery.of(context).size.width;
 
-        // Parallax suave para que el contenido de la pantalla entrante se aprecie dentro de la ola
-        final double screenWidth = MediaQuery.of(context).size.width;
-        final double incomingSlide = _isForward
-            ? (1.0 - progress) * (screenWidth * 0.35)
-            : -(1.0 - progress) * (screenWidth * 0.35);
-        final double outgoingSlide = _isForward
-            ? -progress * (screenWidth * 0.12)
-            : progress * (screenWidth * 0.12);
+            final double incomingSlide = isAnimating
+                ? (_isForward
+                    ? (1.0 - progress) * (screenWidth * 0.35)
+                    : -(1.0 - progress) * (screenWidth * 0.35))
+                : 0.0;
+            final double outgoingSlide = isAnimating
+                ? (_isForward
+                    ? -progress * (screenWidth * 0.12)
+                    : progress * (screenWidth * 0.12))
+                : 0.0;
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            // CAPA 1: Pantalla saliente con parallax sutil
-            Transform.translate(
-              offset: Offset(outgoingSlide, 0),
-              child: Material(
-                color: AppColors.background,
-                child: outgoingWidget,
-              ),
-            ),
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                // CAPA 0: Todos los demás tabs en Offstage para preservar su estado y datos en memoria
+                for (int i = 0; i < widget.children.length; i++)
+                  if (i != _targetIndex && (i != _previousIndex || !isAnimating))
+                    Offstage(
+                      offstage: true,
+                      child: TickerMode(
+                        enabled: false,
+                        child: KeyedSubtree(
+                          key: _tabKeys[i],
+                          child: widget.children[i],
+                        ),
+                      ),
+                    ),
 
-            // CAPA 2: Pantalla entrante con máscara de ola líquida y deslizamiento coordinado
-            ClipPath(
-              clipper: LiquidWaveClipper(
-                progress: progress,
-                fromRight: _isForward,
-              ),
-              child: Material(
-                color: AppColors.background,
-                child: Transform.translate(
-                  offset: Offset(incomingSlide, 0),
-                  child: incomingWidget,
-                ),
-              ),
-            ),
+                // CAPA 1: Pantalla saliente con parallax sutil (solo visible durante animación)
+                if (isAnimating && _previousIndex != _targetIndex)
+                  Transform.translate(
+                    offset: Offset(outgoingSlide, 0),
+                    child: Material(
+                      color: AppColors.background,
+                      child: KeyedSubtree(
+                        key: _tabKeys[_previousIndex],
+                        child: widget.children[_previousIndex],
+                      ),
+                    ),
+                  ),
 
-            // CAPA 3: Resplandor LED, sombra de elevación y cresta de ola líquida
-            if (isAnimating)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: LiquidWaveEdgePainter(
-                      progress: progress,
-                      fromRight: _isForward,
-                      waveColor: effectiveWaveColor,
+                // CAPA 2: Pantalla entrante / activa (permanente en la misma posición de jerarquía)
+                ClipPath(
+                  clipper: isAnimating
+                      ? LiquidWaveClipper(
+                          progress: progress,
+                          fromRight: _isForward,
+                        )
+                      : null,
+                  clipBehavior: isAnimating ? Clip.antiAlias : Clip.none,
+                  child: Material(
+                    color: AppColors.background,
+                    child: Transform.translate(
+                      offset: Offset(incomingSlide, 0),
+                      child: KeyedSubtree(
+                        key: _tabKeys[_targetIndex],
+                        child: widget.children[_targetIndex],
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+
+                // CAPA 3: Resplandor LED, sombra de elevación y cresta de ola líquida
+                if (isAnimating)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: CustomPaint(
+                        painter: LiquidWaveEdgePainter(
+                          progress: progress,
+                          fromRight: _isForward,
+                          waveColor: effectiveWaveColor,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
-      },
-    );
       },
     );
   }
