@@ -1,8 +1,9 @@
-// Bloque: Controlador de estado y presentador de la sesión interactiva de evaluación o examen médico
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../leaderboard/api/leaderboard_service.dart';
 import '../api/quiz_progress_service.dart';
 import '../model/quiz_model.dart';
 import '../utils/quiz_scoring_helper.dart';
@@ -29,22 +30,14 @@ class QuizSessionScreen extends StatefulWidget {
 }
 
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
-  late int _currentIndex;
+  late int _currentIndex, _totalMaxStars;
   int? _selectedOptionIndex;
-  bool? _isMatchingCorrect;
-  bool? _isOrderingCorrect;
-  bool _isAnswered = false;
-  int _score = 0;
-  int _totalEarnedStars = 0;
-  late int _totalMaxStars;
-  int _currentEarnedStars = 0;
-  int _currentMaxStars = 1;
-  int _currentQuestionSeconds = 0;
-  int _elapsedSessionSeconds = 0;
-  late DateTime _sessionStartTime;
-  late DateTime _questionStartTime;
+  bool? _isMatchingCorrect, _isOrderingCorrect;
+  bool _isAnswered = false, _isCompleted = false;
+  int _score = 0, _totalEarnedStars = 0, _currentEarnedStars = 0, _currentMaxStars = 1;
+  int _currentQuestionSeconds = 0, _elapsedSessionSeconds = 0;
+  late DateTime _sessionStartTime, _questionStartTime;
   Timer? _tickerTimer;
-  bool _isCompleted = false;
 
   @override
   void initState() {
@@ -160,17 +153,21 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     } else {
       _tickerTimer?.cancel();
       setState(() => _isCompleted = true);
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        LeaderboardService().recordCompletedQuiz(
+          uid: uid,
+          earnedStars: _totalEarnedStars,
+          durationSeconds: _elapsedSessionSeconds,
+        );
+      }
     }
   }
 
   void _restartQuizSession() {
     setState(() {
-      _currentIndex = 0;
-      _score = 0;
-      _totalEarnedStars = 0;
-      _elapsedSessionSeconds = 0;
-      _isCompleted = false;
-      _sessionStartTime = DateTime.now();
+      _currentIndex = 0; _score = 0; _totalEarnedStars = 0; _elapsedSessionSeconds = 0;
+      _isCompleted = false; _sessionStartTime = DateTime.now();
       _resetQuestionFields();
     });
     _startTimer();

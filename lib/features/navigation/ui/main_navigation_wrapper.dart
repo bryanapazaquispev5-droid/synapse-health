@@ -11,10 +11,10 @@ import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../cheatsheets/ui/cheatsheet_list_screen.dart';
+import '../../leaderboard/ui/leaderboard_screen.dart';
 import '../../quizzes/ui/quiz_areas_screen.dart';
 import '../../user_profile/ui/profile_screen.dart';
 import 'widgets/liquid_wave_transition.dart';
-import 'widgets/navigation_placeholder_view.dart';
 
 // Definicion principal de la clase [MainNavigationWrapper]
 class MainNavigationWrapper extends StatefulWidget {
@@ -72,13 +72,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
             children: [
               const CheatsheetListScreen(),
               const QuizAreasScreen(),
-              const NavigationPlaceholderView(
-                title: 'Métricas y Rachas',
-                subtitle: 'Análisis mensual de rendimiento y detector de materias débiles.',
-                gifPath: 'assets/images/progreso.gif',
-                color: Color(0xFF10B981),
-                tag: 'Fase 4 del Plan',
-              ),
+              LeaderboardScreen(currentUser: widget.user),
               ProfileScreen(user: widget.user),
             ],
           ),

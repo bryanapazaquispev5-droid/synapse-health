@@ -16,6 +16,7 @@ class AppConstants {
   static const String FIRESTORE_TOPICS = 'topics';
   static const String FIRESTORE_CHEATSHEETS = 'cheatsheets';
   static const String FIRESTORE_QUIZZES = 'quizzes';
+  static const String FIRESTORE_LEADERBOARD = 'leaderboard';
 
   // Preferencias Locales (SharedPreferences Keys)
   static const String PREF_CREATED_ACCOUNTS = 'created_accounts_on_device';
@@ -36,6 +37,7 @@ class AppConstants {
   static const String firestoreTopics = FIRESTORE_TOPICS;
   static const String firestoreCheatsheets = FIRESTORE_CHEATSHEETS;
   static const String firestoreQuizzes = FIRESTORE_QUIZZES;
+  static const String firestoreLeaderboard = FIRESTORE_LEADERBOARD;
   static const String prefCreatedAccounts = PREF_CREATED_ACCOUNTS;
   static const String prefFailedLoginAttempts = PREF_FAILED_LOGIN_ATTEMPTS;
   static const String prefLoginLockoutUntil = PREF_LOGIN_LOCKOUT_UNTIL;
