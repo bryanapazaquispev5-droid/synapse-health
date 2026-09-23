@@ -10,21 +10,40 @@ import 'widgets/leaderboard_podium_widget.dart';
 import 'widgets/leaderboard_user_tile.dart';
 
 // Bloque: Vista principal del Leaderboard
-class LeaderboardScreen extends StatelessWidget {
+class LeaderboardScreen extends StatefulWidget {
   final User currentUser;
 
   const LeaderboardScreen({super.key, required this.currentUser});
 
   @override
+  State<LeaderboardScreen> createState() => _LeaderboardScreenState();
+}
+
+class _LeaderboardScreenState extends State<LeaderboardScreen>
+    with AutomaticKeepAliveClientMixin {
+  late final Stream<List<LeaderboardUserModel>> _leaderboardStream;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _leaderboardStream = LeaderboardService().getLeaderboardStream();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
         child: StreamBuilder<List<LeaderboardUserModel>>(
-          stream: LeaderboardService().getLeaderboardStream(),
+          stream: _leaderboardStream,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
               return const Center(child: CupertinoActivityIndicator(radius: 14));
             }
             if (snapshot.hasError) {
@@ -35,7 +54,7 @@ class LeaderboardScreen extends StatelessWidget {
               return const Center(child: Text('Aún no hay participantes en el ranking', style: TextStyle(fontFamily: '.SF Pro Text', color: AppColors.textMuted, fontSize: 14)));
             }
 
-            final myRankUser = users.cast<LeaderboardUserModel?>().firstWhere((u) => u?.userId == currentUser.uid, orElse: () => null);
+            final myRankUser = users.cast<LeaderboardUserModel?>().firstWhere((u) => u?.userId == widget.currentUser.uid, orElse: () => null);
             final restUsers = users.length > 3 ? users.sublist(3) : <LeaderboardUserModel>[];
 
             return CustomScrollView(
@@ -53,7 +72,7 @@ class LeaderboardScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SliverToBoxAdapter(child: LeaderboardMyRankCard(currentUser: myRankUser, fallbackUser: currentUser)),
+                SliverToBoxAdapter(child: LeaderboardMyRankCard(currentUser: myRankUser, fallbackUser: widget.currentUser)),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 12),
@@ -64,7 +83,7 @@ class LeaderboardScreen extends StatelessWidget {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final u = restUsers[index];
-                      return LeaderboardUserTile(user: u, isCurrentUser: u.userId == currentUser.uid);
+                      return LeaderboardUserTile(user: u, isCurrentUser: u.userId == widget.currentUser.uid);
                     },
                     childCount: restUsers.length,
                   ),

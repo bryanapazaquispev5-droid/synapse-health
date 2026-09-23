@@ -22,34 +22,65 @@ class LeaderboardService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  // Bloque: Stream del Leaderboard ordenado en memoria con ranking asignado
-  Stream<List<LeaderboardUserModel>> getLeaderboardStream({int limit = 50}) {
-    return _firestore
-        .collection(AppConstants.FIRESTORE_LEADERBOARD)
-        .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => LeaderboardUserModel.fromMap(doc.data(), docId: doc.id))
-          .toList();
+  // Bloque: Caché en memoria y stream compartido para evitar recargas y parpadeos
+  List<LeaderboardUserModel>? _cachedLeaderboard;
+  Stream<List<LeaderboardUserModel>>? _leaderboardStream;
+  int _cachedLimit = 50;
 
-      list.sort((a, b) {
-        final starsComp = b.totalStars.compareTo(a.totalStars);
-        if (starsComp != 0) return starsComp;
+  /// Retorna la última lista clasificada en caché de forma sincrónica
+  List<LeaderboardUserModel>? get cachedLeaderboard => _cachedLeaderboard;
 
-        if (a.completedQuizzesCount > 0 && b.completedQuizzesCount == 0) return -1;
-        if (a.completedQuizzesCount == 0 && b.completedQuizzesCount > 0) return 1;
+  /// Invalida la caché del leaderboard y reinicia la suscripción compartida
+  void clearCache() {
+    _cachedLeaderboard = null;
+    _leaderboardStream = null;
+  }
 
-        final timeComp = a.averageTimeSeconds.compareTo(b.averageTimeSeconds);
-        if (timeComp != 0) return timeComp;
+  // Bloque: Stream del Leaderboard optimizado con caché persistente y transmisión compartida
+  Stream<List<LeaderboardUserModel>> getLeaderboardStream({int limit = 50}) async* {
+    if (_cachedLeaderboard != null) {
+      yield _cachedLeaderboard!.take(limit).toList();
+    }
 
-        return b.completedQuizzesCount.compareTo(a.completedQuizzesCount);
-      });
+    if (_leaderboardStream == null || _cachedLimit != limit) {
+      _cachedLimit = limit;
+      _leaderboardStream = _firestore
+          .collection(AppConstants.FIRESTORE_LEADERBOARD)
+          .snapshots()
+          .map((snapshot) => _processSnapshot(snapshot, limit))
+          .asBroadcastStream(onCancel: (_) {});
+    }
 
-      final limited = list.take(limit).toList();
-      return List<LeaderboardUserModel>.generate(limited.length, (i) {
-        return limited[i].copyWith(rank: i + 1);
-      });
+    yield* _leaderboardStream!;
+  }
+
+  List<LeaderboardUserModel> _processSnapshot(
+    QuerySnapshot<Map<String, dynamic>> snapshot,
+    int limit,
+  ) {
+    final list = snapshot.docs
+        .map((doc) => LeaderboardUserModel.fromMap(doc.data(), docId: doc.id))
+        .toList();
+
+    list.sort((a, b) {
+      final starsComp = b.totalStars.compareTo(a.totalStars);
+      if (starsComp != 0) return starsComp;
+
+      if (a.completedQuizzesCount > 0 && b.completedQuizzesCount == 0) return -1;
+      if (a.completedQuizzesCount == 0 && b.completedQuizzesCount > 0) return 1;
+
+      final timeComp = a.averageTimeSeconds.compareTo(b.averageTimeSeconds);
+      if (timeComp != 0) return timeComp;
+
+      return b.completedQuizzesCount.compareTo(a.completedQuizzesCount);
     });
+
+    final limited = list.take(limit).toList();
+    final ranked = List<LeaderboardUserModel>.generate(limited.length, (i) {
+      return limited[i].copyWith(rank: i + 1);
+    });
+    _cachedLeaderboard = ranked;
+    return ranked;
   }
 
   // Bloque: Registro acumulado de quiz completado y actualización de métricas
