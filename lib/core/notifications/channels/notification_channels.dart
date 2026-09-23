@@ -41,13 +41,13 @@ class NotificationChannels {
     showBadge: true,
   );
 
-  /// Canal de prioridad estándar para novedades, chuletas y anuncios de la plataforma
+  /// Canal de prioridad estándar para novedades, fichas y anuncios de la plataforma
   static const AndroidNotificationChannel announcements =
       AndroidNotificationChannel(
     announcementsId,
     'Anuncios y Novedades',
     description:
-        'Actualizaciones académicas, nuevas chuletas médicas y avisos del sistema.',
+        'Actualizaciones académicas, nuevas fichas médicas y avisos del sistema.',
     importance: Importance.defaultImportance,
     playSound: true,
     showBadge: true,

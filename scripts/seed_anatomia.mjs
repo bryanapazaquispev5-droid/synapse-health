@@ -498,7 +498,7 @@ Encapsulado dentro de la porción petrosa del temporal, combina la transducción
 
   console.log('\n=================================================================');
   console.log('¡CARGA COMPLETA DE ROUVIÈRE TOMO 1 EN FIRESTORE FINALIZADA!');
-  console.log('6 Temas Clínicos y 18 Chuletas de Alto Rendimiento sincronizadas.');
+  console.log('6 Temas Clínicos y 18 Fichas de Alto Rendimiento sincronizadas.');
   console.log('Relación de datos: Estrictamente 1:N sin relaciones muchos a muchos.');
   console.log('=================================================================');
 }

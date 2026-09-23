@@ -1,6 +1,6 @@
 // Script de carga integral para Anatomía Humana Tomo 2 (Tronco: Tórax y Abdomen - Rouvière / Delmas)
 // NO MODIFICA LOS TEMAS DEL TOMO 1 (permanecen 100% intactos).
-// Se agregan los temas 7 a 12 con sus respectivas chuletas clínicas.
+// Se agregan los temas 7 a 12 con sus respectivas fichas clínicas.
 // Relaciones estrictamente 1:N (Cero relaciones Muchos a Muchos).
 
 const BASE_URL = 'https://firestore.googleapis.com/v1/projects/synapse-health/databases/(default)/documents';
@@ -42,7 +42,7 @@ async function setDocument(path, fields) {
 async function main() {
   console.log('Iniciando carga de Tomo 2 de Rouvière (Tronco: Tórax y Abdomen)...\n');
 
-  // 1. ACTUALIZAR CONTADORES GLOBALES DEL ÁREA MÉDICA (6 temas Tomo 1 + 6 temas Tomo 2 = 12 temas, 34 chuletas)
+  // 1. ACTUALIZAR CONTADORES GLOBALES DEL ÁREA MÉDICA (6 temas Tomo 1 + 6 temas Tomo 2 = 12 temas, 34 fichas)
   await setDocument('medical_areas/anatomia', {
     name: 'Anatomía Humana',
     code: 'ANATOMIA',
@@ -481,8 +481,8 @@ La aorta abdominal desciende apoyada sobre los cuerpos vertebrales, a la izquier
 
   console.log('\n=================================================================');
   console.log('¡CARGA DEL TOMO 2 DE ROUVIÈRE (TRONCO) EN FIRESTORE FINALIZADA!');
-  console.log('Nuevos temas: 7 al 12 | Nuevas chuletas: 16 adicionales.');
-  console.log('Total en Anatomía: 12 Temas y 34 Chuletas de Alto Rendimiento.');
+  console.log('Nuevos temas: 7 al 12 | Nuevas fichas: 16 adicionales.');
+  console.log('Total en Anatomía: 12 Temas y 34 Fichas de Alto Rendimiento.');
   console.log('Tomo 1 intacto sin alteraciones.');
   console.log('=================================================================');
 }

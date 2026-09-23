@@ -15,7 +15,7 @@ class CheatsheetOfflineState extends StatelessWidget {
 
   CheatsheetOfflineState({
     super.key,
-    this.message = 'Para proteger la seguridad médica y mantener la información actualizada, las chuletas se cargan exclusivamente en línea desde la nube.',
+    this.message = 'Para proteger la seguridad médica y mantener la información actualizada, las fichas se cargan exclusivamente en línea desde la nube.',
   });
 
   // Renderizado reactivo del arbol de widgets

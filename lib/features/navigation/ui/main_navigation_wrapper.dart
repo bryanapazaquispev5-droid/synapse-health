@@ -90,7 +90,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                   currentIndex: _currentIndex,
                   onTap: (index) => setState(() => _currentIndex = index),
                   items: [
-                    const BottomPillItem(assetPath: 'assets/images/book.gif', label: 'Chuletas'),
+                    const BottomPillItem(assetPath: 'assets/images/book.gif', label: 'Fichas'),
                     const BottomPillItem(assetPath: 'assets/images/quiz.gif', label: 'Quizzes'),
                     const BottomPillItem(assetPath: 'assets/images/progreso.gif', label: 'Progreso'),
                     BottomPillItem(assetPath: userGif, label: 'Perfil'),

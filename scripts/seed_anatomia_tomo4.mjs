@@ -1,6 +1,6 @@
 // Script de carga integral para Anatomía Humana Tomo 4 (Sistema Nervioso Central - Rouvière / Delmas)
 // NO MODIFICA LOS TEMAS DEL TOMO 1, 2 NI 3 (permanecen 100% intactos).
-// Se agregan los temas 19 a 24 con sus respectivas chuletas clínicas.
+// Se agregan los temas 19 a 24 con sus respectivas fichas clínicas.
 // Relaciones estrictamente 1:N (Cero relaciones Muchos a Muchos).
 
 const BASE_URL = 'https://firestore.googleapis.com/v1/projects/synapse-health/databases/(default)/documents';
@@ -42,7 +42,7 @@ async function setDocument(path, fields) {
 async function main() {
   console.log('Iniciando carga de Tomo 4 de Rouvière (Sistema Nervioso Central)...\n');
 
-  // 1. ACTUALIZAR CONTADORES GLOBALES DEL ÁREA MÉDICA (18 temas previos + 6 temas nuevos = 24 temas; 49 + 12 = 61 chuletas)
+  // 1. ACTUALIZAR CONTADORES GLOBALES DEL ÁREA MÉDICA (18 temas previos + 6 temas nuevos = 24 temas; 49 + 12 = 61 fichas)
   await setDocument('medical_areas/anatomia', {
     name: 'Anatomía Humana',
     code: 'ANATOMIA',
@@ -389,8 +389,8 @@ Proporciona flotabilidad física amortiguando el peso neto del encéfalo de 1400
 
   console.log('\n=================================================================');
   console.log('¡CARGA DEL TOMO 4 DE ROUVIÈRE (SNC) EN FIRESTORE FINALIZADA!');
-  console.log('Nuevos temas: 19 al 24 | Nuevas chuletas: 12 adicionales.');
-  console.log('Total en Anatomía: 24 Temas y 61 Chuletas de Alto Rendimiento.');
+  console.log('Nuevos temas: 19 al 24 | Nuevas fichas: 12 adicionales.');
+  console.log('Total en Anatomía: 24 Temas y 61 Fichas de Alto Rendimiento.');
   console.log('Tomos 1, 2 y 3 intactos sin alteraciones.');
   console.log('=================================================================');
 }

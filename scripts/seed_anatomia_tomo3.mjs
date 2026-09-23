@@ -1,6 +1,6 @@
 // Script de carga integral para Anatomía Humana Tomo 3 (Miembros: Superior e Inferior - Rouvière / Delmas)
 // NO MODIFICA LOS TEMAS DEL TOMO 1 NI DEL TOMO 2 (permanecen 100% intactos).
-// Se agregan los temas 13 a 18 con sus respectivas chuletas clínicas.
+// Se agregan los temas 13 a 18 con sus respectivas fichas clínicas.
 // Relaciones estrictamente 1:N (Cero relaciones Muchos a Muchos).
 
 const BASE_URL = 'https://firestore.googleapis.com/v1/projects/synapse-health/databases/(default)/documents';
@@ -42,7 +42,7 @@ async function setDocument(path, fields) {
 async function main() {
   console.log('Iniciando carga de Tomo 3 de Rouvière (Miembros: Superior e Inferior)...\n');
 
-  // 1. ACTUALIZAR CONTADORES GLOBALES DEL ÁREA MÉDICA (12 temas anteriores + 6 temas nuevos = 18 temas; 34 + 15 = 49 chuletas)
+  // 1. ACTUALIZAR CONTADORES GLOBALES DEL ÁREA MÉDICA (12 temas anteriores + 6 temas nuevos = 18 temas; 34 + 15 = 49 fichas)
   await setDocument('medical_areas/anatomia', {
     name: 'Anatomía Humana',
     code: 'ANATOMIA',
@@ -454,8 +454,8 @@ El apoyo del pie se distribuye en tres puntos principales: la tuberosidad del ca
 
   console.log('\n=================================================================');
   console.log('¡CARGA DEL TOMO 3 DE ROUVIÈRE (MIEMBROS) EN FIRESTORE FINALIZADA!');
-  console.log('Nuevos temas: 13 al 18 | Nuevas chuletas: 15 adicionales.');
-  console.log('Total en Anatomía: 18 Temas y 49 Chuletas de Alto Rendimiento.');
+  console.log('Nuevos temas: 13 al 18 | Nuevas fichas: 15 adicionales.');
+  console.log('Total en Anatomía: 18 Temas y 49 Fichas de Alto Rendimiento.');
   console.log('Tomos 1 y 2 intactos sin alteraciones.');
   console.log('=================================================================');
 }

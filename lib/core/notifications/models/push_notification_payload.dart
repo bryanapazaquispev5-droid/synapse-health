@@ -25,7 +25,7 @@ enum NotificationType {
       case 'quiz':
         return NotificationType.dailyQuiz;
       case 'cheatsheet':
-      case 'chuleta':
+      case 'ficha':
         return NotificationType.cheatsheet;
       case 'announcement':
       case 'anuncio':

@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: cheatsheet_list_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [cheatsheet_list_screen].
+// Propósito: Pantalla de visualizacion y exploracion para las fichas y resumenes medicos [cheatsheet_list_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -85,7 +85,7 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen> with Automa
                           textBaseline: TextBaseline.alphabetic,
                           children: [
                             const Text(
-                              'Chuletas',
+                              'Fichas',
                               style: TextStyle(
                                 fontSize: 34,
                                 fontWeight: FontWeight.w800,

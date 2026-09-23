@@ -116,7 +116,7 @@ class NotificationRouter {
         _navigateToTab(state, user, targetIndex: 1);
         break;
       case '/cheatsheets':
-      case '/chuletas':
+      case '/fichas':
         _navigateToTab(state, user, targetIndex: 0);
         break;
       case '/progress':

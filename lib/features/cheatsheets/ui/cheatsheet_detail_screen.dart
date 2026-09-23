@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: cheatsheet_detail_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [cheatsheet_detail_screen].
+// Propósito: Pantalla de visualizacion y exploracion para las fichas y resumenes medicos [cheatsheet_detail_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';

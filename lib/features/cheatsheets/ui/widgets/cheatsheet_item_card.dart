@@ -63,7 +63,7 @@ class CheatsheetItemCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    'CHULETA #$index',
+                    'FICHA #$index',
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,

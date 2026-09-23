@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: medical_areas_service.dart
-// Propósito: Servicio de consulta a Firestore para obtener areas medicas, temas y chuletas clinicas en tiempo real.
+// Propósito: Servicio de consulta a Firestore para obtener areas medicas, temas y fichas clinicas en tiempo real.
 // ============================================================================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,7 +9,7 @@ import '../model/medical_area_model.dart';
 import '../model/topic_model.dart';
 import '../model/cheatsheet_model.dart';
 
-/// Servicio de Dominio / Datos para Áreas Médicas, Temas y Chuletas.
+/// Servicio de Dominio / Datos para Áreas Médicas, Temas y Fichas.
 /// CERO persistencia local y CERO datos quemados en código:
 /// Todo se obtiene estrictamente en tiempo real desde Firestore.
 class MedicalAreasService {
@@ -55,7 +55,7 @@ class MedicalAreasService {
     });
   }
 
-  /// Stream en tiempo real de chuletas clínicas para un tema específico
+  /// Stream en tiempo real de fichas clínicas para un tema específico
   Stream<List<CheatsheetModel>> getTopicCheatsheetsStream(String areaId, String topicId) {
     return _firestore
         .collection(areasCollection)

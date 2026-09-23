@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: topic_cheatsheets_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las chuletas y resumenes medicos [topic_cheatsheets_screen].
+// Propósito: Pantalla de visualizacion y exploracion para las fichas y resumenes medicos [topic_cheatsheets_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -105,7 +105,7 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
 
                   if (!isOnline) {
                     return CheatsheetOfflineState(
-                      message: 'Las chuletas médicas se descargan en tiempo real por seguridad. Conéctate a internet para leerlas.',
+                      message: 'Las fichas se descargan en tiempo real por seguridad. Conéctate a internet para leerlas.',
                     );
                   }
 
@@ -122,7 +122,7 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
 
                       if (cheatsheets.isEmpty) {
                         return const CheatsheetEmptyState(
-                          title: 'Sin chuletas aún',
+                          title: 'Sin fichas aún',
                           subtitle: 'El contenido médico de este tema se cargará próximamente.',
                           icon: CupertinoIcons.doc_text,
                         );

@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS medical_areas (
     code VARCHAR(20) NOT NULL UNIQUE,         -- Código de referencia (ej. 'ANATOMIA')
     order_index INT NOT NULL DEFAULT 1,       -- Orden de visualización en la interfaz
     topics_count INT NOT NULL DEFAULT 0,      -- Contador desnormalizado para visualización rápida
-    cheatsheets_count INT NOT NULL DEFAULT 0, -- Total de chuletas disponibles
+    cheatsheets_count INT NOT NULL DEFAULT 0, -- Total de fichas disponibles
     quizzes_count INT NOT NULL DEFAULT 0,     -- Total de preguntas de quiz
     is_available BOOLEAN NOT NULL DEFAULT TRUE, -- Bandera de disponibilidad
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS topics (
     title VARCHAR(150) NOT NULL,             -- Título del tema (ej. 'Osteología del Cráneo')
     description TEXT,                         -- Breve descripción introductoria
     order_index INT NOT NULL DEFAULT 1,       -- Orden dentro del área
-    cheatsheets_count INT NOT NULL DEFAULT 0, -- Chuletas en este tema
+    cheatsheets_count INT NOT NULL DEFAULT 0, -- Fichas en este tema
     quizzes_count INT NOT NULL DEFAULT 0,     -- Quizzes en este tema
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_topics_area FOREIGN KEY (area_id) 
@@ -45,14 +45,14 @@ CREATE TABLE IF NOT EXISTS topics (
 -- Índice para optimizar consultas de temas por área
 CREATE INDEX IF NOT EXISTS idx_topics_area_id ON topics(area_id);
 
--- 3. TABLA: CHULETAS DE ALTO RENDIMIENTO (cheatsheets)
--- Relación 1:N estricta: Cada chuleta pertenece a UN tema específico.
--- NO existe relación muchos a muchos: Una chuleta no se comparte entre temas independientes.
+-- 3. TABLA: FICHAS DE ALTO RENDIMIENTO (cheatsheets)
+-- Relación 1:N estricta: Cada ficha pertenece a UN tema específico.
+-- NO existe relación muchos a muchos: Una ficha no se comparte entre temas independientes.
 CREATE TABLE IF NOT EXISTS cheatsheets (
     id VARCHAR(50) PRIMARY KEY,               -- Identificador único (ej. 'esfenoides_orificios')
     topic_id VARCHAR(50) NOT NULL,            -- Clave Foránea 1:N hacia topics
     area_id VARCHAR(50) NOT NULL,             -- Clave de alcance directo 1:N hacia medical_areas
-    title VARCHAR(150) NOT NULL,             -- Título de la chuleta
+    title VARCHAR(150) NOT NULL,             -- Título de la ficha
     summary VARCHAR(255) NOT NULL,           -- Resumen clínico conciso (1 a 2 líneas)
     content_markdown TEXT NOT NULL,          -- Contenido estructurado en Markdown
     key_points_json TEXT NOT NULL,           -- Puntos clave de alto rendimiento (Array JSON)

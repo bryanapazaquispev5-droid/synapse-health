@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: medical_area_model.dart
-// Propósito: Modelo de datos que representa la estructura inmutable de chuletas y areas clinicas [medical_area_model].
+// Propósito: Modelo de datos que representa la estructura inmutable de fichas y areas clinicas [medical_area_model].
 // ============================================================================
 
 import 'dart:convert';

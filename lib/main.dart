@@ -35,7 +35,7 @@ void main() async {
   );
 
   // DESACTIVAR PERSISTENCIA EN DISCO (Seguridad y protección contra ingeniería inversa)
-  // Todo el contenido médico y chuletas residen únicamente en memoria volátil (RAM)
+  // Todo el contenido médico y fichas residen únicamente en memoria volátil (RAM)
   // y requieren conexión activa a internet para ser consultados.
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,

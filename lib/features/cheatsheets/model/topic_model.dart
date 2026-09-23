@@ -1,6 +1,6 @@
 // ============================================================================
 // Archivo: topic_model.dart
-// Propósito: Modelo de datos que representa la estructura inmutable de chuletas y areas clinicas [topic_model].
+// Propósito: Modelo de datos que representa la estructura inmutable de fichas y areas clinicas [topic_model].
 // ============================================================================
 
 // Entidad inmutable que representa los datos de [TopicModel]

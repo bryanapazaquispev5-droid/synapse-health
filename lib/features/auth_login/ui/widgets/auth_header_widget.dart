@@ -55,7 +55,7 @@ class AuthHeaderWidget extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           isLogin
-              ? 'Accede a tus chuletas y quizzes médicos'
+              ? 'Accede a tus fichas y quizzes'
               : 'Únete para registrar tu racha y progreso',
           textAlign: TextAlign.center,
           style: const TextStyle(

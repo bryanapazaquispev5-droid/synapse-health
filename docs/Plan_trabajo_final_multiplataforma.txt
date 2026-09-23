@@ -8,14 +8,14 @@
 La aplicación es una plataforma de estudio ágil y de alto rendimiento orientada
 a estudiantes de carreras de salud (Medicina, Enfermería, Odontología, etc.).
 Su meta es permitir el repaso en cualquier momento libre con la "Regla de los 
-2 Toques": abrir la app y en menos de 5 segundos estar leyendo una chuleta o
+2 Toques": abrir la app y en menos de 5 segundos estar leyendo una ficha o
 respondiendo un quiz de retroalimentación inmediata.
 
 Pilares del Sistema:
-* Chuletas (Cheatsheets): Resúmenes de alto rendimiento clínico y mnemotécnicas.
+* Fichas (Cheatsheets): Resúmenes de alto rendimiento clínico y mnemotécnicas.
 * Quizzes Dinámicos: Preguntas con justificación médica inmediata.
 * Métricas Mensuales: Gráficas de evolución y detección de materias débiles.
-* Modo Offline: Acceso a chuletas dentro de hospitales o zonas sin cobertura.
+* Modo Offline: Acceso a fichas dentro de hospitales o zonas sin cobertura.
 
 
 2. FILOSOFÍA DE INTERFAZ: ERGONOMÍA ONE UI (REACHABILITY FIRST)
@@ -24,7 +24,7 @@ Inspirado en el diseño moderno de Samsung One UI, adaptado para usar el teléfo
 cómodamente con una sola mano:
 
 * ZONA SUPERIOR (70% de la pantalla): Zona de Lectura y Visualización.
-  - Títulos grandes, tarjetas de chuletas, enunciados de casos clínicos y gráficos.
+  - Títulos grandes, tarjetas de fichas, enunciados de casos clínicos y gráficos.
 * ESQUINA SUPERIOR DERECHA:
   - Exclusivamente el botón discreto de Ajustes (⚙️), de uso ocasional.
 * ZONA INFERIOR (30% de la pantalla): Zona de Control al alcance del Pulgar.
@@ -38,7 +38,7 @@ cómodamente con una sola mano:
 --------------------------------------------------------------------------------
 Siguiendo la metodología de trabajo en equipo solicitada por el docente, cada
 módulo es independiente y autosuficiente. Si un integrante edita los quizzes,
-no afecta el login ni las chuletas.
+no afecta el login ni las fichas.
 
 Estructura del Proyecto en Flutter:
 
@@ -63,7 +63,7 @@ lib/
 │   │   ├── controllers/auth_controller.dart
 │   │   └── widgets/social_pill_button.dart
 │   │
-│   ├── cheatsheets/                    <-- MÓDULO 3: Chuletas y resúmenes médicos
+│   ├── cheatsheets/                    <-- MÓDULO 3: Fichas y resúmenes médicos
 │   │   ├── models/cheatsheet_model.dart
 │   │   ├── screens/cheatsheet_list_screen.dart
 │   │   ├── screens/cheatsheet_reader_screen.dart
@@ -96,11 +96,11 @@ A. Login / Autenticación:
    - Abajo: Botón principal "Ingresar" + Píldora con [Google] | [Modo Invitado].
    - El Modo Invitado permite usar la app al instante sin registro previo.
 
-B. Chuletas (Home):
+B. Fichas (Home):
    - Centro: Tarjetas de resúmenes filtrables (Farmacología, Anatomía, etc.).
    - Píldora Flotante Principal:
-     [ 📑 Chuletas ] | [ ⚡ Quizzes ] | [ 📊 Progreso ] | [ 👤 Perfil ]
-   - Al abrir una chuleta (Visor):
+     [ 📑 Fichas ] | [ ⚡ Quizzes ] | [ 📊 Progreso ] | [ 👤 Perfil ]
+   - Al abrir una ficha (Visor):
      Píldora Inferior con [← Atrás] (lado izquierdo), [⭐ Guardar] y [Siguiente →].
 
 C. Quizzes Interactivos:
@@ -125,7 +125,7 @@ E. Ajustes (Esquina Superior Derecha):
 * Persistencia Offline de Firebase:
   Configurada con:
   FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
-  Permite que las chuletas descargadas funcionen en sótanos de hospitales o sin red.
+  Permite que las fichas descargadas funcionen en sótanos de hospitales o sin red.
 
 
 6. BASE DE DATOS FIREBASE (FIRESTORE)
@@ -179,7 +179,7 @@ feat(auth): implement clean login screen with guest mode
 - add floating bottom pill for guest and google sign in
 - apply minimalist 3-color theme palette
 
-Ejemplo 2 (Chuletas y píldora ergonómica):
+Ejemplo 2 (Fichas y píldora ergonómica):
 feat(cheatsheets): add reader screen with bottom floating pill
 
 - create cheatsheet list view with category chips
@@ -219,7 +219,7 @@ CÓMO CONFIGURAR EL REPOSITORIO EN LA TERMINAL:
 a repositorios públicos).
 
 
-10. METODOLOGÍA DE EXTRACCIÓN Y ESTRUCTURA DE CHULETAS (CHEATSHEETS)
+10. METODOLOGÍA DE EXTRACCIÓN Y ESTRUCTURA DE FICHAS (CHEATSHEETS)
 --------------------------------------------------------------------------------
 Para garantizar resúmenes de máxima calidad médica y fidelidad bibliográfica 
 absoluta (sin invenciones ni omisiones), se definió un protocolo estricto de
@@ -234,18 +234,18 @@ A. METODOLOGÍA DE EXTRACCIÓN BIBLIOGRÁFICA (100% FIDELIDAD TEXTUAL):
 2. Segmentación Jerárquica:
    - Nivel 1 (Área Médica): Colección raíz (ej. "anatomia", "farmacologia").
    - Nivel 2 (Tema Anatómico/Clínico): División por capítulos u órganos (ej. "Hueso Esfenoides").
-   - Nivel 3 (Chuleta de Alto Rendimiento): Unidad atómica de estudio rápido (ej. "Alas Mayores y Orificios de la Base").
+   - Nivel 3 (Ficha de Alto Rendimiento): Unidad atómica de estudio rápido (ej. "Alas Mayores y Orificios de la Base").
 3. Extracción Automatizada y Validación:
    - Parseo digital completo del texto fuente mediante scripts especializados.
    - Indexación de páginas oficiales para trazabilidad académica inmediata.
 
-B. ESTRUCTURA DE DATOS DE CADA CHULETA (DATA SCHEMA EN FIRESTORE):
-Cada documento de chuleta almacena los siguientes campos estandarizados:
+B. ESTRUCTURA DE DATOS DE CADA FICHA (DATA SCHEMA EN FIRESTORE):
+Cada documento de ficha almacena los siguientes campos estandarizados:
 
 * id (String):
   Identificador canónico único en snake_case (ej. "hueso_esfenoides_alas_mayores").
 * title (String):
-  Título formal y descriptivo de la chuleta anatómica.
+  Título formal y descriptivo de la ficha anatómica.
 * topicId (String):
   ID del tema padre al que pertenece dentro del área médica.
 * areaId (String):
@@ -278,13 +278,13 @@ C. PERSISTENCIA EN FIRESTORE Y SINCRONIZACIÓN REACTIVA:
    cheatsheets/{cheatsheetId}
    - Permite búsquedas globales, marcadores favoritos y filtros transversales.
 3. Modo Offline Nativo:
-   - Gracias al motor de persistencia local de Firestore, las chuletas consultadas
+   - Gracias al motor de persistencia local de Firestore, las fichas consultadas
      permanecen en la memoria del dispositivo y son legibles sin conexión a internet.
 
 D. INTEGRACIÓN EN LA INTERFAZ DE USUARIO (ONE UI REACHABILITY):
 1. Pantalla de Temas (AreaTopicsScreen):
-   - Muestra el listado de temas oficiales con su contador dinámico de chuletas.
-2. Pantalla de Chuletas del Tema (TopicCheatsheetsScreen):
+   - Muestra el listado de temas oficiales con su contador dinámico de fichas.
+2. Pantalla de Fichas del Tema (TopicCheatsheetsScreen):
    - Lista ergonómica de tarjetas con indicador de tiempo de lectura, título y resumen.
 3. Visor Detallado (CheatsheetDetailScreen):
    - Zona Superior: Tarjeta destacada de resumen y contenido en texto enriquecido.
