@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "926565525814",
+    "project_id": "synapse-health",
+    "storage_bucket": "synapse-health.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:926565525814:android:64a58267486ca15f1f2b97",
+        "android_client_info": {
+          "package_name": "com.example.synapse_health"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "926565525814-0hkjeoa60avvuo133vc929vshs00enmu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoktVrrQ-W0JFj9NlXo1mJGM6HEv3C2uc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "926565525814-0hkjeoa60avvuo133vc929vshs00enmu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
