@@ -33,32 +33,57 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
   // Bloque: Diálogo de confirmación para reintentar el tema
   void _confirmRetry() {
     HapticFeedback.lightImpact();
-    showCupertinoDialog<void>(
+    showGeneralDialog<void>(
       context: context,
-      builder: (dialogCtx) => CupertinoAlertDialog(
-        title: const Text('¿Reintentar tema?'),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            'Tu progreso actual de ${widget.progress.activeAttempt.totalEarnedStars} estrellas se guardará en tu historial (hasta 3 reintentos guardados en BD). Todas las preguntas se desbloquearán para volver a responderlas.',
+      barrierDismissible: false,
+      barrierLabel: 'Dismiss',
+      barrierColor: const Color(0x33000000),
+      transitionDuration: const Duration(milliseconds: 520),
+      pageBuilder: (dialogCtx, animation, secondaryAnimation) => Opacity(
+        opacity: 0.90,
+        child: CupertinoAlertDialog(
+          title: const Text(
+            '¿Reintentar tema?',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              'Tu progreso actual de ${widget.progress.activeAttempt.totalEarnedStars} estrellas se guardará en tu historial (hasta 3 reintentos guardados en BD). Todas las preguntas se desbloquearán para volver a responderlas.',
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text('Cancelar', style: TextStyle(fontSize: 15)),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.pop(dialogCtx);
+                _executeRetry();
+              },
+              child: const Text(
+                'Reintentar',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Cancelar'),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              _executeRetry();
-            },
-            child: const Text('Reintentar'),
-          ),
-        ],
       ),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.90, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(opacity: curvedAnimation, child: child),
+        );
+      },
     );
   }
 
