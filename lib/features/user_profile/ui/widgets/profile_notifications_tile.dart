@@ -10,7 +10,7 @@ import '../../../../core/notifications/channels/notification_channels.dart';
 import '../../../../core/notifications/models/push_notification_payload.dart';
 import '../../../../core/notifications/services/local_notification_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import 'profile_fcm_token_dialog.dart';
+import '../../../../core/widgets/ios_top_banner.dart';
 
 /// Sección atómica para gestión y prueba de notificaciones Push (FCM) y locales.
 class ProfileNotificationsTile extends StatefulWidget {
@@ -23,11 +23,6 @@ class ProfileNotificationsTile extends StatefulWidget {
 // Estado reactivo y control de ciclo de vida para [ProfileNotificationsTile]
 class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
   bool _isTestingNotification = false;
-
-  void _openTokenDialog() {
-    HapticFeedback.lightImpact();
-    ProfileFcmTokenDialog.show(context: context);
-  }
 
   Future<void> _sendTestNotification() async {
     if (_isTestingNotification) return;
@@ -49,39 +44,16 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
       await LocalNotificationService().showNotification(payload);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(CupertinoIcons.bell_fill, color: Colors.white, size: 18),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Alerta médica emitida con sonido y vibración',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontFamily: '.SF Pro Text'),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: AppColors.accent,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            margin: const EdgeInsets.all(16),
-            duration: const Duration(seconds: 3),
-          ),
+        IosTopBanner.info(
+          context,
+          'Alerta médica emitida con sonido y vibración.',
         );
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('No se pudo emitir la alerta médica local.', style: TextStyle(fontWeight: FontWeight.w600)),
-            backgroundColor: AppColors.systemRed,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            margin: const EdgeInsets.all(16),
-          ),
+        IosTopBanner.error(
+          context,
+          'No se pudo emitir la alerta médica local.',
         );
       }
     } finally {
@@ -96,7 +68,7 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'NOTIFICACIONES PUSH & FCM',
+          'NOTIFICACIONES LOCALES',
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted, letterSpacing: 0.4),
         ),
         const SizedBox(height: 8),
@@ -106,30 +78,16 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.border, width: 0.8),
           ),
-          child: Column(
-            children: [
-              _NotificationItemTile(
-                icon: CupertinoIcons.device_phone_portrait,
-                iconColor: AppColors.accent,
-                iconBgColor: AppColors.accent.withValues(alpha: 0.12),
-                title: 'Ver Token FCM del Dispositivo',
-                subtitle: 'Consultar y copiar token para Firebase',
-                trailing: const Icon(CupertinoIcons.chevron_forward, size: 16, color: AppColors.textTertiary),
-                onTap: _openTokenDialog,
-              ),
-              const Divider(height: 0.8, thickness: 0.8, indent: 66, endIndent: 16, color: AppColors.border),
-              _NotificationItemTile(
-                icon: CupertinoIcons.bell_fill,
-                iconColor: AppColors.systemOrange,
-                iconBgColor: AppColors.systemOrange.withValues(alpha: 0.12),
-                title: 'Probar Notificación Local',
-                subtitle: 'Emitir alerta médica con sonido y vibración',
-                trailing: _isTestingNotification
-                    ? const CupertinoActivityIndicator(radius: 8)
-                    : const Icon(CupertinoIcons.play_arrow_solid, size: 16, color: AppColors.accent),
-                onTap: _sendTestNotification,
-              ),
-            ],
+          child: _NotificationItemTile(
+            icon: CupertinoIcons.bell_fill,
+            iconColor: AppColors.systemOrange,
+            iconBgColor: AppColors.systemOrange.withValues(alpha: 0.12),
+            title: 'Probar Notificación Local',
+            subtitle: 'Emitir alerta médica con sonido y vibración',
+            trailing: _isTestingNotification
+                ? const CupertinoActivityIndicator(radius: 8)
+                : const Icon(CupertinoIcons.play_arrow_solid, size: 16, color: AppColors.accent),
+            onTap: _sendTestNotification,
           ),
         ),
       ],

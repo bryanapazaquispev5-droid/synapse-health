@@ -1,8 +1,8 @@
 // Bloque: Componente interactivo para mostrar cada pregunta de quiz en la lista del tema
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/ios_top_banner.dart';
 import '../../model/quiz_model.dart';
 import '../../model/quiz_question_progress_model.dart';
 import '../quiz_session_screen.dart';
@@ -40,40 +40,18 @@ class QuizListTile extends StatelessWidget {
           onTap: () {
             // Bloque: Validación si el intento de práctica no ha comenzado
             if (!isAttemptStarted) {
-              HapticFeedback.lightImpact();
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                    "Pulsa 'Comenzar Examen de Práctica' para iniciar el quiz del tema.",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontFamily: '.SF Pro Text'),
-                  ),
-                  backgroundColor: AppColors.accent,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  margin: const EdgeInsets.all(16),
-                  duration: const Duration(seconds: 3),
-                ),
+              IosTopBanner.info(
+                context,
+                "Pulsa 'Comenzar Examen de Práctica' para iniciar el quiz del tema.",
               );
               return;
             }
 
             // Bloque: Acción al pulsar pregunta bloqueada o completada
             if (isLocked) {
-              HapticFeedback.lightImpact();
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                    "Pregunta completada en este intento. Pulsa 'Reintentar tema' para responderla nuevamente.",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontFamily: '.SF Pro Text'),
-                  ),
-                  backgroundColor: AppColors.accent,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  margin: const EdgeInsets.all(16),
-                  duration: const Duration(seconds: 3),
-                ),
+              IosTopBanner.warning(
+                context,
+                "Pregunta completada en este intento. Pulsa 'Reintentar tema' para responderla nuevamente.",
               );
               return;
             }

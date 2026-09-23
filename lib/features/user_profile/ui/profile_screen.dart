@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/ios_top_banner.dart';
 import '../api/profile_api_service.dart';
 import 'widgets/profile_career_sheet.dart';
 import 'widgets/profile_edit_name_dialog.dart';
@@ -48,19 +49,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showFeedback(String message, {bool isError = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: '.SF Pro Text'),
-        ),
-        backgroundColor: isError ? AppColors.systemRed : AppColors.accent,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+    if (isError) {
+      IosTopBanner.error(context, message);
+    } else {
+      IosTopBanner.success(context, message);
+    }
   }
 
   // Bloque: Manejo del diálogo de confirmación y cierre de sesión seguro

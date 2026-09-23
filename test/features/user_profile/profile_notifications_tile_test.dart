@@ -9,7 +9,7 @@ import 'package:synapse_health/core/theme/app_theme.dart';
 import 'package:synapse_health/features/user_profile/ui/widgets/profile_notifications_tile.dart';
 
 void main() {
-  testWidgets('ProfileNotificationsTile renders FCM token and local notification options',
+  testWidgets('ProfileNotificationsTile renders local notification options without FCM token',
       (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -22,8 +22,8 @@ void main() {
       ),
     );
 
-    expect(find.text('NOTIFICACIONES PUSH & FCM'), findsOneWidget);
-    expect(find.text('Ver Token FCM del Dispositivo'), findsOneWidget);
+    expect(find.text('NOTIFICACIONES LOCALES'), findsOneWidget);
+    expect(find.text('Ver Token FCM del Dispositivo'), findsNothing);
     expect(find.text('Probar Notificación Local'), findsOneWidget);
   });
 }

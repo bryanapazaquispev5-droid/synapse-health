@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
+import 'package:synapse_health/core/widgets/ios_top_banner.dart';
 import 'package:synapse_health/features/quizzes/model/quiz_attempt_model.dart';
 import 'package:synapse_health/features/quizzes/model/quiz_model.dart';
 import 'package:synapse_health/features/quizzes/model/quiz_question_progress_model.dart';
@@ -198,6 +199,8 @@ void main() {
       await tester.pump();
 
       expect(find.text("Pulsa 'Comenzar Examen de Práctica' para iniciar el quiz del tema."), findsOneWidget);
+      IosTopBanner.dismiss();
+      await tester.pump();
     });
   });
 }

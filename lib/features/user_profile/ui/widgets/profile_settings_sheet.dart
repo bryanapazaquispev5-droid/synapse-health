@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import 'profile_fcm_token_dialog.dart';
 
 // Bloque: Presentador estático de la hoja modal de ajustes
 class ProfileSettingsSheet {
@@ -29,11 +28,6 @@ class ProfileSettingsSheet {
 // Bloque: Contenido interno del modal translúcido de ajustes
 class _SettingsSheetContent extends StatelessWidget {
   const _SettingsSheetContent();
-
-  void _openTokenDialog(BuildContext context) {
-    HapticFeedback.lightImpact();
-    ProfileFcmTokenDialog.show(context: context);
-  }
 
   Widget _buildWaveSwitch() => ValueListenableBuilder<bool>(
     valueListenable: AppSettingsService().isLiquidWaveEnabled,
@@ -78,7 +72,7 @@ class _SettingsSheetContent extends StatelessWidget {
                           child: Column(mainAxisSize: MainAxisSize.min, children: [
                             Text('Ajustes del Sistema', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
                             SizedBox(height: 4),
-                            Text('Personaliza animaciones y notificaciones Firebase', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, color: AppColors.textMuted)),
+                            Text('Personaliza animaciones y comportamiento del sistema', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, color: AppColors.textMuted)),
                           ]),
                         ),
                         divider,
@@ -88,15 +82,6 @@ class _SettingsSheetContent extends StatelessWidget {
                           title: 'Transición tipo Ola',
                           subtitle: 'Efecto líquido entre menús',
                           trailing: _buildWaveSwitch(),
-                        ),
-                        divider,
-                        _buildRow(
-                          icon: CupertinoIcons.device_phone_portrait,
-                          iconColor: AppColors.accent,
-                          title: 'Token FCM del Dispositivo',
-                          subtitle: 'Consultar y copiar token Firebase',
-                          trailing: const Icon(CupertinoIcons.chevron_forward, size: 14, color: Color(0xFFC7C7CC)),
-                          onTap: () => _openTokenDialog(context),
                         ),
                       ],
                     ),

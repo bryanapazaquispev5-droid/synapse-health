@@ -4,9 +4,9 @@
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/ios_top_banner.dart';
 
 // Estado reactivo y control de ciclo de vida para [CheatsheetOffline]
 class CheatsheetOfflineState extends StatelessWidget {
@@ -64,18 +64,9 @@ class CheatsheetOfflineState extends StatelessWidget {
                 final isConnected = await _connectivityService.checkConnection();
                 if (!context.mounted) return;
                 if (!isConnected) {
-                  // Bloque: Despliegue de notificación visual o SnackBar
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        'Aún no hay conexión a internet. Revisa tu Wi-Fi o datos móviles.',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      backgroundColor: AppColors.systemRed,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      duration: const Duration(seconds: 2),
-                    ),
+                  IosTopBanner.error(
+                    context,
+                    'No se pudo descargar las fichas. Verifica tu conexión médica a internet.',
                   );
                 }
               },

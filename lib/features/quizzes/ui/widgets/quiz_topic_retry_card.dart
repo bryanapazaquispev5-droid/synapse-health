@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/ios_top_banner.dart';
 import '../../api/quiz_progress_service.dart';
 import '../../model/quiz_topic_progress_model.dart';
 
@@ -101,34 +102,16 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(CupertinoIcons.arrow_counterclockwise_circle_fill, color: Colors.white, size: 18),
-                SizedBox(width: 10),
-                Expanded(child: Text('Tema reiniciado. Todas las preguntas están desbloqueadas.', style: TextStyle(fontWeight: FontWeight.w600))),
-              ],
-            ),
-            backgroundColor: AppColors.accent,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            margin: const EdgeInsets.all(16),
-            duration: const Duration(seconds: 3),
-          ),
+        IosTopBanner.success(
+          context,
+          'Tema reiniciado. Todas las preguntas están desbloqueadas.',
         );
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('No se pudo reintentar el tema en este momento.'),
-            backgroundColor: AppColors.systemRed,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            margin: const EdgeInsets.all(16),
-          ),
+        IosTopBanner.error(
+          context,
+          'No se pudo reiniciar el tema. Intenta nuevamente.',
         );
       }
     } finally {
