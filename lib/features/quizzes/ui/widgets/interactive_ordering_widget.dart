@@ -53,8 +53,14 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
     final shuffled = List<String>.from(_correctSequence);
 
     if (shuffled.length > 1) {
-      shuffled.shuffle(Random());
-      if (_areListsEqual(shuffled, _correctSequence)) {
+      final rand = Random();
+      for (int i = 0; i < 15; i++) {
+        shuffled.shuffle(rand);
+        if (shuffled[0] != _correctSequence[0] && !_areListsEqual(shuffled, _correctSequence)) {
+          break;
+        }
+      }
+      if (shuffled[0] == _correctSequence[0] || _areListsEqual(shuffled, _correctSequence)) {
         final first = shuffled.removeAt(0);
         shuffled.add(first);
       }

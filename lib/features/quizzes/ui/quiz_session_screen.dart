@@ -30,6 +30,7 @@ class QuizSessionScreen extends StatefulWidget {
 }
 
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
+  late List<QuizModel> _sessionQuizzes;
   late int _currentIndex, _totalMaxStars;
   int? _selectedOptionIndex;
   bool? _isMatchingCorrect, _isOrderingCorrect;
@@ -42,8 +43,9 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   @override
   void initState() {
     super.initState();
-    _currentIndex = (widget.initialIndex >= 0 && widget.initialIndex < widget.quizzes.length) ? widget.initialIndex : 0;
-    _totalMaxStars = QuizScoringHelper.calculateTotalMaxStars(widget.quizzes);
+    _sessionQuizzes = widget.quizzes.map((q) => q.withShuffledOptions()).toList();
+    _currentIndex = (widget.initialIndex >= 0 && widget.initialIndex < _sessionQuizzes.length) ? widget.initialIndex : 0;
+    _totalMaxStars = QuizScoringHelper.calculateTotalMaxStars(_sessionQuizzes);
     _sessionStartTime = DateTime.now();
     _questionStartTime = DateTime.now();
     _startTimer();
@@ -83,7 +85,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     required int maxStars,
     int? selectedOptionIndex,
   }) {
-    final quiz = widget.quizzes[_currentIndex];
+    final quiz = _sessionQuizzes[_currentIndex];
     QuizProgressService().recordQuestionAnswer(
       areaId: quiz.areaId,
       topicId: quiz.topicId,
@@ -98,7 +100,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
 
   void _handleOptionSelected(int index) {
     if (_isAnswered) return;
-    final currentQuiz = widget.quizzes[_currentIndex];
+    final currentQuiz = _sessionQuizzes[_currentIndex];
     final bool isCorrect = index == currentQuiz.correctIndex;
     final int spent = DateTime.now().difference(_questionStartTime).inSeconds;
 
@@ -148,7 +150,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   }
 
   void _handleNextQuestion() {
-    if (_currentIndex < widget.quizzes.length - 1) {
+    if (_currentIndex < _sessionQuizzes.length - 1) {
       setState(() { _currentIndex++; _resetQuestionFields(); });
     } else {
       _tickerTimer?.cancel();
@@ -165,6 +167,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   }
 
   void _restartQuizSession() {
+    _sessionQuizzes = widget.quizzes.map((q) => q.withShuffledOptions()).toList();
     setState(() {
       _currentIndex = 0; _score = 0; _totalEarnedStars = 0; _elapsedSessionSeconds = 0;
       _isCompleted = false; _sessionStartTime = DateTime.now();
@@ -175,7 +178,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.quizzes.isEmpty) {
+    if (_sessionQuizzes.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: CupertinoNavigationBar(middle: Text(widget.areaTitle)),
@@ -186,7 +189,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     if (_isCompleted) {
       return QuizResultView(
         score: _score,
-        totalQuestions: widget.quizzes.length,
+        totalQuestions: _sessionQuizzes.length,
         earnedStars: _totalEarnedStars,
         totalMaxStars: _totalMaxStars,
         totalDurationSeconds: _elapsedSessionSeconds,
@@ -196,7 +199,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       );
     }
 
-    final quiz = widget.quizzes[_currentIndex];
+    final quiz = _sessionQuizzes[_currentIndex];
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -204,7 +207,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
           children: [
             QuizSessionHeader(
               currentIndex: _currentIndex,
-              totalQuestions: widget.quizzes.length,
+              totalQuestions: _sessionQuizzes.length,
               earnedStars: _totalEarnedStars,
               elapsedSeconds: _elapsedSessionSeconds,
               onExit: () => Navigator.pop(context),
@@ -231,7 +234,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _isAnswered
           ? QuizSessionBottomBar(
-              hasNext: _currentIndex < widget.quizzes.length - 1,
+              hasNext: _currentIndex < _sessionQuizzes.length - 1,
               onNext: _handleNextQuestion,
             )
           : null,

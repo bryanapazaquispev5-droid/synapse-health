@@ -3,6 +3,7 @@
 // Propósito: Modelo de datos inmutable para preguntas medicas, opciones de respuesta y emparejamientos [quiz_model].
 // ============================================================================
 
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../utils/quiz_fallback_parser.dart';
 import 'matching_pair_model.dart';
@@ -173,5 +174,43 @@ class QuizModel {
       default:
         return const Color(0xFFD1FAE5);
     }
+  }
+
+  QuizModel copyWith({
+    String? id,
+    String? areaId,
+    String? topicId,
+    String? type,
+    String? question,
+    List<String>? options,
+    int? correctIndex,
+    String? rationale,
+    String? sourceBook,
+    int? orderIndex,
+    List<MatchingPair>? matchingPairs,
+    List<String>? orderingItems,
+  }) {
+    return QuizModel(
+      id: id ?? this.id,
+      areaId: areaId ?? this.areaId,
+      topicId: topicId ?? this.topicId,
+      type: type ?? this.type,
+      question: question ?? this.question,
+      options: options ?? this.options,
+      correctIndex: correctIndex ?? this.correctIndex,
+      rationale: rationale ?? this.rationale,
+      sourceBook: sourceBook ?? this.sourceBook,
+      orderIndex: orderIndex ?? this.orderIndex,
+      matchingPairs: matchingPairs ?? this.matchingPairs,
+      orderingItems: orderingItems ?? this.orderingItems,
+    );
+  }
+
+  QuizModel withShuffledOptions({Random? random}) {
+    if (options.length <= 1) return this;
+    final correctText = (correctIndex >= 0 && correctIndex < options.length) ? options[correctIndex] : null;
+    final shuffled = List<String>.from(options)..shuffle(random ?? Random());
+    final newIndex = correctText != null ? shuffled.indexOf(correctText) : correctIndex;
+    return copyWith(options: shuffled, correctIndex: newIndex);
   }
 }

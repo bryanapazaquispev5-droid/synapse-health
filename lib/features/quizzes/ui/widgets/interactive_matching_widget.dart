@@ -59,24 +59,23 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
     _leftItems = _originalPairs.map((p) => p.left).toList();
 
     final shuffledRights = _originalPairs.map((p) => p.right).toList();
-    shuffledRights.shuffle(Random());
-    if (shuffledRights.length > 1 && _areArraysEqual(shuffledRights, _originalPairs.map((p) => p.right).toList())) {
-      final first = shuffledRights.removeAt(0);
-      shuffledRights.add(first);
+    if (shuffledRights.length > 1) {
+      final rand = Random();
+      for (int attempt = 0; attempt < 15; attempt++) {
+        shuffledRights.shuffle(rand);
+        final hasDirectMatch = shuffledRights.asMap().entries.any((e) => e.value == _originalPairs[e.key].right);
+        if (!hasDirectMatch) break;
+      }
+      if (shuffledRights[0] == _originalPairs[0].right) {
+        final first = shuffledRights.removeAt(0);
+        shuffledRights.add(first);
+      }
     }
     _rightItems = shuffledRights;
 
     _userPairings.clear();
     _selectedLeftIndex = null;
     _isSubmitted = widget.isAnswered;
-  }
-
-  bool _areArraysEqual(List<String> a, List<String> b) {
-    if (a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
   }
 
   void _onLeftItemTapped(int index) {
