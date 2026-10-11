@@ -6,12 +6,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../cheatsheets/ui/cheatsheet_list_screen.dart';
-import '../../leaderboard/ui/leaderboard_screen.dart';
+import '../../personal_progress/ui/personal_progress_screen.dart';
 import '../../quizzes/ui/quiz_areas_screen.dart';
 import '../../user_profile/ui/profile_screen.dart';
 import 'widgets/liquid_wave_transition.dart';
@@ -72,7 +73,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
             children: [
               const CheatsheetListScreen(),
               const QuizAreasScreen(),
-              LeaderboardScreen(currentUser: widget.user),
+              const PersonalProgressScreen(),
               ProfileScreen(user: widget.user),
             ],
           ),
@@ -81,7 +82,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
             child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: _userStream,
               builder: (context, snapshot) {
-                final String gender = snapshot.data?.data()?['gender'] ?? _cachedGender;
+                final String gender =
+                    snapshot.data?.data()?['gender'] ?? _cachedGender;
                 final String userGif = (gender.toLowerCase() == 'mujer')
                     ? 'assets/images/user_girl.gif'
                     : 'assets/images/user_boy.gif';
@@ -90,9 +92,18 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                   currentIndex: _currentIndex,
                   onTap: (index) => setState(() => _currentIndex = index),
                   items: [
-                    const BottomPillItem(assetPath: 'assets/images/book.gif', label: 'Fichas'),
-                    const BottomPillItem(assetPath: 'assets/images/quiz.gif', label: 'Quizzes'),
-                    const BottomPillItem(assetPath: 'assets/images/progreso.gif', label: 'Progreso'),
+                    const BottomPillItem(
+                      assetPath: 'assets/images/book.gif',
+                      label: 'Fichas',
+                    ),
+                    const BottomPillItem(
+                      assetPath: 'assets/images/quiz.gif',
+                      label: 'Quizzes',
+                    ),
+                    const BottomPillItem(
+                      assetPath: 'assets/images/progreso.gif',
+                      label: 'Progreso',
+                    ),
                     BottomPillItem(assetPath: userGif, label: 'Perfil'),
                   ],
                 );
