@@ -102,13 +102,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     try {
       await widget.user.updateDisplayName(name);
 
-      await _authService.firestore.collection(AppConstants.FIRESTORE_USERS).doc(widget.user.uid).set({
+      final profileRef = _authService.firestore
+          .collection(AppConstants.FIRESTORE_USERS).doc(widget.user.uid);
+      final existingProfile = await profileRef.get();
+      await profileRef.set({
         'uid': widget.user.uid,
         'name': name,
         'email': widget.user.email ?? '',
         'career': career,
         'gender': _selectedGender,
-        'createdAt': FieldValue.serverTimestamp(),
+        if (!(existingProfile.data()?.containsKey('createdAt') ?? false))
+          'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 

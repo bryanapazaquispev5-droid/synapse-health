@@ -77,21 +77,10 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
     });
 
     try {
-      final exists = await _authService.isEmailRegisteredInFirestore(email);
-      if (!exists) {
-        if (mounted) {
-          setState(() {
-            _isChecking = false;
-            _localError = 'Este correo no está registrado en el sistema.';
-          });
-        }
-        return;
-      }
-
       await _authService.sendPasswordResetEmail(email);
       if (mounted) {
         Navigator.pop(context);
-        widget.onSuccess('¡Enlace enviado a $email! Revisa tu bandeja o spam.');
+        widget.onSuccess('Si existe una cuenta con ese correo, recibirás un enlace. Revisa tu bandeja o spam.');
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
@@ -104,7 +93,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
       if (mounted) {
         setState(() {
           _isChecking = false;
-          _localError = 'Ocurrió un error al verificar: $e';
+          _localError = 'No se pudo solicitar el enlace. Inténtalo de nuevo.';
         });
       }
     }

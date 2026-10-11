@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../leaderboard/api/leaderboard_service.dart';
 import '../api/quiz_progress_service.dart';
 import '../model/quiz_model.dart';
 import '../utils/quiz_scoring_helper.dart';
@@ -155,14 +153,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     } else {
       _tickerTimer?.cancel();
       setState(() => _isCompleted = true);
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null) {
-        LeaderboardService().recordCompletedQuiz(
-          uid: uid,
-          earnedStars: _totalEarnedStars,
-          durationSeconds: _elapsedSessionSeconds,
-        );
-      }
+      // Personal practice persists separately; client scores cannot update ranking.
     }
   }
 

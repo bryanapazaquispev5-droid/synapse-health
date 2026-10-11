@@ -13,8 +13,12 @@ import '../../../core/services/user_local_profile_service.dart';
 
 // Servicio para la gestion de operaciones de [AuthService]
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore})
+      : _auth = auth ?? FirebaseAuth.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance;
+
+  final FirebaseAuth _auth;
+  final FirebaseFirestore _firestore;
 
   FirebaseAuth get auth => _auth;
   FirebaseFirestore get firestore => _firestore;
@@ -87,36 +91,19 @@ class AuthService {
         gender: gender,
         photoUrl: user.photoURL,
       );
-
-      try {
-        final oldDocs = await _firestore
-            .collection(AppConstants.FIRESTORE_USERS)
-            .where('email', isEqualTo: email.trim().toLowerCase())
-            .get();
-        for (final d in oldDocs.docs) {
-          if (d.id != user.uid) {
-            await d.reference.delete();
-          }
-        }
-      } catch (_) {}
     }
 
     return userCredential;
   }
 
-  /// Verifica si el correo está registrado en Firestore antes de enviar reset
-  Future<bool> isEmailRegisteredInFirestore(String email) async {
-    final snapshot = await _firestore
-        .collection(AppConstants.FIRESTORE_USERS)
-        .where('email', isEqualTo: email.trim().toLowerCase())
-        .limit(1)
-        .get();
-    return snapshot.docs.isNotEmpty;
-  }
-
   /// Envía correo para recuperar contraseña
   Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
+    } on FirebaseAuthException catch (error) {
+      // Do not reveal whether an email belongs to a registered account.
+      if (error.code != 'user-not-found') rethrow;
+    }
   }
 
   /// Flujo OAuth2 Google Sign-In (Token directo via AccountManager / Fallback / Nativo)

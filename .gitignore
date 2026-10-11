@@ -56,3 +56,7 @@ node_modules/
 .agents/
 AGENTS.md
 GEMINI.md
+# Local Firebase Emulator logs and coverage reports
+*-debug.log
+*-debug.log.*
+security/coverage/

@@ -1,0 +1,14 @@
+{
+  "name": "synapse-health-firestore-security-tests",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "firebase emulators:exec --config ../firebase.emulators.json --project demo-synapse-health --only firestore \"node --test --test-concurrency=1 tests/*.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.0.0",
+    "firebase-tools": "15.30.1"
+  }
+}
