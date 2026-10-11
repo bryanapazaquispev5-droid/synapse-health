@@ -241,3 +241,27 @@
 - Commits técnicos publicados y comprobados en el remoto. Este documento se publica en un tercer commit de documentación.
 - Enlace: https://github.com/bryanapazaquispev5-droid/synapse-health/tree/feat/janely-synapse-development
 - main y testIv permanecen en da55709c53b27f6e6d0ae6cd50ff5d9333f996be; no force push, no despliegue Firebase/AWS y no inicio de Fase 2.
+
+
+## Fase 2 — Implementada, validada y publicada en GitHub
+- Fecha: 11 de octubre de 2026, America/Lima; rama feat/janely-synapse-development.
+- Alcance: Loading, Empty, Error y Offline compartidos con estilo existente; wrappers de fichas reutilizados.
+- Integración en nueve pantallas existentes de fichas, quizzes y ranking; búsqueda vacía contextual y acciones de reintento.
+- Suscripciones estables y contenido conservado en memoria; avisos parciales offline/error/recarga sin desmontar listas.
+- Errores de acceso tienen prioridad sobre offline y descartan datos revocados; errores no se convierten en vacío.
+- Progreso en carga/fallo no se interpreta como cero; intentos dependientes esperan datos válidos, sin cambiar reglas funcionales.
+- Se retiraron valores de presentación ficticios: contador provisional de áreas y fallback20 cuando falta el número/máximo de quizzes.
+- Sondeo HTTPS sin nuevas dependencias, agrupación de comprobaciones y separación de alcance de red vs disponibilidad del servidor.
+- Persistencia Firestore en disco permanece desactivada; no se promete contenido disponible tras reiniciar.
+- No se añadieron pantallas NotFound/UnderDevelopment sin flujo real, ni funciones de Fase 3.
+- flutter analyze: sin incidencias, exit0 (3,2 s); flutter test: 55 aprobadas, exit0 (29 existentes y 26 nuevas).
+- flutter run lib/main.dart en iPhone17/iOS26.5: compilación19,9 s, sincronización198 ms, VM y login visible.
+- QA visual adicional de componentes aislados y botones; entrada temporal externa al repositorio, luego restaurada la app real.
+- Aviso Google Sign-In UIScene previo persiste; flujos autenticados reales no se probaron en esta fase.
+- Informe, archivos, limitaciones y capturas: docs/FASE_2_ESTADOS_UI.md.
+- Commit de componentes y pruebas publicado: 340daacd8daf082329d63b445740ac46a74dd612.
+- Commit de integración y pruebas de tarjetas publicado: a6a01e596a79ebe82d83d335a07892dbbdb3b2fa.
+- Push 02de0b3 → a6a01e5 verificado por git ls-remote y API GitHub; documentación y capturas se publican en commit separado.
+- Rama: https://github.com/bryanapazaquispev5-droid/synapse-health/tree/feat/janely-synapse-development
+- Revisión de 31 archivos de la fase sin secretos detectados; archivos Dart modificados menores de 250 líneas.
+- Detenerse aquí: Fase 3 sin iniciar; no despliegues ni cambios en main/testIv.
