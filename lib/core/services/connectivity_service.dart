@@ -4,7 +4,9 @@
 // ============================================================================
 
 import 'dart:async';
-import 'dart:io';
+import 'dart:developer' as developer;
+
+import 'internet_connection_probe.dart';
 
 /// Servicio singleton para monitoreo de conexión a internet en tiempo real
 class ConnectivityService {
@@ -21,32 +23,42 @@ class ConnectivityService {
   bool get isOnline => _isOnline;
 
   Timer? _timer;
+  Future<bool>? _pendingCheck;
 
   void _init() {
-    checkConnection();
+    _checkInBackground();
     // Verificación continua cada 2.5 segundos
     _timer = Timer.periodic(const Duration(milliseconds: 2500), (_) {
-      checkConnection();
+      _checkInBackground();
     });
   }
 
-  /// Comprueba la conectividad real haciendo una consulta DNS a Google
-  Future<bool> checkConnection() async {
-    // Bloque: Ejecución protegida de operación asíncrona
-    try {
-      final result = await InternetAddress.lookup('google.com')
-          .timeout(const Duration(milliseconds: 2000));
-      final bool isConnectionOnline = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-      _updateStatus(isConnectionOnline);
-      return isConnectionOnline;
-    } catch (_) {
-      _updateStatus(false);
-      return false;
-    }
+  /// Coalesces checks so polling and retry never start overlapping probes.
+  Future<bool> checkConnection() {
+    return _pendingCheck ??= probeInternetConnection()
+        .then((online) {
+          _updateStatus(online);
+          return online;
+        })
+        .whenComplete(() => _pendingCheck = null);
+  }
+
+  void _checkInBackground() {
+    unawaited(
+      checkConnection().catchError((Object error, StackTrace stack) {
+        developer.log(
+          'Unexpected connectivity failure',
+          name: 'ConnectivityService',
+          error: error,
+          stackTrace: stack,
+        );
+        return _isOnline; // An internal error is not evidence of being offline.
+      }),
+    );
   }
 
   void _updateStatus(bool isOnline) {
-    if (_isOnline != isOnline) {
+    if (!_controller.isClosed && _isOnline != isOnline) {
       _isOnline = isOnline;
       _controller.add(isOnline);
     }
