@@ -1,7 +1,9 @@
 // Bloque: Servicio de Gestión de Progreso, Estrellas y Reintentos de Quizzes
 import 'dart:developer' as developer;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../model/quiz_question_progress_model.dart';
 import '../model/quiz_topic_progress_model.dart';
@@ -14,10 +16,7 @@ class QuizProgressService {
     FirebaseAuth? auth,
   }) {
     if (firestore != null || auth != null) {
-      return QuizProgressService._internal(
-        firestore: firestore,
-        auth: auth,
-      );
+      return QuizProgressService._internal(firestore: firestore, auth: auth);
     }
     return _instance;
   }
@@ -25,8 +24,8 @@ class QuizProgressService {
   QuizProgressService._internal({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -54,10 +53,7 @@ class QuizProgressService {
       if (!snapshot.exists || snapshot.data() == null) {
         return null;
       }
-      return QuizTopicProgressModel.fromMap(
-        snapshot.data()!,
-        topicId: topicId,
-      );
+      return QuizTopicProgressModel.fromMap(snapshot.data()!, topicId: topicId);
     });
   }
 
@@ -105,70 +101,72 @@ class QuizProgressService {
     try {
       final collection = _getUserProgressCollection();
       if (collection == null) {
-        developer.log(
-          'Usuario no autenticado para registrar respuesta en quiz: $quizId',
-          name: 'QuizProgressService',
-        );
-        return;
+        throw FirebaseAuthException(code: 'unauthenticated');
       }
 
       final docRef = collection.doc(topicId);
-      final snapshot = await docRef.get();
+      await _firestore.runTransaction<void>((transaction) async {
+        final snapshot = await transaction.get(docRef);
 
-      QuizTopicProgressModel model;
-      if (snapshot.exists && snapshot.data() != null) {
-        model = QuizTopicProgressModel.fromMap(
-          snapshot.data()!,
-          topicId: topicId,
-          areaId: areaId,
+        QuizTopicProgressModel model;
+        if (snapshot.exists && snapshot.data() != null) {
+          model = QuizTopicProgressModel.fromMap(
+            snapshot.data()!,
+            topicId: topicId,
+            areaId: areaId,
+          );
+        } else {
+          model = QuizTopicProgressModel.empty(
+            topicId: topicId,
+            areaId: areaId,
+          );
+        }
+
+        // Bloque: Crear entrada de respuesta para la pregunta actual
+        final questionProgress = QuizQuestionProgressModel(
+          quizId: quizId,
+          isAnswered: true,
+          isCorrect: isCorrect,
+          earnedStars: earnedStars,
+          maxStars: maxStars,
+          selectedOptionIndex: selectedOptionIndex,
+          answeredAt: DateTime.now(),
         );
-      } else {
-        model = QuizTopicProgressModel.empty(
-          topicId: topicId,
-          areaId: areaId,
+
+        final updatedAnswers = Map<String, QuizQuestionProgressModel>.from(
+          model.activeAttempt.questionAnswers,
         );
-      }
+        updatedAnswers[quizId] = questionProgress;
 
-      // Bloque: Crear entrada de respuesta para la pregunta actual
-      final questionProgress = QuizQuestionProgressModel(
-        quizId: quizId,
-        isAnswered: true,
-        isCorrect: isCorrect,
-        earnedStars: earnedStars,
-        maxStars: maxStars,
-        selectedOptionIndex: selectedOptionIndex,
-        answeredAt: DateTime.now(),
-      );
+        // Bloque: Recalcular estrellas acumuladas del intento activo
+        final int totalEarned = updatedAnswers.values.fold(
+          0,
+          (acc, q) => acc + q.earnedStars,
+        );
 
-      final updatedAnswers = Map<String, QuizQuestionProgressModel>.from(
-        model.activeAttempt.questionAnswers,
-      );
-      updatedAnswers[quizId] = questionProgress;
+        final int totalMax =
+            (topicTotalMaxStars != null && topicTotalMaxStars > 0)
+            ? topicTotalMaxStars
+            : (model.activeAttempt.totalMaxStars > updatedAnswers.length
+                  ? model.activeAttempt.totalMaxStars
+                  : updatedAnswers.values.fold(
+                      0,
+                      (acc, q) => acc + q.maxStars,
+                    ));
 
-      // Bloque: Recalcular estrellas acumuladas del intento activo
-      final int totalEarned = updatedAnswers.values.fold(
-        0,
-        (acc, q) => acc + q.earnedStars,
-      );
+        final updatedAttempt = model.activeAttempt.copyWith(
+          questionAnswers: updatedAnswers,
+          totalEarnedStars: totalEarned,
+          totalMaxStars: totalMax,
+        );
 
-      final int totalMax = (topicTotalMaxStars != null && topicTotalMaxStars > 0)
-          ? topicTotalMaxStars
-          : (model.activeAttempt.totalMaxStars > updatedAnswers.length
-              ? model.activeAttempt.totalMaxStars
-              : updatedAnswers.values.fold(0, (acc, q) => acc + q.maxStars));
+        final updatedModel = model.copyWith(
+          activeAttempt: updatedAttempt,
+          updatedAt: DateTime.now(),
+        );
 
-      final updatedAttempt = model.activeAttempt.copyWith(
-        questionAnswers: updatedAnswers,
-        totalEarnedStars: totalEarned,
-        totalMaxStars: totalMax,
-      );
-
-      final updatedModel = model.copyWith(
-        activeAttempt: updatedAttempt,
-        updatedAt: DateTime.now(),
-      );
-
-      await docRef.set(updatedModel.toMap(), SetOptions(merge: true));
+        transaction.set(docRef, updatedModel.toMap(), SetOptions(merge: true));
+      });
     } catch (e, stackTrace) {
       developer.log(
         'Error registrando respuesta de quiz: $e',
@@ -176,6 +174,7 @@ class QuizProgressService {
         error: e,
         stackTrace: stackTrace,
       );
+      rethrow;
     }
   }
 
@@ -187,43 +186,48 @@ class QuizProgressService {
   }) async {
     try {
       final collection = _getUserProgressCollection();
-      if (collection == null) return;
+      if (collection == null) {
+        throw FirebaseAuthException(code: 'unauthenticated');
+      }
 
       final docRef = collection.doc(topicId);
-      final snapshot = await docRef.get();
+      await _firestore.runTransaction<void>((transaction) async {
+        final snapshot = await transaction.get(docRef);
 
-      if (!snapshot.exists || snapshot.data() == null) {
-        final initialModel = QuizTopicProgressModel.empty(
+        if (!snapshot.exists || snapshot.data() == null) {
+          final initialModel = QuizTopicProgressModel.empty(
+            topicId: topicId,
+            areaId: areaId,
+            totalMaxStars: totalMaxStars,
+          );
+          transaction.set(docRef, initialModel.toMap());
+          return;
+        }
+
+        final model = QuizTopicProgressModel.fromMap(
+          snapshot.data()!,
           topicId: topicId,
           areaId: areaId,
-          totalMaxStars: totalMaxStars,
         );
-        await docRef.set(initialModel.toMap());
-        return;
-      }
 
-      final model = QuizTopicProgressModel.fromMap(
-        snapshot.data()!,
-        topicId: topicId,
-        areaId: areaId,
-      );
-
-      // Bloque: Si el intento actual contiene respuestas, archivarlo con FIFO estricto
-      if (model.activeAttempt.questionAnswers.isNotEmpty) {
-        final resetModel = model.archiveCurrentAttemptAndReset(
-          totalMaxStars: totalMaxStars,
-        );
-        await docRef.set(resetModel.toMap());
-      } else {
-        // Bloque: Si estaba vacío, solo actualizar configuración de estrellas
-        final updatedAttempt = model.activeAttempt.copyWith(
-          totalMaxStars: totalMaxStars,
-        );
-        await docRef.set(
-          model.copyWith(activeAttempt: updatedAttempt).toMap(),
-          SetOptions(merge: true),
-        );
-      }
+        // Bloque: Si el intento actual contiene respuestas, archivarlo con FIFO estricto
+        if (model.activeAttempt.questionAnswers.isNotEmpty) {
+          final resetModel = model.archiveCurrentAttemptAndReset(
+            totalMaxStars: totalMaxStars,
+          );
+          transaction.set(docRef, resetModel.toMap());
+        } else {
+          // Bloque: Si estaba vacío, solo actualizar configuración de estrellas
+          final updatedAttempt = model.activeAttempt.copyWith(
+            totalMaxStars: totalMaxStars,
+          );
+          transaction.set(
+            docRef,
+            model.copyWith(activeAttempt: updatedAttempt).toMap(),
+            SetOptions(merge: true),
+          );
+        }
+      });
     } catch (e, stackTrace) {
       developer.log(
         'Error reintentando tema de quiz: $e',
@@ -231,6 +235,7 @@ class QuizProgressService {
         error: e,
         stackTrace: stackTrace,
       );
+      rethrow;
     }
   }
 }

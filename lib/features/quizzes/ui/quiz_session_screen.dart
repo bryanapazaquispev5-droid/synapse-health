@@ -1,7 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/ios_top_banner.dart';
 import '../api/quiz_progress_service.dart';
 import '../model/quiz_model.dart';
 import '../utils/quiz_scoring_helper.dart';
@@ -42,7 +45,9 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   void initState() {
     super.initState();
     _sessionQuizzes = widget.quizzes.map((q) => q.withShuffledOptions()).toList();
-    _currentIndex = (widget.initialIndex >= 0 && widget.initialIndex < _sessionQuizzes.length) ? widget.initialIndex : 0;
+    _currentIndex = (widget.initialIndex >= 0 && widget.initialIndex < _sessionQuizzes.length)
+        ? widget.initialIndex
+        : 0;
     _totalMaxStars = QuizScoringHelper.calculateTotalMaxStars(_sessionQuizzes);
     _sessionStartTime = DateTime.now();
     _questionStartTime = DateTime.now();
@@ -84,16 +89,22 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     int? selectedOptionIndex,
   }) {
     final quiz = _sessionQuizzes[_currentIndex];
-    QuizProgressService().recordQuestionAnswer(
-      areaId: quiz.areaId,
-      topicId: quiz.topicId,
-      quizId: quiz.id,
-      isCorrect: isCorrect,
-      earnedStars: earnedStars,
-      maxStars: maxStars,
-      selectedOptionIndex: selectedOptionIndex,
-      topicTotalMaxStars: _totalMaxStars,
-    );
+    QuizProgressService()
+        .recordQuestionAnswer(
+          areaId: quiz.areaId,
+          topicId: quiz.topicId,
+          quizId: quiz.id,
+          isCorrect: isCorrect,
+          earnedStars: earnedStars,
+          maxStars: maxStars,
+          selectedOptionIndex: selectedOptionIndex,
+          topicTotalMaxStars: _totalMaxStars,
+        )
+        .catchError((Object error) {
+          if (mounted) {
+            IosTopBanner.error(context, 'No se pudo guardar tu respuesta. Verifica tu conexión e inténtalo de nuevo.');
+          }
+        });
   }
 
   void _handleOptionSelected(int index) {
@@ -149,7 +160,10 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
 
   void _handleNextQuestion() {
     if (_currentIndex < _sessionQuizzes.length - 1) {
-      setState(() { _currentIndex++; _resetQuestionFields(); });
+      setState(() {
+        _currentIndex++;
+        _resetQuestionFields();
+      });
     } else {
       _tickerTimer?.cancel();
       setState(() => _isCompleted = true);
@@ -160,8 +174,12 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   void _restartQuizSession() {
     _sessionQuizzes = widget.quizzes.map((q) => q.withShuffledOptions()).toList();
     setState(() {
-      _currentIndex = 0; _score = 0; _totalEarnedStars = 0; _elapsedSessionSeconds = 0;
-      _isCompleted = false; _sessionStartTime = DateTime.now();
+      _currentIndex = 0;
+      _score = 0;
+      _totalEarnedStars = 0;
+      _elapsedSessionSeconds = 0;
+      _isCompleted = false;
+      _sessionStartTime = DateTime.now();
       _resetQuestionFields();
     });
     _startTimer();
@@ -224,10 +242,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _isAnswered
-          ? QuizSessionBottomBar(
-              hasNext: _currentIndex < _sessionQuizzes.length - 1,
-              onNext: _handleNextQuestion,
-            )
+          ? QuizSessionBottomBar(hasNext: _currentIndex < _sessionQuizzes.length - 1, onNext: _handleNextQuestion)
           : null,
     );
   }
