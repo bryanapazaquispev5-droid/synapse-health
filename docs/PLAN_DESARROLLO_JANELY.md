@@ -265,3 +265,23 @@
 - Rama: https://github.com/bryanapazaquispev5-droid/synapse-health/tree/feat/janely-synapse-development
 - Revisión de 31 archivos de la fase sin secretos detectados; archivos Dart modificados menores de 250 líneas.
 - Detenerse aquí: Fase 3 sin iniciar; no despliegues ni cambios en main/testIv.
+
+## Fase 4 — Progreso Personal (2026-10-11)
+
+- Implementado únicamente por solicitud explícita de la Fase 4; Fase 3 no consta implementada y no se añadió aquí.
+- Pestaña Progreso: resumen privado, rendimiento por área y evolución de intentos del mismo tema. Ranking global conservado y accesible con regreso visible.
+- Datos de servicios existentes; sin colecciones, campos persistidos, paquetes o estadísticas ficticias nuevos.
+- Estrellas actuales y aciertos de intentos activos; únicos respondidos e intentos del historial conservado, no totales vitalicios.
+- Evolución solo con dos intentos fechados mediante answeredAt. Sin tiempo promedio ni avance porcentual no verificable.
+- Guardado y reintento transaccionales, mismas fórmulas y FIFO de tres históricos; errores propagados y aviso de guardado.
+- Protección por UID y reinicio de contenido al cambiar sesión; estados de Fase 2 reutilizados.
+- flutter pub get correcto; flutter analyze sin incidencias; flutter test: 100 aprobadas (45 nuevas); Emulator Suite: 19 aprobadas.
+- iPhone 17 / iOS 26.5: flutter run real, build 19,9 s, sincronización 111 ms, VM activa y login visible.
+- Sin pruebas autenticadas con datos de producción; sin despliegues Firebase/AWS. Aviso UIScene de Google Sign-In previo persiste.
+- Fórmulas, archivos, seguridad, limitaciones y evidencias: docs/FASE_4_PROGRESO_PERSONAL.md.
+- Detenerse al publicar esta fase; no avanzar automáticamente.
+- Commit de persistencia publicado: 57ef9f77a7c3932944629b5165a2393b6b7debea (fix(quizzes): preserve progress updates with transactions).
+- Commit del módulo y pruebas publicado: 20989359a2f932609fb3684271fe4e208f44b76f (feat(progress): implement personal progress dashboard).
+- Push 34d565a → 2098935 verificado por API GitHub y git ls-remote; main/testIv siguen en da55709c53b27f6e6d0ae6cd50ff5d9333f996be.
+- Documentación y dos capturas se publican en un commit separado de esta misma fase.
+- Arranque normal restaurado tras la vista temporal: build 19,6 s, sincronización 88 ms, VM activa.
