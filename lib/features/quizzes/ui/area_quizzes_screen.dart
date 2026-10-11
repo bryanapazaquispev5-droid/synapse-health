@@ -5,7 +5,9 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/states/app_async_content.dart';
 import '../../cheatsheets/model/medical_area_model.dart';
 import '../api/quiz_service.dart';
 import '../model/quiz_model.dart';
@@ -44,17 +46,29 @@ class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 12, right: 16, top: 10, bottom: 8),
+              padding: const EdgeInsets.only(
+                left: 12,
+                right: 16,
+                top: 10,
+                bottom: 8,
+              ),
               child: Row(
                 children: [
                   CupertinoButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
                     minimumSize: const Size(36, 36),
                     onPressed: () => Navigator.pop(context),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(CupertinoIcons.chevron_back, size: 24, color: AppColors.accent),
+                        Icon(
+                          CupertinoIcons.chevron_back,
+                          size: 24,
+                          color: AppColors.accent,
+                        ),
                         SizedBox(width: 2),
                         Text(
                           'Cursos',
@@ -70,7 +84,10 @@ class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -78,7 +95,11 @@ class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(CupertinoIcons.bolt_fill, size: 12, color: AppColors.accent),
+                        const Icon(
+                          CupertinoIcons.bolt_fill,
+                          size: 12,
+                          color: AppColors.accent,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${widget.area.quizzesCount} Quizzes',
@@ -95,45 +116,46 @@ class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
               ),
             ),
             Expanded(
-              child: StreamBuilder<List<QuizModel>>(
+              child: AppAsyncStreamBuilder<List<QuizModel>>(
                 stream: _quizzesStream,
-                builder: (context, snapshot) {
-                  final bool isLoading = snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData;
+                onRetryStream: () =>
+                    _quizService.getQuizzesByAreaStream(widget.area.id),
+                builder: (context, snapshot, retry) {
                   final quizzes = snapshot.data ?? [];
-
-                  if (isLoading) {
-                    return const Center(child: CupertinoActivityIndicator(radius: 14));
-                  }
-
-                  if (quizzes.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(CupertinoIcons.question_circle, size: 44, color: AppColors.textMuted),
-                          SizedBox(height: 12),
-                          Text(
-                            'No hay quizzes en esta especialidad',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary),
-                          ),
-                        ],
-                      ),
+                  if (!snapshot.hasData ||
+                      quizzes.isEmpty ||
+                      snapshot.isAccessFailure) {
+                    return AppAsyncStatus(
+                      snapshot: snapshot,
+                      isEmpty: quizzes.isEmpty,
+                      onRetry: retry,
+                      emptyTitle: 'No hay quizzes en esta especialidad',
+                      emptyMessage: 'Los quizzes disponibles aparecerán aquí.',
+                      emptyIcon: CupertinoIcons.question_circle,
                     );
                   }
-
-                  return ListView.builder(
-                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.fromLTRB(18, 12, 18, 100),
-                    itemCount: quizzes.length,
-                    itemBuilder: (context, index) {
-                      final quiz = quizzes[index];
-                      return QuizListTile(
-                        quiz: quiz,
-                        index: index + 1,
-                        allQuizzes: quizzes,
-                        areaTitle: widget.area.name,
-                      );
-                    },
+                  return Column(
+                    children: [
+                      AppAsyncNotice(snapshot: snapshot, onRetry: retry),
+                      Expanded(
+                        child: ListView.builder(
+                          physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(18, 12, 18, 100),
+                          itemCount: quizzes.length,
+                          itemBuilder: (context, index) {
+                            final quiz = quizzes[index];
+                            return QuizListTile(
+                              quiz: quiz,
+                              index: index + 1,
+                              allQuizzes: quizzes,
+                              areaTitle: widget.area.name,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

@@ -4,87 +4,20 @@
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
-import '../../../../core/services/connectivity_service.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/ios_top_banner.dart';
 
-// Estado reactivo y control de ciclo de vida para [CheatsheetOffline]
+import '../../../../core/widgets/states/app_states.dart';
+
 class CheatsheetOfflineState extends StatelessWidget {
-  final String message;
-  final ConnectivityService _connectivityService = ConnectivityService();
-
-  CheatsheetOfflineState({
+  const CheatsheetOfflineState({
     super.key,
-    this.message = 'Para proteger la seguridad médica y mantener la información actualizada, las fichas se cargan exclusivamente en línea desde la nube.',
+    this.message = 'Comprueba tu conexión a Internet para cargar las fichas.',
+    this.onRetry,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  final String message;
+  final VoidCallback? onRetry;
+
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFECEB),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Center(
-                child: Icon(CupertinoIcons.wifi_slash, size: 40, color: AppColors.systemRed),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Sin conexión a internet',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: AppColors.primary,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4),
-            ),
-            const SizedBox(height: 24),
-            CupertinoButton.filled(
-              borderRadius: BorderRadius.circular(14),
-              onPressed: () async {
-                final isConnected = await _connectivityService.checkConnection();
-                if (!context.mounted) return;
-                if (!isConnected) {
-                  IosTopBanner.error(
-                    context,
-                    'No se pudo descargar las fichas. Verifica tu conexión médica a internet.',
-                  );
-                }
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(CupertinoIcons.arrow_clockwise, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Reintentar conexión',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppOfflineState(message: message, onRetry: onRetry);
 }

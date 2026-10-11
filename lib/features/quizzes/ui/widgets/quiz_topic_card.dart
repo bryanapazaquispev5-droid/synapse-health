@@ -4,7 +4,9 @@
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
+
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/states/app_states.dart';
 import '../../../cheatsheets/model/medical_area_model.dart';
 import '../../../cheatsheets/model/topic_model.dart';
 import '../../model/quiz_topic_progress_model.dart';
@@ -17,6 +19,8 @@ class QuizTopicCard extends StatelessWidget {
   final TopicModel topic;
   final int number;
   final QuizTopicProgressModel? progress;
+  final bool progressIsAvailable;
+  final bool isLoadingProgress;
 
   const QuizTopicCard({
     super.key,
@@ -24,13 +28,15 @@ class QuizTopicCard extends StatelessWidget {
     required this.topic,
     required this.number,
     this.progress,
+    this.progressIsAvailable = true,
+    this.isLoadingProgress = false,
   });
 
   // Renderizado reactivo del arbol de widgets
   // Bloque: Renderizado reactivo del árbol de widgets principal
   @override
   Widget build(BuildContext context) {
-    final int quizzesCount = topic.quizzesCount > 0 ? topic.quizzesCount : 20;
+    final int quizzesCount = topic.quizzesCount;
 
     return GestureDetector(
       onTap: () {
@@ -95,10 +101,33 @@ class QuizTopicCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      QuizTopicProgressBadge(
-                        progress: progress,
-                        fallbackCount: quizzesCount,
-                      ),
+                      if (!progressIsAvailable)
+                        if (isLoadingProgress)
+                          const AppLoadingState(
+                            message: 'Cargando progreso',
+                            compact: true,
+                          )
+                        else
+                          const Text(
+                            'Progreso no disponible',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textMuted,
+                            ),
+                          )
+                      else if (progress != null || quizzesCount > 0)
+                        QuizTopicProgressBadge(
+                          progress: progress,
+                          fallbackCount: quizzesCount,
+                        )
+                      else
+                        const Text(
+                          'Ver quizzes',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
                       if (topic.description.isNotEmpty) ...[
                         const SizedBox(width: 6),
                         Expanded(
@@ -118,7 +147,11 @@ class QuizTopicCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(CupertinoIcons.chevron_forward, size: 14, color: Color(0xFFC7C7CC)),
+            const Icon(
+              CupertinoIcons.chevron_forward,
+              size: 14,
+              color: Color(0xFFC7C7CC),
+            ),
           ],
         ),
       ),

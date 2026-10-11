@@ -3,9 +3,10 @@
 // Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [quiz_list_screen].
 // ============================================================================
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/states/app_async_content.dart';
 import '../api/quiz_service.dart';
 import '../model/quiz_model.dart';
 import 'widgets/quiz_list_tile.dart';
@@ -19,7 +20,8 @@ class QuizListScreen extends StatefulWidget {
 }
 
 // Estado reactivo y control de ciclo de vida para [QuizListScreen]
-class _QuizListScreenState extends State<QuizListScreen> with AutomaticKeepAliveClientMixin {
+class _QuizListScreenState extends State<QuizListScreen>
+    with AutomaticKeepAliveClientMixin {
   final QuizService _quizService = QuizService();
   late final Stream<List<QuizModel>> _quizzesStream;
 
@@ -43,18 +45,25 @@ class _QuizListScreenState extends State<QuizListScreen> with AutomaticKeepAlive
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: StreamBuilder<List<QuizModel>>(
+        child: AppAsyncStreamBuilder<List<QuizModel>>(
           stream: _quizzesStream,
-          builder: (context, snapshot) {
-            final bool isLoading = snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData;
+          onRetryStream: () => _quizService.getQuizzesByAreaStream('anatomia'),
+          builder: (context, snapshot, retry) {
             final quizzes = snapshot.data ?? [];
 
             return CustomScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 12),
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 20,
+                      bottom: 12,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
@@ -81,42 +90,38 @@ class _QuizListScreenState extends State<QuizListScreen> with AutomaticKeepAlive
                     ),
                   ),
                 ),
-                if (isLoading)
-                  const SliverFillRemaining(
-                    child: Center(child: CupertinoActivityIndicator(radius: 14)),
-                  )
-                else if (quizzes.isEmpty)
-                  const SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(CupertinoIcons.question_circle, size: 48, color: AppColors.textMuted),
-                          SizedBox(height: 12),
-                          Text(
-                            'No hay quizzes disponibles',
-                            style: TextStyle(color: AppColors.textMuted, fontSize: 15),
-                          ),
-                        ],
-                      ),
+                if (snapshot.hasData &&
+                    quizzes.isNotEmpty &&
+                    !snapshot.isAccessFailure)
+                  SliverToBoxAdapter(
+                    child: AppAsyncNotice(snapshot: snapshot, onRetry: retry),
+                  ),
+                if (!snapshot.hasData ||
+                    quizzes.isEmpty ||
+                    snapshot.isAccessFailure)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppAsyncStatus(
+                      snapshot: snapshot,
+                      isEmpty: quizzes.isEmpty,
+                      onRetry: retry,
+                      emptyTitle: 'No hay quizzes disponibles',
+                      emptyMessage: 'Los quizzes de esta área aparecerán aquí.',
                     ),
                   )
                 else
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(18, 0, 18, 100),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final quiz = quizzes[index];
-                          return QuizListTile(
-                            quiz: quiz,
-                            index: index + 1,
-                            allQuizzes: quizzes,
-                            areaTitle: 'Anatomía Humana',
-                          );
-                        },
-                        childCount: quizzes.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final quiz = quizzes[index];
+                        return QuizListTile(
+                          quiz: quiz,
+                          index: index + 1,
+                          allQuizzes: quizzes,
+                          areaTitle: 'Anatomía Humana',
+                        );
+                      }, childCount: quizzes.length),
                     ),
                   ),
               ],

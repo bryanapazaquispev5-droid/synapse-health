@@ -5,7 +5,9 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/states/app_async_content.dart';
 import '../../cheatsheets/api/medical_areas_service.dart';
 import '../../cheatsheets/model/medical_area_model.dart';
 import 'widgets/quiz_course_card.dart';
@@ -19,7 +21,8 @@ class QuizAreasScreen extends StatefulWidget {
 }
 
 // Estado reactivo y control de ciclo de vida para [QuizAreasScreen]
-class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAliveClientMixin {
+class _QuizAreasScreenState extends State<QuizAreasScreen>
+    with AutomaticKeepAliveClientMixin {
   final MedicalAreasService _medicalAreasService = MedicalAreasService();
   final TextEditingController _searchController = TextEditingController();
   late final Stream<List<MedicalAreaModel>> _areasStream;
@@ -53,22 +56,31 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: StreamBuilder<List<MedicalAreaModel>>(
+        child: AppAsyncStreamBuilder<List<MedicalAreaModel>>(
           stream: _areasStream,
-          builder: (context, snapshot) {
-            final bool isLoading = snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData;
+          onRetryStream: _medicalAreasService.getAreasStream,
+          builder: (context, snapshot, retry) {
             final allAreas = snapshot.data ?? [];
             final filteredAreas = allAreas.where((a) {
-              return a.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              return a.name.toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ) ||
                   a.code.toLowerCase().contains(_searchQuery.toLowerCase());
             }).toList();
 
             return CustomScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 8),
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 20,
+                      bottom: 8,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -94,44 +106,55 @@ class _QuizAreasScreenState extends State<QuizAreasScreen> with AutomaticKeepAli
                         CupertinoSearchTextField(
                           controller: _searchController,
                           placeholder: 'Buscar curso o especialidad...',
-                          onChanged: (val) => setState(() => _searchQuery = val.trim()),
+                          onChanged: (val) =>
+                              setState(() => _searchQuery = val.trim()),
                         ),
                         const SizedBox(height: 18),
                       ],
                     ),
                   ),
                 ),
-                if (isLoading)
-                  const SliverFillRemaining(
-                    child: Center(child: CupertinoActivityIndicator(radius: 14)),
+                if (snapshot.hasData &&
+                    allAreas.isNotEmpty &&
+                    !snapshot.isAccessFailure)
+                  SliverToBoxAdapter(
+                    child: AppAsyncNotice(snapshot: snapshot, onRetry: retry),
+                  ),
+                if (!snapshot.hasData ||
+                    allAreas.isEmpty ||
+                    snapshot.isAccessFailure)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppAsyncStatus(
+                      snapshot: snapshot,
+                      isEmpty: allAreas.isEmpty,
+                      onRetry: retry,
+                      emptyTitle: 'No hay cursos de quizzes disponibles',
+                      emptyMessage: 'Los cursos disponibles aparecerán aquí.',
+                    ),
                   )
                 else if (filteredAreas.isEmpty)
-                  const SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(CupertinoIcons.search, size: 44, color: AppColors.textMuted),
-                          SizedBox(height: 10),
-                          Text(
-                            'No se encontraron cursos de quizzes',
-                            style: TextStyle(fontSize: 14, color: AppColors.textMuted),
-                          ),
-                        ],
-                      ),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppEmptyState(
+                      title: 'No se encontraron cursos',
+                      message: 'Prueba con otro término o limpia la búsqueda.',
+                      icon: CupertinoIcons.search,
+                      actionLabel: 'Limpiar búsqueda',
+                      onAction: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
                     ),
                   )
                 else
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(18, 0, 18, 100),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final area = filteredAreas[index];
-                          return QuizCourseCard(area: area);
-                        },
-                        childCount: filteredAreas.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final area = filteredAreas[index];
+                        return QuizCourseCard(area: area);
+                      }, childCount: filteredAreas.length),
                     ),
                   ),
               ],

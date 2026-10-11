@@ -5,15 +5,14 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../../core/services/connectivity_service.dart';
+
+import '../../../core/widgets/states/app_async_content.dart';
 import '../../../core/theme/app_theme.dart';
 import '../api/medical_areas_service.dart';
 import '../model/cheatsheet_model.dart';
 import '../model/medical_area_model.dart';
 import '../model/topic_model.dart';
-import 'widgets/cheatsheet_empty_state.dart';
 import 'widgets/cheatsheet_item_card.dart';
-import 'widgets/cheatsheet_offline_state.dart';
 
 // Pantalla de interfaz de usuario [TopicCheatsheetsScreen]
 class TopicCheatsheetsScreen extends StatefulWidget {
@@ -33,7 +32,6 @@ class TopicCheatsheetsScreen extends StatefulWidget {
 // Estado reactivo y control de ciclo de vida para [TopicCheatsheetsScreen]
 class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
-  final ConnectivityService _connectivityService = ConnectivityService();
   late final Stream<List<CheatsheetModel>> _cheatsheetsStream;
 
   // Inicializacion de dependencias y estado local del componente
@@ -41,7 +39,10 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
   @override
   void initState() {
     super.initState();
-    _cheatsheetsStream = _medicalService.getTopicCheatsheetsStream(widget.area.id, widget.topic.id);
+    _cheatsheetsStream = _medicalService.getTopicCheatsheetsStream(
+      widget.area.id,
+      widget.topic.id,
+    );
   }
 
   // Renderizado reactivo del arbol de widgets
@@ -54,17 +55,29 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 12, right: 16, top: 10, bottom: 8),
+              padding: const EdgeInsets.only(
+                left: 12,
+                right: 16,
+                top: 10,
+                bottom: 8,
+              ),
               child: Row(
                 children: [
                   CupertinoButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
                     minimumSize: const Size(36, 36),
                     onPressed: () => Navigator.pop(context),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(CupertinoIcons.chevron_back, size: 24, color: AppColors.accent),
+                        const Icon(
+                          CupertinoIcons.chevron_back,
+                          size: 24,
+                          color: AppColors.accent,
+                        ),
                         const SizedBox(width: 2),
                         Text(
                           widget.area.name,
@@ -97,52 +110,56 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
               ),
             ),
             Expanded(
-              child: StreamBuilder<bool>(
-                stream: _connectivityService.isOnlineStream,
-                initialData: _connectivityService.isOnline,
-                builder: (context, onlineSnap) {
-                  final bool isOnline = onlineSnap.data ?? false;
-
-                  if (!isOnline) {
-                    return CheatsheetOfflineState(
-                      message: 'Las fichas se descargan en tiempo real por seguridad. Conéctate a internet para leerlas.',
+              child: AppAsyncStreamBuilder<List<CheatsheetModel>>(
+                stream: _cheatsheetsStream,
+                onRetryStream: () => _medicalService.getTopicCheatsheetsStream(
+                  widget.area.id,
+                  widget.topic.id,
+                ),
+                builder: (context, snapshot, retry) {
+                  final cheatsheets = snapshot.data ?? [];
+                  if (!snapshot.hasData ||
+                      cheatsheets.isEmpty ||
+                      snapshot.isAccessFailure) {
+                    return AppAsyncStatus(
+                      snapshot: snapshot,
+                      isEmpty: cheatsheets.isEmpty,
+                      onRetry: retry,
+                      emptyTitle: 'Sin fichas aún',
+                      emptyMessage:
+                          'Todavía no hay fichas disponibles para este tema.',
+                      emptyIcon: CupertinoIcons.doc_text,
+                      errorMessage: 'No se pudieron cargar las fichas. Inténtalo de nuevo.',
                     );
                   }
-
-                  return StreamBuilder<List<CheatsheetModel>>(
-                    stream: _cheatsheetsStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                        return const Center(
-                          child: CupertinoActivityIndicator(radius: 14),
-                        );
-                      }
-
-                      final cheatsheets = snapshot.data ?? [];
-
-                      if (cheatsheets.isEmpty) {
-                        return const CheatsheetEmptyState(
-                          title: 'Sin fichas aún',
-                          subtitle: 'El contenido médico de este tema se cargará próximamente.',
-                          icon: CupertinoIcons.doc_text,
-                        );
-                      }
-
-                      return ListView.separated(
-                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                        padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 90),
-                        itemCount: cheatsheets.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final cs = cheatsheets[index];
-                          return CheatsheetItemCard(
-                            cheatsheet: cs,
-                            area: widget.area,
-                            index: index + 1,
-                          );
-                        },
-                      );
-                    },
+                  return Column(
+                    children: [
+                      AppAsyncNotice(snapshot: snapshot, onRetry: retry),
+                      Expanded(
+                        child: ListView.separated(
+                          physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            top: 4,
+                            bottom: 90,
+                          ),
+                          itemCount: cheatsheets.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final cs = cheatsheets[index];
+                            return CheatsheetItemCard(
+                              cheatsheet: cs,
+                              area: widget.area,
+                              index: index + 1,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

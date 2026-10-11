@@ -5,13 +5,12 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../../core/services/connectivity_service.dart';
+
+import '../../../core/widgets/states/app_async_content.dart';
 import '../../../core/theme/app_theme.dart';
 import '../api/medical_areas_service.dart';
 import '../model/medical_area_model.dart';
 import '../model/topic_model.dart';
-import 'widgets/cheatsheet_empty_state.dart';
-import 'widgets/cheatsheet_offline_state.dart';
 import 'widgets/topic_list_card.dart';
 
 // Pantalla de interfaz de usuario [AreaTopicsScreen]
@@ -27,7 +26,6 @@ class AreaTopicsScreen extends StatefulWidget {
 // Estado reactivo y control de ciclo de vida para [AreaTopicsScreen]
 class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
-  final ConnectivityService _connectivityService = ConnectivityService();
   late final Stream<List<TopicModel>> _topicsStream;
 
   // Inicializacion de dependencias y estado local del componente
@@ -48,17 +46,29 @@ class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 12, right: 16, top: 10, bottom: 10),
+              padding: const EdgeInsets.only(
+                left: 12,
+                right: 16,
+                top: 10,
+                bottom: 10,
+              ),
               child: Row(
                 children: [
                   CupertinoButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
                     minimumSize: const Size(36, 36),
                     onPressed: () => Navigator.pop(context),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(CupertinoIcons.chevron_back, size: 24, color: AppColors.accent),
+                        Icon(
+                          CupertinoIcons.chevron_back,
+                          size: 24,
+                          color: AppColors.accent,
+                        ),
                         SizedBox(width: 2),
                         Text(
                           'Atrás',
@@ -104,52 +114,53 @@ class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
               ),
             ),
             Expanded(
-              child: StreamBuilder<bool>(
-                stream: _connectivityService.isOnlineStream,
-                initialData: _connectivityService.isOnline,
-                builder: (context, onlineSnap) {
-                  final bool isOnline = onlineSnap.data ?? false;
-
-                  if (!isOnline) {
-                    return CheatsheetOfflineState(
-                      message: 'Los temas clínicos no se almacenan localmente. Conéctate a internet para ver este temario.',
+              child: AppAsyncStreamBuilder<List<TopicModel>>(
+                stream: _topicsStream,
+                onRetryStream: () =>
+                    _medicalService.getTopicsStream(widget.area.id),
+                builder: (context, snapshot, retry) {
+                  final topics = snapshot.data ?? [];
+                  if (!snapshot.hasData ||
+                      topics.isEmpty ||
+                      snapshot.isAccessFailure) {
+                    return AppAsyncStatus(
+                      snapshot: snapshot,
+                      isEmpty: topics.isEmpty,
+                      onRetry: retry,
+                      emptyTitle: 'Sin temas registrados aún',
+                      emptyMessage: 'Todavía no hay temas clínicos para esta especialidad.',
+                      emptyIcon: CupertinoIcons.layers_alt,
+                      errorMessage: 'No se pudieron cargar los temas. Inténtalo de nuevo.',
                     );
                   }
-
-                  return StreamBuilder<List<TopicModel>>(
-                    stream: _topicsStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                        return const Center(
-                          child: CupertinoActivityIndicator(radius: 14),
-                        );
-                      }
-
-                      final topics = snapshot.data ?? [];
-
-                      if (topics.isEmpty) {
-                        return const CheatsheetEmptyState(
-                          title: 'Sin temas registrados aún',
-                          subtitle: 'Los temas clínicos de esta especialidad se sincronizarán en tiempo real.',
-                          icon: CupertinoIcons.layers_alt,
-                        );
-                      }
-
-                      return ListView.separated(
-                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                        padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 90),
-                        itemCount: topics.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final topic = topics[index];
-                          return TopicListCard(
-                            area: widget.area,
-                            topic: topic,
-                            number: index + 1,
-                          );
-                        },
-                      );
-                    },
+                  return Column(
+                    children: [
+                      AppAsyncNotice(snapshot: snapshot, onRetry: retry),
+                      Expanded(
+                        child: ListView.separated(
+                          physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            top: 4,
+                            bottom: 90,
+                          ),
+                          itemCount: topics.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final topic = topics[index];
+                            return TopicListCard(
+                              area: widget.area,
+                              topic: topic,
+                              number: index + 1,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
