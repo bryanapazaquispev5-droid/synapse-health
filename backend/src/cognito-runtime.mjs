@@ -39,7 +39,11 @@ export function createCognitoRuntime({env = process.env, createVerifier = proper
       }
       const activeSubject = await verifyUserStatus(token, env.COGNITO_USER_POOL_ID);
       if (activeSubject !== claims.sub) throw new ApiError(401, 'unauthenticated', 'Sign in again.');
-      return {sub: claims.sub};
+      const groups = claims['cognito:groups'];
+      if (groups !== undefined && (!Array.isArray(groups) || groups.some(group => typeof group !== 'string'))) {
+        throw new ApiError(401, 'unauthenticated', 'Sign in again.');
+      }
+      return {sub: claims.sub, groups: groups ?? []};
     },
   };
 }

@@ -7,14 +7,17 @@
     "node": ">=22 <27"
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs",
+    "test": "npm run build && node --test test/*.test.mjs",
     "test:emulator": "node --test test/emulator.integration.mjs",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:health": "npm run build && node --test test/health.smoke.mjs"
+    "test:health": "npm run build && node --test test/health.smoke.mjs",
+    "test:dynamodb": "npm run build && node --test test/flashcard-*.integration.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1149.0",
     "@aws-sdk/client-secrets-manager": "^3.0.0",
+    "@aws-sdk/lib-dynamodb": "3.1149.0",
     "aws-jwt-verify": "5.2.1",
     "firebase-admin": "14.5.0"
   },

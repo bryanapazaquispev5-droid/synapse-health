@@ -13,7 +13,7 @@ export function withCors(handler, allowedOrigin) {
     }
     const result = await handler(event);
     if (origin === allowedOrigin) {
-      result.headers = {...result.headers, 'Access-Control-Allow-Origin': allowedOrigin, Vary: 'Origin'};
+      result.headers = {...result.headers, 'Access-Control-Allow-Origin': allowedOrigin, 'Access-Control-Expose-Headers': 'ETag,Retry-After,Location', Vary: 'Origin'};
     }
     return result;
   };

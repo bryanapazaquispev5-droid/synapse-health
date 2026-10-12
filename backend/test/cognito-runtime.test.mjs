@@ -23,8 +23,8 @@ function runtime() {
 }
 const isStatus = status => error => error.status === status && !error.message.includes('local-');
 
-test('verifies a real RSA signature with cached JWKS and returns only subject', async () => {
-  assert.deepEqual(await runtime().verifyCognitoToken(token({email: 'private@example.invalid'})), {sub: 'local-subject'});
+test('verifies a real RSA signature with cached JWKS and returns subject and empty groups', async () => {
+  assert.deepEqual(await runtime().verifyCognitoToken(token({email: 'private@example.invalid'})), {sub: 'local-subject', groups: []});
 });
 for (const [name, claims] of [
   ['expired', {exp: Math.floor(Date.now() / 1000) - 60}],
@@ -95,4 +95,11 @@ test('does not call online account verification for an invalid JWT', async () =>
     createVerifier: () => verifier, verifyUserStatus: async () => {calls++; return 'local-subject';}});
   await assert.rejects(service.verifyCognitoToken(token({client_id: 'other'})), isStatus(401));
   assert.equal(calls, 0);
+});
+
+test('returns only cryptographically verified Cognito groups', async () => {
+  assert.deepEqual(await runtime().verifyCognitoToken(token({'cognito:groups': ['admins']})), {sub: 'local-subject', groups: ['admins']});
+});
+test('rejects malformed signed Cognito groups', async () => {
+  await assert.rejects(runtime().verifyCognitoToken(token({'cognito:groups': 'admins'})), isStatus(401));
 });

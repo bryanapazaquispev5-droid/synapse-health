@@ -13,15 +13,16 @@ Parameters:
     Type: String
     Default: https://synapse.invalid
     AllowedPattern: 'https://[a-zA-Z0-9.-]+(:[0-9]+)?'
-  EnableDynamoHistory:
-    Type: String
-    Default: 'false'
-    AllowedValues: ['true', 'false']
-  EnableCognitoAuth:
-    Type: String
-    Default: 'false'
-    AllowedValues: ['true', 'false']
+  EnableDynamoHistory: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
+  EnableCognitoAuth: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
+  EnableFlashcardCrud: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
+Rules:
+  FlashcardsRequireCognito:
+    Assertions:
+      - Assert: !Or [!Equals [!Ref EnableFlashcardCrud, 'false'], !Equals [!Ref EnableCognitoAuth, 'true']]
+        AssertDescription: Flashcard CRUD requires Cognito authentication.
 Conditions:
+  CreateFlashcardContent: !And [!Equals [!Ref EnableFlashcardCrud, 'true'], !Equals [!Ref EnableCognitoAuth, 'true']]
   CreateCognitoAuth: !Equals [!Ref EnableCognitoAuth, 'true']
   CreateFutureHistoryTable: !Equals [!Ref EnableDynamoHistory, 'true']
 Resources:
@@ -29,11 +30,10 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: dev
-      EndpointConfiguration:
-        Type: REGIONAL
+      EndpointConfiguration: {Type: REGIONAL}
       Cors:
-        AllowMethods: "'GET,PATCH,OPTIONS'"
-        AllowHeaders: "'Authorization,Content-Type'"
+        AllowMethods: "'GET,POST,PATCH,DELETE,OPTIONS'"
+        AllowHeaders: "'Authorization,Content-Type,If-Match'"
         AllowOrigin: !Sub "'${AllowedOrigin}'"
       MethodSettings:
         - ResourcePath: '/*'
@@ -84,6 +84,10 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: !Ref FirebaseCredentialSecretArn
+              - !If
+                - CreateFlashcardContent
+                - {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem', 'dynamodb:Query', 'dynamodb:UpdateItem'], Resource: !GetAtt FlashcardContentTable.Arn}
+                - !Ref AWS::NoValue
   BackendFunction:
     Type: AWS::Serverless::Function
     DependsOn: BackendLogGroup
@@ -102,6 +106,8 @@ Resources:
           FIREBASE_PROJECT_ID: !Ref FirebaseProjectId
           FIREBASE_CREDENTIAL_SECRET_ARN: !Ref FirebaseCredentialSecretArn
           USER_RATE_LIMIT: '30'
+          FLASHCARDS_RATE_LIMIT: '60'
+          FLASHCARDS_TABLE_NAME: !If [CreateFlashcardContent, !Ref FlashcardContentTable, '']
           ALLOWED_ORIGIN: !Ref AllowedOrigin
           COGNITO_USER_POOL_ID: !If [CreateCognitoAuth, !Ref CognitoUserPool, '']
           COGNITO_CLIENT_ID: !If [CreateCognitoAuth, !Ref CognitoFlutterClient, '']
@@ -109,6 +115,12 @@ Resources:
         Health:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /api/v1/health, Method: GET}
+        Flashcards:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/flashcards, Method: ANY}
+        FlashcardDetail:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: '/api/v1/flashcards/{id}', Method: ANY}
         CognitoSession:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /api/v1/auth/session, Method: GET}
@@ -151,10 +163,8 @@ Resources:
         - {Name: email, AttributeDataType: String, Required: true, Mutable: true}
         - {Name: name, AttributeDataType: String, Required: false, Mutable: true}
       MfaConfiguration: 'OFF'
-      VerificationMessageTemplate:
-        DefaultEmailOption: CONFIRM_WITH_CODE
-      EmailConfiguration:
-        EmailSendingAccount: COGNITO_DEFAULT
+      VerificationMessageTemplate: {DefaultEmailOption: CONFIRM_WITH_CODE}
+      EmailConfiguration: {EmailSendingAccount: COGNITO_DEFAULT}
   CognitoFlutterClient:
     Type: AWS::Cognito::UserPoolClient
     Condition: CreateCognitoAuth
@@ -174,6 +184,22 @@ Resources:
       TokenValidityUnits: {AccessToken: minutes, IdToken: minutes, RefreshToken: days}
       RefreshTokenRotation: {Feature: ENABLED, RetryGracePeriodSeconds: 10}
       AuthSessionValidity: 3
+  ContentAdmins:
+    Type: AWS::Cognito::UserPoolGroup
+    Condition: CreateFlashcardContent
+    Properties: {GroupName: admins, UserPoolId: !Ref CognitoUserPool, Description: Explicitly assigned content editors; no users are granted automatically.}
+  FlashcardContentTable:
+    Type: AWS::DynamoDB::Table
+    Condition: CreateFlashcardContent
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [{AttributeName: PK, AttributeType: S}, {AttributeName: SK, AttributeType: S}]
+      KeySchema: [{AttributeName: PK, KeyType: HASH}, {AttributeName: SK, KeyType: RANGE}]
+      SSESpecification: {SSEEnabled: true}
+      PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: true}
+      TimeToLiveSpecification: {AttributeName: expiresAt, Enabled: true}
   FutureHistoryTable:
     Type: AWS::DynamoDB::Table
     Condition: CreateFutureHistoryTable
