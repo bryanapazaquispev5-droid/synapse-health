@@ -17,7 +17,12 @@ Parameters:
     Type: String
     Default: 'false'
     AllowedValues: ['true', 'false']
+  EnableCognitoAuth:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
 Conditions:
+  CreateCognitoAuth: !Equals [!Ref EnableCognitoAuth, 'true']
   CreateFutureHistoryTable: !Equals [!Ref EnableDynamoHistory, 'true']
 Resources:
   RestApi:
@@ -98,10 +103,15 @@ Resources:
           FIREBASE_CREDENTIAL_SECRET_ARN: !Ref FirebaseCredentialSecretArn
           USER_RATE_LIMIT: '30'
           ALLOWED_ORIGIN: !Ref AllowedOrigin
+          COGNITO_USER_POOL_ID: !If [CreateCognitoAuth, !Ref CognitoUserPool, '']
+          COGNITO_CLIENT_ID: !If [CreateCognitoAuth, !Ref CognitoFlutterClient, '']
       Events:
         Health:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /api/v1/health, Method: GET}
+        CognitoSession:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/auth/session, Method: GET}
         History:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /api/v1/history, Method: GET}
@@ -114,6 +124,56 @@ Resources:
         ProfileWrite:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /v1/me/profile, Method: PATCH}
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Condition: CreateCognitoAuth
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: !Sub ${AWS::StackName}-auth
+      UsernameAttributes: [email]
+      UsernameConfiguration: {CaseSensitive: false}
+      AutoVerifiedAttributes: [email]
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - {Name: verified_email, Priority: 1}
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate: [email]
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 7
+      Schema:
+        - {Name: email, AttributeDataType: String, Required: true, Mutable: true}
+        - {Name: name, AttributeDataType: String, Required: false, Mutable: true}
+      MfaConfiguration: 'OFF'
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+  CognitoFlutterClient:
+    Type: AWS::Cognito::UserPoolClient
+    Condition: CreateCognitoAuth
+    Properties:
+      ClientName: !Sub ${AWS::StackName}-flutter
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      ExplicitAuthFlows: [ALLOW_USER_PASSWORD_AUTH]
+      SupportedIdentityProviders: [COGNITO]
+      ReadAttributes: [email, email_verified, name]
+      WriteAttributes: [email, name]
+      AccessTokenValidity: 15
+      IdTokenValidity: 15
+      RefreshTokenValidity: 7
+      TokenValidityUnits: {AccessToken: minutes, IdToken: minutes, RefreshToken: days}
+      RefreshTokenRotation: {Feature: ENABLED, RetryGracePeriodSeconds: 10}
+      AuthSessionValidity: 3
   FutureHistoryTable:
     Type: AWS::DynamoDB::Table
     Condition: CreateFutureHistoryTable
@@ -141,3 +201,12 @@ Outputs:
     Value: !Sub https://${RestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/dev/
   HistoryStorage:
     Value: Firestore during transition; DynamoDB is inactive.
+  CognitoPoolId:
+    Condition: CreateCognitoAuth
+    Value: !Ref CognitoUserPool
+  CognitoAppClientId:
+    Condition: CreateCognitoAuth
+    Value: !Ref CognitoFlutterClient
+  CognitoRegion:
+    Condition: CreateCognitoAuth
+    Value: !Ref AWS::Region
