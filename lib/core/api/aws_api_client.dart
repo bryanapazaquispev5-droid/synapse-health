@@ -63,11 +63,43 @@ class AwsApiClient {
     return _execute('GET', path: 'api/v1/history/$id');
   }
 
+  /// Authenticated relative REST request; never redirects to arbitrary URLs.
+  Future<Map<String, dynamic>> requestData(
+    String method,
+    String path, {
+    Map<String, String>? query,
+    Map<String, dynamic>? body,
+    Map<String, String>? extraHeaders,
+  }) {
+    if (!{'GET', 'POST', 'PATCH', 'DELETE'}.contains(method) ||
+        !RegExp(r'^api/v1/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*$')
+            .hasMatch(path) ||
+        (body != null && !{'POST', 'PATCH'}.contains(method))) {
+      throw ArgumentError('Invalid REST request.');
+    }
+    if (extraHeaders != null &&
+        extraHeaders.entries.any(
+          (entry) =>
+              entry.key != 'If-Match' ||
+              !RegExp(r'^"[1-9][0-9]*"$').hasMatch(entry.value),
+        )) {
+      throw ArgumentError('Invalid REST headers.');
+    }
+    return _execute(
+      method,
+      path: path,
+      query: query,
+      body: body == null ? null : jsonEncode(body),
+      extraHeaders: extraHeaders,
+    );
+  }
+
   Future<Map<String, dynamic>> _execute(
     String method, {
     String? body,
     String path = 'v1/me/profile',
     Map<String, String>? query,
+    Map<String, String>? extraHeaders,
   }) async {
     if (!isEnabled) throw const AwsApiException(ApiFailure.disabled);
     final uid = _sessionUidSupplier();
@@ -79,6 +111,7 @@ class AwsApiClient {
         uid: uid,
         path: path,
         query: query,
+        extraHeaders: extraHeaders,
       );
       if (response.statusCode == 401) {
         response = await _request(
@@ -88,9 +121,15 @@ class AwsApiClient {
           uid: uid,
           path: path,
           query: query,
+          extraHeaders: extraHeaders,
         );
       }
-      if (response.statusCode != 200) {
+      if (_sessionUidSupplier() != uid) {
+        throw const AwsApiException(ApiFailure.unauthenticated);
+      }
+      if (response.statusCode == 204 && method == 'DELETE') return {};
+      if (response.statusCode != 200 &&
+          !(response.statusCode == 201 && method == 'POST')) {
         throw AwsApiException(_statusFailure(response.statusCode));
       }
       final decoded = jsonDecode(response.body);
@@ -126,6 +165,7 @@ class AwsApiClient {
     String? uid,
     required String path,
     Map<String, String>? query,
+    Map<String, String>? extraHeaders,
   }) async {
     if (_sessionUidSupplier() != uid) {
       throw const AwsApiException(ApiFailure.unauthenticated);
@@ -140,6 +180,7 @@ class AwsApiClient {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
         if (body != null) 'Content-Type': 'application/json',
+        ...?extraHeaders,
       },
       method,
       body,
@@ -169,6 +210,8 @@ class AwsApiClient {
   }
 
   static ApiFailure _statusFailure(int status) => switch (status) {
+    400 || 413 || 415 || 422 => ApiFailure.invalidRequest,
+    409 || 412 => ApiFailure.conflict,
     401 => ApiFailure.unauthenticated,
     403 => ApiFailure.forbidden,
     404 => ApiFailure.notFound,
