@@ -1,0 +1,83 @@
+# Synapse Health AWS backend
+
+AWS is mandatory in the target architecture. This module is prepared and tested locally; it has not been deployed. Firestore remains the source of academic history during the transition. No mock data is loaded by the production handler.
+
+## Local verification
+
+Use Node.js 22, the selected Lambda runtime:
+
+```sh
+cd backend
+npm ci --ignore-scripts
+npm run typecheck
+npm run build
+npm test
+```
+
+From the repository root, with Java 21+ and the security test dependencies installed:
+
+```sh
+JAVA_HOME=/path/to/jdk security/node_modules/.bin/firebase emulators:exec \
+  --config firebase.backend.emulators.json --project demo-synapse-health \
+  --only auth,firestore 'npm run test:emulator --prefix backend'
+```
+
+The integration script refuses non-loopback emulators. Fixture accounts and records exist only in the demo project. Emulator tokens do not prove production JWT signing or deployed IAM; valid production-token verification remains a staging acceptance check.
+
+## REST endpoints
+
+Paths below are relative to the API Gateway stage URL, such as `/dev/`:
+
+| Method | Path | Authentication | Result |
+| --- | --- | --- | --- |
+| GET | `/api/v1/health` | Public | Process liveness, not database readiness |
+| GET | `/api/v1/history` | Firebase ID token | `{items,nextCursor}` |
+| GET | `/api/v1/history/{id}` | Firebase ID token | Saved answer in a retained attempt |
+| GET | `/v1/me/profile` | Firebase ID token | Whitelisted own profile |
+| PATCH | `/v1/me/profile` | Firebase ID token | Existing preparation; name/career/gender only |
+
+Success: `{data,requestId}`. Errors: `{error:{code,message},requestId}`. Backend status codes include 400, 401, 403, 404, 405, 409, 413, 415, 429, 500 and 503. No internal exception text reaches the response. API Gateway default errors remain managed gateway responses; throttling is configured separately.
+
+History accepts `limit` (1–50, default20) and optional `cursor`. Other query keys are rejected. IDs are canonical unpadded Base64URL JSON `[areaId,topicId,attemptNumber,quizId]`; knowing an ID does not grant access. The token UID selects the owner path, never a body/query userId.
+
+A cursor is linked to the owner and last returned entry. Deletion of that entry returns409 and requires refresh. Pages are fresh bounded snapshots, not a frozen export: new concurrent records appear after refresh. The nested Firestore model cannot be globally paginated chronologically by query. The adapter reads at most201 topic documents; more than200 returns an explicit503, with no silent truncation. A date-indexed DynamoDB model is the planned scalable replacement.
+
+## Security and configuration
+
+- Admin SDK verifies Firebase ID tokens with `checkRevoked=true`, including disabled users. Infrastructure failures are not reported as invalid credentials.
+- Server libraries bypass Firestore rules. Repositories explicitly derive the owner from verified UID and whitelist profile fields. Public ranking writes are not implemented from client practice scores.
+- `FIREBASE_PROJECT_ID` must match the service-account project in an existing AWS Secrets Manager secret. Only its ARN appears in the environment. No credential JSON is committed or embedded in Flutter.
+- Production runtime rejects emulator environment variables. Local emulator integration injects the real emulator SDK explicitly.
+- `USER_RATE_LIMIT=30`: one server-only hashed-owner Firestore counter per minute, atomic transaction,429 with Retry-After. Fixed windows can allow a burst across a boundary; this is not a sliding-window quota.
+- API Gateway additionally has shared throttling10 requests/s and burst20; AWS throttling is best effort, not a spending cap. Lambda concurrency is5, timeout20s; logs retain14days.
+- `ALLOWED_ORIGIN` is one exact HTTPS origin; mismatched browser origins receive403. Native requests without Origin remain supported. No wildcard CORS, token/UID/event/body logging or DataTrace.
+- The Lambda role can read only the specified credential secret and write to its own log group. No DynamoDB permission is granted while that store is inactive.
+- A Google service account needs Firebase Authentication read access for revocation checks and required Firestore read/transaction/write permissions for the limiter/profile. Scope it to the selected project/database; confirm least-privilege IAM in staging. If a customer KMS key protects the secret, a narrowly scoped kms:Decrypt grant must be reviewed before deployment.
+- Rotate service-account keys through Secrets Manager and restart execution environments to clear credential caches. Workload Identity Federation is the preferred later replacement for long-lived keys; it is not configured here.
+
+## Flutter rollout
+
+`SYNAPSE_API_BASE_URL` is empty by default, so history uses existing live Firestore services. After an approved, validated deployment, provide its HTTPS stage base URL through dart-define. The history repository then calls the real REST list/detail endpoints. A configured backend failure never falls back to direct Firebase reads.
+
+The client uses current Firebase ID tokens in memory, one forced refresh after401, UID checks across awaits, no redirects, bounded response size and request timeout. No AWS credentials are present in Flutter. Catalog names remain on existing Firestore streams. AWS history loads its first page immediately, then fetches additional pages only through Mostrar más; later errors keep loaded records with a safe notice. It is a refreshable paginated snapshot; it does not claim realtime/offline disk persistence. Existing profile editing remains in Firebase; prepared profile REST methods are not switched into that flow in this phase.
+
+## Infrastructure and later deployment
+
+`template.yaml` defines API Gateway REST, Lambda Node.js22/ARM64, IAM and CloudWatch. The optional encrypted/PITR DynamoDB table has `EnableDynamoHistory=false` by default. Turning it on creates a table but does not migrate records or switch the backend. Cognito is only a documented future authentication alternative.
+
+Validation executed here uses cfn-lint, which applies the SAM transform and validates the generated CloudFormation. AWS CLI, SAM CLI and Docker were not installed in the execution environment; no sam local/docker build or AWS account validation is claimed.
+
+After explicit deployment authorization, a reproducible workflow is:
+
+```sh
+cd backend
+npm ci --ignore-scripts
+npm run build
+sam validate --lint --template-file template.yaml
+sam build --template-file template.yaml
+sam deploy --guided
+```
+
+Supply the existing secret ARN, Firebase project and approved web origin during deployment. Keep DynamoDB disabled until its migration/store adapter is implemented and verified. Review region/account, existing resources, IAM/KMS, estimated API/Lambda/Firestore/Secrets Manager/log costs, budget alerts and staging token tests before confirming deployment. No deployment command was executed in this phase.
+
+Data model, diagram, migration and verification results: `../docs/FASE_5_HISTORIAL_AWS.md`.

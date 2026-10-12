@@ -285,3 +285,26 @@
 - Push 34d565a → 2098935 verificado por API GitHub y git ls-remote; main/testIv siguen en da55709c53b27f6e6d0ae6cd50ff5d9333f996be.
 - Documentación y dos capturas se publican en un commit separado de esta misma fase.
 - Arranque normal restaurado tras la vista temporal: build 19,6 s, sincronización 88 ms, VM activa.
+
+## Fase 5 — Historial académico y arquitectura AWS (2026-10-11)
+
+- Trabajo preparatorio recuperado de la sesión interrumpida; permisos de escritura restablecidos y cambios válidos conservados.
+- AWS es obligatorio en la arquitectura objetivo; esta fase prepara integración y recursos, sin despliegue autorizado.
+- Mi historial desde Progreso: respuestas guardadas, nombres reales, fechas disponibles, resultado, estrellas e intento; detalle y Mostrar más. Ranking y navegación conservados.
+- Tres históricos por tema más activo; fechas/duración no registradas no se inventan. Catálogo actual, no copia histórica del enunciado.
+- Repositorio de transición: Firestore activo; REST list/detail al configurar URL HTTPS. UID comprobado, sin fallback silencioso ante errores AWS.
+- Backend Lambda modular con entrada TypeScript/Node.js22; GET /api/v1/health, /api/v1/history y /api/v1/history/{id}; perfil preparatorio conservado.
+- Firebase ID Tokens con revocación, autorización propia, paginación/cursor por usuario, HTTP seguro, CORS exacto, rate limiting transaccional y Gateway.
+- SAM: API Gateway REST, Lambda, IAM mínimo, CloudWatch; DynamoDB condicional inactivo y migración documentada. Cognito no incorporado al login.
+- Firebase activo: Auth, catálogo/streams, práctica/reintentos, ranking leído, perfiles y FCM. No se alteraron reglas ni puntuaciones.
+- flutter analyze sin incidencias; 166 pruebas Flutter; 78 backend Node22; 2 integraciones Auth/Firestore emuladores; 19 reglas de seguridad.
+- TypeScript build/typecheck y cfn-lint/SAM correctos; npm audit producción0 vulnerabilidades. SDK Admin backend14.5.0, FlutterFire sin cambios.
+- iPhone17: ejecución real build19,4s/sync119ms; comprobación visual vacía identificada como prueba; app real restaurada y compilación final build18,8s/sync88ms.
+- No AWS CLI/SAM CLI/Docker disponibles: no sam local, validación de cuenta ni despliegue. No sesiones de producción autenticadas ni migración real.
+- Informe/modelo/diagramas/limitaciones: docs/FASE_5_HISTORIAL_AWS.md; despliegue futuro: backend/README.md.
+- Pendiente de autorización: despliegue AWS y configuración segura/IAM; adaptador/migración DynamoDB y Cognito posteriores, sin avanzar al Prompt7.
+- Commit Flutter publicado: da13b2eea493998f10e86dce16c24e010e178455 — feat(history): implement academic activity history.
+- Commit AWS publicado: c6d0555616c773878f744a66c41cba833dfa15a9 — feat(aws): implement serverless history endpoints.
+- Push 75cfbcf → c6d0555 verificado por GitHub API y git ls-remote; documentación/evidencias en commit separado.
+- main remoto recibió un cambio externo del propietario (22e4c1a); no se modificó ni incorporó. Nuestros pushes solo afectan la rama autorizada; testIv sigue da55709.
+- Revisión de50 archivos sin secretos detectados; health del artefacto Lambda compilado HTTP200 local, sin servicios remotos.
