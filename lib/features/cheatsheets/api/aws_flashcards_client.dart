@@ -1,6 +1,6 @@
 import '../../../core/api/aws_api_client.dart';
 import '../../auth_login/cognito/api/cognito_auth_service.dart';
-import '../../auth_login/cognito/model/cognito_auth_exception.dart';
+import '../../auth_login/cognito/api/cognito_aws_api.dart';
 import '../model/aws_flashcard.dart';
 import '../model/cheatsheet_model.dart';
 
@@ -13,30 +13,12 @@ class AwsFlashcardsClient {
     String baseUrl = const String.fromEnvironment('SYNAPSE_API_BASE_URL'),
     ApiTransport? transport,
   }) => AwsFlashcardsClient(
-    api: AwsApiClient(
+    api: cognitoAwsApi(
+      service: service,
       baseUrl: baseUrl,
-      tokenSupplier: (refresh) => _cognitoToken(service, refresh),
-      sessionUidSupplier: () => service.currentSession?.sub,
       transport: transport,
     ),
   );
-
-  static Future<String?> _cognitoToken(
-    CognitoAuthService service,
-    bool refresh,
-  ) async {
-    try {
-      return (await service.validSession(forceRefresh: refresh))?.accessToken;
-    } on CognitoAuthException catch (error) {
-      throw AwsApiException(switch (error.code) {
-        'offline' => ApiFailure.offline,
-        'timeout' => ApiFailure.timeout,
-        'rate_limited' => ApiFailure.rateLimited,
-        'service_unavailable' => ApiFailure.unavailable,
-        _ => ApiFailure.unauthenticated,
-      });
-    }
-  }
 
   final AwsApiClient api;
   static const _path = 'api/v1/flashcards';
