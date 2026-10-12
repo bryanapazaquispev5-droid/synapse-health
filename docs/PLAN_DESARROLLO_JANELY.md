@@ -373,3 +373,20 @@
 - Backend publicado:2bf3ab882a44becefebb36b7f2243aba6faa7638 — feat(quizzes): add server grading and DynamoDB progress.
 - Flutter publicado:74ac377e3d8b2b47c1f6c9708ed15cdd3f05529c — feat(flutter): prepare secure quiz and progress REST clients.
 - Push94b8018 →74ac377 verificado por GitHub API; cuenta janelyapazasencia95-sketch con permisos. Revisión33 archivos sin secretos; npm audit producción0 vulnerabilidades; tablas de prueba limpiadas y DynamoDB Local detenido.
+
+## Prompt 10 — AWS Parte 5: historial y ranking (2026-10-12)
+
+- Base235a0fd publicada/auditada; rama correcta limpia al inicio, Partes1–4 conservadas.
+- /api/v1/history y/{attemptUUID} reutilizados: Cognito/DynamoDB solo EnableAcademicViews=true; predeterminado Firebase/Firestore. Sin mezcla de identidades/fallback de tokens.
+- Historial cronológico propio de envíos reales, título/fecha/puntuación/estrellas/duración/estado, cursor por usuario y detalle autorizado. Proyección en la misma transacción, duplicados sin entradas extra; sin backfill/migración.
+- /api/v1/ranking y/me: estrellas acumuladas descendentes, promedio ascendente a un decimal, ciclos completos descendentes y UUID pseudónimo para empates. Métricas del servidor; sin datos de perfil públicos ni posiciones modificables por Flutter.
+- Publicación una vez por ciclo completo de tema; no respuestas parciales. Frontera REST explícita distinta de entradas parciales/sesiones de área del productor UI antiguo; Firebase permanece intacto. Reintentar no resta el ranking acumulado.
+- Índice radix contado en la tabla privada existente: posiciones exactas sin Scan/QueryCOUNT global, lectura consistente por revisión, offsets manipulados rechazados, transacción de actualización <100operaciones. Concurrencia hasta3reintentos seguros y409 explícito.
+- Flutter reutiliza paginación/estados/mediciones e incorpora clientes Cognito y DTO públicos. HistoryResult mantiene diseño y diferencia retención Firebase vsAWS; no nuevas pantallas ni activación de endpoints inexistentes.
+- Validación:277 backend Node22 +4 health;13 integraciones DynamoDB Local; TypeScript/SAM correctos;296 Flutter/analyze sin incidencias. iPhone17 real Xcode18,1s/sync129ms, Firebase activo.
+- Resueltos: actualización duplicada/parcial, carreras de preparación/lectura, fraude de cursor, espera previa al cronómetro y aviso incorrecto de retención. Aserción de formato SAM corregida; pruebas finales sin fallos.
+- Documentación/diagrama/API ampliados en docs/AWS_PARTE_3_DYNAMODB_CRUD.md y backend/README.md, sin informe paralelo duplicado.
+- Pendiente: autorización de despliegue/costos, IAM/Cognito reales, carga/capacidad de proyección, migraciones autorizadas si hubo datos previos y activación gradual UI trasvalidación. Sin AWS desplegado, datos reales migrados ni avance al Prompt11.
+- Backend publicado:3779760065a36d2d35ed553e40e261d6afaf109e — feat(academic): add private history and atomic global ranking.
+- Flutter publicado:729486806ec17e007e37df80ab1e099e5775ee53 — feat(flutter): prepare academic history and ranking clients.
+- Push235a0fd →7294868 verificado por GitHub API; usuario janelyapazasencia95-sketch con permisos. Revisión34 archivos sin secretos; audit producción0 vulnerabilidades; noUnusedLocals/noUnusedParameters correctos. Tablas temporales limpiadas y DynamoDB Local detenido.

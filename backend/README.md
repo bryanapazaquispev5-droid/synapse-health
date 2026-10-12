@@ -117,3 +117,9 @@ Opt-in authenticated flashcard CRUD reuses the Lambda/API Gateway and existing F
 `EnableQuizBackend=false` prepares Cognito-authenticated quiz reads, server-started attempts, grading, idempotent submissions, topic retries and personal progress. The shared academic table and previously prepared private table are reused; the same Lambda serves all routes. No deployment or Firebase/UI switch occurred. Safe quiz DTOs never become answer-bearing Flutter QuizModel objects.
 
 The existing [DynamoDB/API document](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md#aws-parte-4--quizzes-resultados-y-progreso-2026-10-12) now includes scoring rules, request bodies, private keys, the updated diagram and limits. `npm run test:dynamodb` includes quiz repository and actual HTTP/RSA/JWKS integrations. GetUser account status uses a local fixture; no real Cognito/AWS account is claimed. Catalog loading and staging deployment need separate authorization.
+
+## Academic history and global ranking / AWS Part 5
+
+`EnableAcademicViews=false` preserves the Firebase implementation of the canonical `/api/v1/history` routes. Explicit activation requires Cognito and quiz storage; Cognito history uses submitted immutable DynamoDB results. `/api/v1/ranking` and `/api/v1/ranking/me` use a pseudonymous counted ordering projection, atomically updated only on a complete validated topic cycle. No new table, GSI, scan or client-controlled scoring is introduced.
+
+The existing [academic data/API document](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md) describes cumulative ranking rules, history retention, transaction limits, cursor protection, concurrency, local tests and deployment limitations. `npm run test:dynamodb` now includes history and ranking tests. No deployment, real-data migration or automatic historical backfill was executed.
