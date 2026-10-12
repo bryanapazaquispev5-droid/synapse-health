@@ -1,0 +1,140 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Synapse Health REST backend. Deployment requires authorization.
+Parameters:
+  FirebaseProjectId:
+    Type: String
+    AllowedPattern: '[a-z][a-z0-9-]{4,62}'
+  FirebaseCredentialSecretArn:
+    Type: String
+    Description: Existing Secrets Manager ARN, never a credential value.
+    AllowedPattern: 'arn:[a-z-]+:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+'
+  AllowedOrigin:
+    Type: String
+    Default: https://synapse.invalid
+    AllowedPattern: 'https://[a-zA-Z0-9.-]+(:[0-9]+)?'
+  EnableDynamoHistory:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+Conditions:
+  CreateFutureHistoryTable: !Equals [!Ref EnableDynamoHistory, 'true']
+Resources:
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      EndpointConfiguration:
+        Type: REGIONAL
+      Cors:
+        AllowMethods: "'GET,PATCH,OPTIONS'"
+        AllowHeaders: "'Authorization,Content-Type'"
+        AllowOrigin: !Sub "'${AllowedOrigin}'"
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 10
+          DataTraceEnabled: false
+          MetricsEnabled: false
+      GatewayResponses:
+        THROTTLED:
+          StatusCode: '429'
+          ResponseParameters:
+            Headers.Retry-After: "'60'"
+            Headers.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+          ResponseTemplates:
+            application/json: '{"error":{"code":"rate_limited","message":"Try again later."}}'
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+  BackendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-history
+      RetentionInDays: 14
+  BackendRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: lambda.amazonaws.com}
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: BackendLogsAndCredentialRead
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-history:*
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref FirebaseCredentialSecretArn
+  BackendFunction:
+    Type: AWS::Serverless::Function
+    DependsOn: BackendLogGroup
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-history
+      CodeUri: ./
+      Handler: dist/index.handler
+      Runtime: nodejs22.x
+      Architectures: [arm64]
+      MemorySize: 256
+      Timeout: 20
+      ReservedConcurrentExecutions: 5
+      Role: !GetAtt BackendRole.Arn
+      Environment:
+        Variables:
+          FIREBASE_PROJECT_ID: !Ref FirebaseProjectId
+          FIREBASE_CREDENTIAL_SECRET_ARN: !Ref FirebaseCredentialSecretArn
+          USER_RATE_LIMIT: '30'
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Events:
+        Health:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/health, Method: GET}
+        History:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/history, Method: GET}
+        HistoryDetail:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: '/api/v1/history/{id}', Method: GET}
+        ProfileRead:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /v1/me/profile, Method: GET}
+        ProfileWrite:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /v1/me/profile, Method: PATCH}
+  FutureHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Condition: CreateFutureHistoryTable
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - {AttributeName: userKey, AttributeType: S}
+        - {AttributeName: entryKey, AttributeType: S}
+        - {AttributeName: historyOrder, AttributeType: S}
+      KeySchema:
+        - {AttributeName: userKey, KeyType: HASH}
+        - {AttributeName: entryKey, KeyType: RANGE}
+      GlobalSecondaryIndexes:
+        - IndexName: ByDate
+          KeySchema:
+            - {AttributeName: userKey, KeyType: HASH}
+            - {AttributeName: historyOrder, KeyType: RANGE}
+          Projection: {ProjectionType: ALL}
+      SSESpecification: {SSEEnabled: true}
+      PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: true}
+Outputs:
+  ApiBaseUrl:
+    Value: !Sub https://${RestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/dev/
+  HistoryStorage:
+    Value: Firestore during transition; DynamoDB is inactive.
