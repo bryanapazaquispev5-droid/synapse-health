@@ -308,3 +308,16 @@
 - Push 75cfbcf → c6d0555 verificado por GitHub API y git ls-remote; documentación/evidencias en commit separado.
 - main remoto recibió un cambio externo del propietario (22e4c1a); no se modificó ni incorporó. Nuestros pushes solo afectan la rama autorizada; testIv sigue da55709.
 - Revisión de50 archivos sin secretos detectados; health del artefacto Lambda compilado HTTP200 local, sin servicios remotos.
+
+## Prompt 6 — AWS Parte 1
+
+- Base existente recuperada y conservada: entrada TypeScript, módulos Node.js, Lambda/API Gateway REST, SAM, IAM limitado y logs sin datos sensibles.
+- GET /api/v1/health reutilizado: HTTP200 con JSON {data:{status:ok},requestId}; liveness, no disponibilidad de Firebase ni URL AWS desplegada.
+- Añadida prueba HTTP del artefacto compilado y comando npm run test:health, sin nuevas dependencias de producción.
+- SAM CLI1.168.0 instalado únicamente como herramienta temporal. sam validate --lint detectó cabeceras GatewayResponses mal estructuradas que cfn-lint anterior no detectó; se corrigieron a ResponseParameters.Headers.
+- Validación final SAM CLI: plantilla válida, exit0. TypeScript typecheck/build: correctos.
+- Node.js22:78 pruebas existentes y4 HTTP health aprobadas; flutter analyze sin incidencias (3,7s), flutter test166 aprobadas.
+- Flutter, Firebase, autenticación, quizzes y progreso sin modificaciones/migraciones. Endpoints previos conservados, sin nuevas funcionalidades de fases posteriores.
+- Sin despliegues AWS. Cognito y adaptador/migración DynamoDB pendientes; tabla condicional sigue desactivada.
+- Archivos: backend/test/health.smoke.mjs, backend/package.json, backend/template.yaml, backend/README.md y este plan.
+- Siguiente paso solo tras autorización: preparar la siguiente parte; despliegue requiere autorización independiente. Detenerse aquí.

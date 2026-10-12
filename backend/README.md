@@ -12,6 +12,7 @@ npm ci --ignore-scripts
 npm run typecheck
 npm run build
 npm test
+npm run test:health
 ```
 
 From the repository root, with Java 21+ and the security test dependencies installed:
@@ -23,6 +24,23 @@ JAVA_HOME=/path/to/jdk security/node_modules/.bin/firebase emulators:exec \
 ```
 
 The integration script refuses non-loopback emulators. Fixture accounts and records exist only in the demo project. Emulator tokens do not prove production JWT signing or deployed IAM; valid production-token verification remains a staging acceptance check.
+
+## AWS Part 1 verification
+
+The base and health route are reused from the existing backend. This part adds no authentication, quiz or progress migration and makes no Flutter changes. Cognito and DynamoDB remain future transition work; earlier authorized endpoints are preserved.
+
+`npm run test:health` builds the TypeScript entry and tests the compiled Lambda through a temporary loopback HTTP server. It verifies HTTP200 JSON without Firebase/AWS credentials,405 for unsupported methods,400 for query parameters and the exact-origin CORS restriction. The server closes after the tests. This is local verification, not a deployed AWS URL or database readiness check.
+
+SAM CLI1.168.0 was installed in an isolated temporary tooling environment and executed with telemetry disabled:
+
+```sh
+SAM_CLI_TELEMETRY=0 AWS_EC2_METADATA_DISABLED=true \
+  sam validate --lint --template-file backend/template.yaml --region us-east-1
+```
+
+Run that validation from the repository root. The actual SAM transform detected invalid flattened gateway response headers left in the earlier template. They now use nested `ResponseParameters.Headers`, as required by [AWS SAM response configuration](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-controlling-access-to-apis-customize-response.html). The corrected template passes SAM CLI validation. Prior cfn-lint results alone did not detect this error.
+
+Verification:78 backend regression tests plus4 compiled health HTTP tests passed on Node.js22; TypeScript typecheck/build passed; Flutter analyze had no issues and all166 Flutter tests passed. Runtime dependencies, Firebase services and Flutter code remain unchanged. No AWS deployment or migration was executed.
 
 ## REST endpoints
 
@@ -65,7 +83,7 @@ The client uses current Firebase ID tokens in memory, one forced refresh after40
 
 `template.yaml` defines API Gateway REST, Lambda Node.js22/ARM64, IAM and CloudWatch. The optional encrypted/PITR DynamoDB table has `EnableDynamoHistory=false` by default. Turning it on creates a table but does not migrate records or switch the backend. Cognito is only a documented future authentication alternative.
 
-Validation executed here uses cfn-lint, which applies the SAM transform and validates the generated CloudFormation. AWS CLI, SAM CLI and Docker were not installed in the execution environment; no sam local/docker build or AWS account validation is claimed.
+Initial phase5 validation used cfn-lint. AWS Part1 now also executed SAM CLI1.168.0 validate --lint after correcting gateway response header syntax. AWS CLI and Docker remain unavailable; no sam local/docker build or AWS account validation is claimed.
 
 After explicit deployment authorization, a reproducible workflow is:
 

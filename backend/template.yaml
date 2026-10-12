@@ -41,16 +41,19 @@ Resources:
         THROTTLED:
           StatusCode: '429'
           ResponseParameters:
-            Headers.Retry-After: "'60'"
-            Headers.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+            Headers:
+              Retry-After: "'60'"
+              Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
           ResponseTemplates:
             application/json: '{"error":{"code":"rate_limited","message":"Try again later."}}'
         DEFAULT_4XX:
           ResponseParameters:
-            Headers.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+            Headers:
+              Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
         DEFAULT_5XX:
           ResponseParameters:
-            Headers.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+            Headers:
+              Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
   BackendLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
