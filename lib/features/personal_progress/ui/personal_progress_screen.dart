@@ -5,6 +5,7 @@ import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/states/app_async_content.dart';
 import 'progress_ranking_screen.dart';
+import '../../academic_history/ui/academic_history_screen.dart';
 import '../api/personal_progress_repository.dart';
 import 'widgets/personal_progress_body.dart';
 import 'widgets/progress_header.dart';
@@ -15,10 +16,12 @@ class PersonalProgressScreen extends StatefulWidget {
     this.repository,
     this.connectivity,
     this.rankingBuilder,
+    this.historyBuilder,
   });
   final PersonalProgressRepository? repository;
   final ConnectivityService? connectivity;
   final Widget Function(User)? rankingBuilder;
+  final Widget Function(User)? historyBuilder;
   @override
   State<PersonalProgressScreen> createState() => _PersonalProgressScreenState();
 }
@@ -64,6 +67,20 @@ class _PersonalProgressScreenState extends State<PersonalProgressScreen>
               repository: _repository,
               connectivity: widget.connectivity,
               header: ProgressHeader(
+                onHistory: () {
+                  if (_repository.currentUser?.uid != user.uid) return;
+                  Navigator.push(
+                    context,
+                    AppPageRoute(
+                      child:
+                          widget.historyBuilder?.call(user) ??
+                          AcademicHistoryScreen(
+                            connectivity: widget.connectivity,
+                            expectedUid: user.uid,
+                          ),
+                    ),
+                  );
+                },
                 onRanking: () {
                   if (_repository.currentUser?.uid != user.uid) return;
                   Navigator.push(
