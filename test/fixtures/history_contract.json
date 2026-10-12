@@ -1,0 +1,93 @@
+{
+  "purpose": "Cross-language test fixtures only; never loaded by the application.",
+  "progress": {
+    "areaId": "area-contract",
+    "topicId": "topic-contract",
+    "currentAttemptNumber": 3,
+    "history": [
+      {
+        "attemptNumber": 1,
+        "questionAnswers": {
+          "q1": {
+            "quizId": "q1",
+            "isAnswered": true,
+            "isCorrect": true,
+            "earnedStars": 3,
+            "maxStars": 3,
+            "selectedOptionIndex": null,
+            "answeredAt": "2026-01-01T00:00:00Z"
+          }
+        }
+      },
+      {
+        "attemptNumber": 2,
+        "questionAnswers": {
+          "q2": {
+            "quizId": "q2",
+            "isAnswered": true,
+            "isCorrect": false,
+            "earnedStars": 0,
+            "maxStars": 3,
+            "selectedOptionIndex": null,
+            "answeredAt": null
+          }
+        }
+      }
+    ],
+    "activeAttempt": {
+      "attemptNumber": 3,
+      "questionAnswers": {
+        "q1": {
+          "quizId": "q1",
+          "isAnswered": true,
+          "isCorrect": false,
+          "earnedStars": 0,
+          "maxStars": 3,
+          "selectedOptionIndex": null,
+          "answeredAt": "2026-03-01T00:00:00Z"
+        }
+      }
+    }
+  },
+  "expected": [
+    {
+      "id": "WyJhcmVhLWNvbnRyYWN0IiwidG9waWMtY29udHJhY3QiLDMsInExIl0",
+      "areaId": "area-contract",
+      "topicId": "topic-contract",
+      "quizId": "q1",
+      "attemptNumber": 3,
+      "answeredAt": "2026-03-01T00:00:00.000Z",
+      "isCorrect": false,
+      "earnedStars": 0,
+      "maxStars": 3,
+      "selectedOptionIndex": null,
+      "durationSeconds": null
+    },
+    {
+      "id": "WyJhcmVhLWNvbnRyYWN0IiwidG9waWMtY29udHJhY3QiLDEsInExIl0",
+      "areaId": "area-contract",
+      "topicId": "topic-contract",
+      "quizId": "q1",
+      "attemptNumber": 1,
+      "answeredAt": "2026-01-01T00:00:00.000Z",
+      "isCorrect": true,
+      "earnedStars": 3,
+      "maxStars": 3,
+      "selectedOptionIndex": null,
+      "durationSeconds": null
+    },
+    {
+      "id": "WyJhcmVhLWNvbnRyYWN0IiwidG9waWMtY29udHJhY3QiLDIsInEyIl0",
+      "areaId": "area-contract",
+      "topicId": "topic-contract",
+      "quizId": "q2",
+      "attemptNumber": 2,
+      "answeredAt": null,
+      "isCorrect": false,
+      "earnedStars": 0,
+      "maxStars": 3,
+      "selectedOptionIndex": null,
+      "durationSeconds": null
+    }
+  ]
+}
