@@ -16,15 +16,22 @@ Parameters:
   EnableDynamoHistory: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
   EnableCognitoAuth: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
   EnableFlashcardCrud: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
+  EnableQuizBackend: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
 Rules:
   FlashcardsRequireCognito:
     Assertions:
       - Assert: !Or [!Equals [!Ref EnableFlashcardCrud, 'false'], !Equals [!Ref EnableCognitoAuth, 'true']]
         AssertDescription: Flashcard CRUD requires Cognito authentication.
+  QuizzesRequireCognito:
+    Assertions:
+      - Assert: !Or [!Equals [!Ref EnableQuizBackend, 'false'], !Equals [!Ref EnableCognitoAuth, 'true']]
+        AssertDescription: Quiz backend requires Cognito authentication.
 Conditions:
   CreateFlashcardContent: !And [!Equals [!Ref EnableFlashcardCrud, 'true'], !Equals [!Ref EnableCognitoAuth, 'true']]
   CreateCognitoAuth: !Equals [!Ref EnableCognitoAuth, 'true']
-  CreateFutureHistoryTable: !Equals [!Ref EnableDynamoHistory, 'true']
+  CreateQuizBackend: !And [!Equals [!Ref EnableQuizBackend, 'true'], !Equals [!Ref EnableCognitoAuth, 'true']]
+  CreateAcademicContent: !Or [!Condition CreateFlashcardContent, !Condition CreateQuizBackend]
+  CreateFutureHistoryTable: !Or [!Equals [!Ref EnableDynamoHistory, 'true'], !Condition CreateQuizBackend]
 Resources:
   RestApi:
     Type: AWS::Serverless::Api
@@ -33,7 +40,7 @@ Resources:
       EndpointConfiguration: {Type: REGIONAL}
       Cors:
         AllowMethods: "'GET,POST,PATCH,DELETE,OPTIONS'"
-        AllowHeaders: "'Authorization,Content-Type,If-Match'"
+        AllowHeaders: "'Authorization,Content-Type,If-Match,Idempotency-Key'"
         AllowOrigin: !Sub "'${AllowedOrigin}'"
       MethodSettings:
         - ResourcePath: '/*'
@@ -88,6 +95,14 @@ Resources:
                 - CreateFlashcardContent
                 - {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem', 'dynamodb:Query', 'dynamodb:UpdateItem'], Resource: !GetAtt FlashcardContentTable.Arn}
                 - !Ref AWS::NoValue
+              - !If
+                - CreateQuizBackend
+                - {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:UpdateItem'], Resource: !GetAtt FlashcardContentTable.Arn}
+                - !Ref AWS::NoValue
+              - !If
+                - CreateQuizBackend
+                - {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:PutItem'], Resource: !GetAtt FutureHistoryTable.Arn}
+                - !Ref AWS::NoValue
   BackendFunction:
     Type: AWS::Serverless::Function
     DependsOn: BackendLogGroup
@@ -108,6 +123,9 @@ Resources:
           USER_RATE_LIMIT: '30'
           FLASHCARDS_RATE_LIMIT: '60'
           FLASHCARDS_TABLE_NAME: !If [CreateFlashcardContent, !Ref FlashcardContentTable, '']
+          QUIZZES_TABLE_NAME: !If [CreateQuizBackend, !Ref FlashcardContentTable, '']
+          QUIZ_RESULTS_TABLE_NAME: !If [CreateQuizBackend, !Ref FutureHistoryTable, '']
+          QUIZZES_RATE_LIMIT: '60'
           ALLOWED_ORIGIN: !Ref AllowedOrigin
           COGNITO_USER_POOL_ID: !If [CreateCognitoAuth, !Ref CognitoUserPool, '']
           COGNITO_CLIENT_ID: !If [CreateCognitoAuth, !Ref CognitoFlutterClient, '']
@@ -121,6 +139,15 @@ Resources:
         FlashcardDetail:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: '/api/v1/flashcards/{id}', Method: ANY}
+        Quizzes:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/quizzes, Method: ANY}
+        QuizResources:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: '/api/v1/quizzes/{proxy+}', Method: ANY}
+        PersonalProgress:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/progress/me, Method: GET}
         CognitoSession:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /api/v1/auth/session, Method: GET}
@@ -146,19 +173,10 @@ Resources:
       UsernameAttributes: [email]
       UsernameConfiguration: {CaseSensitive: false}
       AutoVerifiedAttributes: [email]
-      AccountRecoverySetting:
-        RecoveryMechanisms:
-          - {Name: verified_email, Priority: 1}
-      UserAttributeUpdateSettings:
-        AttributesRequireVerificationBeforeUpdate: [email]
+      AccountRecoverySetting: {RecoveryMechanisms: [{Name: verified_email, Priority: 1}]}
+      UserAttributeUpdateSettings: {AttributesRequireVerificationBeforeUpdate: [email]}
       Policies:
-        PasswordPolicy:
-          MinimumLength: 12
-          RequireLowercase: true
-          RequireUppercase: true
-          RequireNumbers: true
-          RequireSymbols: true
-          TemporaryPasswordValidityDays: 7
+        PasswordPolicy: {MinimumLength: 12, RequireLowercase: true, RequireUppercase: true, RequireNumbers: true, RequireSymbols: true, TemporaryPasswordValidityDays: 7}
       Schema:
         - {Name: email, AttributeDataType: String, Required: true, Mutable: true}
         - {Name: name, AttributeDataType: String, Required: false, Mutable: true}
@@ -190,7 +208,7 @@ Resources:
     Properties: {GroupName: admins, UserPoolId: !Ref CognitoUserPool, Description: Explicitly assigned content editors; no users are granted automatically.}
   FlashcardContentTable:
     Type: AWS::DynamoDB::Table
-    Condition: CreateFlashcardContent
+    Condition: CreateAcademicContent
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -207,26 +225,17 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - {AttributeName: userKey, AttributeType: S}
-        - {AttributeName: entryKey, AttributeType: S}
-        - {AttributeName: historyOrder, AttributeType: S}
-      KeySchema:
-        - {AttributeName: userKey, KeyType: HASH}
-        - {AttributeName: entryKey, KeyType: RANGE}
+      AttributeDefinitions: [{AttributeName: userKey, AttributeType: S}, {AttributeName: entryKey, AttributeType: S}, {AttributeName: historyOrder, AttributeType: S}]
+      KeySchema: [{AttributeName: userKey, KeyType: HASH}, {AttributeName: entryKey, KeyType: RANGE}]
       GlobalSecondaryIndexes:
-        - IndexName: ByDate
-          KeySchema:
-            - {AttributeName: userKey, KeyType: HASH}
-            - {AttributeName: historyOrder, KeyType: RANGE}
-          Projection: {ProjectionType: ALL}
+        - {IndexName: ByDate, KeySchema: [{AttributeName: userKey, KeyType: HASH}, {AttributeName: historyOrder, KeyType: RANGE}], Projection: {ProjectionType: ALL}}
       SSESpecification: {SSEEnabled: true}
       PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: true}
 Outputs:
   ApiBaseUrl:
     Value: !Sub https://${RestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/dev/
   HistoryStorage:
-    Value: Firestore during transition; DynamoDB is inactive.
+    Value: Firebase history remains active; Cognito quiz storage is opt-in.
   CognitoPoolId:
     Condition: CreateCognitoAuth
     Value: !Ref CognitoUserPool
@@ -236,3 +245,5 @@ Outputs:
   CognitoRegion:
     Condition: CreateCognitoAuth
     Value: !Ref AWS::Region
+  QuizContentTableName: {Condition: CreateQuizBackend, Value: !Ref FlashcardContentTable}
+  QuizResultsTableName: {Condition: CreateQuizBackend, Value: !Ref FutureHistoryTable}

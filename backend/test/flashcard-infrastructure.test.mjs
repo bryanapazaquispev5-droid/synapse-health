@@ -33,7 +33,7 @@ test('content infrastructure is opt-in and requires Cognito with retained encryp
   assert.match(template, /EnableFlashcardCrud: \{Type: String, Default: 'false'/);
   assert.match(template, /CreateFlashcardContent: !And .*EnableFlashcardCrud.*EnableCognitoAuth/);
   const table = template.split('  FlashcardContentTable:\n')[1].split('  FutureHistoryTable:')[0];
-  for (const requirement of ['Condition: CreateFlashcardContent', 'DeletionPolicy: Retain', 'UpdateReplacePolicy: Retain',
+  for (const requirement of ['Condition: CreateAcademicContent', 'DeletionPolicy: Retain', 'UpdateReplacePolicy: Retain',
     'SSEEnabled: true', 'PointInTimeRecoveryEnabled: true', 'AttributeName: expiresAt, Enabled: true']) {
     assert.ok(table.includes(requirement), requirement);
   }
