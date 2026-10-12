@@ -107,3 +107,7 @@ EnableCognitoAuth remains false. When a deployment is authorized, the template p
 GET /api/v1/auth/session uses COGNITO_USER_POOL_ID/COGNITO_CLIENT_ID and accepts Cognito access tokens only. aws-jwt-verify checks signature/JWKS/issuer/client/token_use/expiration/subject; GetUser checks revocation/disableduser and subject match. It never converts sub to a Firebase UID or uses the Firebase credential secret. Shared Gateway throttling applies; no per-user Cognito counter is added.
 
 Firebase tokens still protect history/profile. Tests use local RSA keys/JWKS and simulated provider transport, not deployed Cognito. TypeScript build,119 backend tests,4 HTTP health and SAM validation passed; runtime dependency audit is clean. Flutter staging/production guards and rollout prerequisites: ../docs/AWS_PARTE_2_COGNITO.md.
+
+## DynamoDB / AWS Part 3
+
+Opt-in authenticated flashcard CRUD reuses the Lambda/API Gateway and existing Flutter REST transport. Firebase catalog and academic flows remain active. `EnableFlashcardCrud=false` by default, requires Cognito; no deployment performed. See [data model, endpoints, permissions and local verification](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md). `npm test` now builds first; `DYNAMODB_LOCAL_ENDPOINT=http://127.0.0.1:8000 npm run test:dynamodb` verifies persistence, HTTP CRUD and distributed quota locally.

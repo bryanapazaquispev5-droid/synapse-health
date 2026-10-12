@@ -338,3 +338,19 @@
 - Backend publicado: b9103a43662da23b0355f1dd39dfde046964d6d0 — feat(auth): prepare Cognito pool and access token verification.
 - Flutter publicado: 24bb3556a2d6ecad48c77640bf1f2da2bfaf1b5b — feat(auth): integrate staged Cognito flows and secure sessions.
 - Push c566c79 → 24bb355 verificado por GitHub API y git ls-remote; documentación/captura en commit separado. Revisión30 archivos sin secretos detectados.
+
+## Prompt 8 — AWS Parte 3: DynamoDB y CRUD (2026-10-12)
+
+- Base Cognito publicada b9f7cf6 auditada; se conserva Firebase, UI, quizzes, progreso e historial actuales.
+- CRUD /api/v1/flashcards y /{id}: GET Cognito autenticado; POST/PATCH/DELETE solo grupo firmado admins. Validación, paginación, ETag/If-Match y concurrencia condicional.
+- Tabla académica compartida PK AREA#/SK FLASHCARD#, localizador opaco sin GSI/Scan. Cuota RATE#/WINDOW# atómica con TTL;60/min por usuario por defecto.
+- SAM opt-in EnableFlashcardCrud=false exige Cognito; tabla cifrada/PITR/Retain, IAM mínimo, grupo admins vacío, Lambda/API Gateway/CloudWatch existentes reutilizados. Sin despliegue.
+- Cliente Flutter preparatorio reutiliza CheatsheetModel y transporte REST; Cognito exclusivo para CRUD; HTTP201/204/409; ninguna pantalla cambia su fuente Firestore.
+- Node.js22:184 backend y4 HTTP health aprobadas;3 integraciones reales DynamoDB Local (CRUD, HTTP/roles/versiones y cuota concurrente) aprobadas. Servidor local detenido/tablas limpiadas.
+- TypeScript typecheck/build y SAM CLI --lint correctos; audit producción0 vulnerabilidades; Flutter analyze sin incidencias y248 pruebas aprobadas. No nueva compilación iOS: sin cambios UI/nativos.
+- Diagrama, auditoría de entidades, endpoints, configuración, reproducción y limitaciones: docs/AWS_PARTE_3_DYNAMODB_CRUD.md.
+- Pendientes: autorización de despliegue/costos, IAM y tokens reales en staging, administradores reales y mapeo/importación auditada del catálogo. Validación de referencias área/tema es por formato; premium es metadato, sin nuevo sistema de suscripciones.
+- No migraciones automáticas ni avance a AWS Parte4.
+- Backend publicado: cd2dc1349e812bb1f88a8ec7b7ba523e105ec236 — feat(api): implement authenticated DynamoDB flashcard CRUD.
+- Flutter publicado: 5ff5846d8851c75791d7249540201c0ca737c732 — feat(flutter): prepare Cognito flashcard REST client.
+- Push b9f7cf6 → 5ff5846 verificado por GitHub API. Identidad janelyapazasencia95-sketch con permisos de push; remoto original conservado. Revisión de31 archivos sin secretos detectados.
