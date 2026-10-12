@@ -17,6 +17,7 @@ Parameters:
   EnableCognitoAuth: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
   EnableFlashcardCrud: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
   EnableQuizBackend: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
+  EnableAcademicViews: {Type: String, Default: 'false', AllowedValues: ['true', 'false']}
 Rules:
   FlashcardsRequireCognito:
     Assertions:
@@ -26,9 +27,14 @@ Rules:
     Assertions:
       - Assert: !Or [!Equals [!Ref EnableQuizBackend, 'false'], !Equals [!Ref EnableCognitoAuth, 'true']]
         AssertDescription: Quiz backend requires Cognito authentication.
+  AcademicViewsRequireQuizzes:
+    Assertions:
+      - Assert: !Or [!Equals [!Ref EnableAcademicViews, 'false'], !And [!Equals [!Ref EnableQuizBackend, 'true'], !Equals [!Ref EnableCognitoAuth, 'true']]]
+        AssertDescription: Academic views require Cognito and the quiz backend.
 Conditions:
   CreateFlashcardContent: !And [!Equals [!Ref EnableFlashcardCrud, 'true'], !Equals [!Ref EnableCognitoAuth, 'true']]
   CreateCognitoAuth: !Equals [!Ref EnableCognitoAuth, 'true']
+  CreateAcademicViews: !And [!Equals [!Ref EnableAcademicViews, 'true'], !Condition CreateQuizBackend]
   CreateQuizBackend: !And [!Equals [!Ref EnableQuizBackend, 'true'], !Equals [!Ref EnableCognitoAuth, 'true']]
   CreateAcademicContent: !Or [!Condition CreateFlashcardContent, !Condition CreateQuizBackend]
   CreateFutureHistoryTable: !Or [!Equals [!Ref EnableDynamoHistory, 'true'], !Condition CreateQuizBackend]
@@ -68,9 +74,7 @@ Resources:
               Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
   BackendLogGroup:
     Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-history
-      RetentionInDays: 14
+    Properties: {LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-history", RetentionInDays: 14}
   BackendRole:
     Type: AWS::IAM::Role
     Properties:
@@ -91,18 +95,10 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: !Ref FirebaseCredentialSecretArn
-              - !If
-                - CreateFlashcardContent
-                - {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem', 'dynamodb:Query', 'dynamodb:UpdateItem'], Resource: !GetAtt FlashcardContentTable.Arn}
-                - !Ref AWS::NoValue
-              - !If
-                - CreateQuizBackend
-                - {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:UpdateItem'], Resource: !GetAtt FlashcardContentTable.Arn}
-                - !Ref AWS::NoValue
-              - !If
-                - CreateQuizBackend
-                - {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:PutItem'], Resource: !GetAtt FutureHistoryTable.Arn}
-                - !Ref AWS::NoValue
+              - !If [CreateFlashcardContent, {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem', 'dynamodb:Query', 'dynamodb:UpdateItem'], Resource: !GetAtt FlashcardContentTable.Arn}, !Ref AWS::NoValue]
+              - !If [CreateQuizBackend, {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:UpdateItem'], Resource: !GetAtt FlashcardContentTable.Arn}, !Ref AWS::NoValue]
+              - !If [CreateQuizBackend, {Effect: Allow, Action: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:PutItem'], Resource: !GetAtt FutureHistoryTable.Arn}, !Ref AWS::NoValue]
+              - !If [CreateAcademicViews, {Effect: Allow, Action: ['dynamodb:DeleteItem'], Resource: !GetAtt FutureHistoryTable.Arn}, !Ref AWS::NoValue]
   BackendFunction:
     Type: AWS::Serverless::Function
     DependsOn: BackendLogGroup
@@ -126,6 +122,7 @@ Resources:
           QUIZZES_TABLE_NAME: !If [CreateQuizBackend, !Ref FlashcardContentTable, '']
           QUIZ_RESULTS_TABLE_NAME: !If [CreateQuizBackend, !Ref FutureHistoryTable, '']
           QUIZZES_RATE_LIMIT: '60'
+          ACADEMIC_VIEWS_ENABLED: !If [CreateAcademicViews, 'true', 'false']
           ALLOWED_ORIGIN: !Ref AllowedOrigin
           COGNITO_USER_POOL_ID: !If [CreateCognitoAuth, !Ref CognitoUserPool, '']
           COGNITO_CLIENT_ID: !If [CreateCognitoAuth, !Ref CognitoFlutterClient, '']
@@ -148,6 +145,12 @@ Resources:
         PersonalProgress:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /api/v1/progress/me, Method: GET}
+        Ranking:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/ranking, Method: GET}
+        OwnRank:
+          Type: Api
+          Properties: {RestApiId: !Ref RestApi, Path: /api/v1/ranking/me, Method: GET}
         CognitoSession:
           Type: Api
           Properties: {RestApiId: !Ref RestApi, Path: /api/v1/auth/session, Method: GET}
@@ -242,8 +245,6 @@ Outputs:
   CognitoAppClientId:
     Condition: CreateCognitoAuth
     Value: !Ref CognitoFlutterClient
-  CognitoRegion:
-    Condition: CreateCognitoAuth
-    Value: !Ref AWS::Region
+  CognitoRegion: {Condition: CreateCognitoAuth, Value: !Ref AWS::Region}
   QuizContentTableName: {Condition: CreateQuizBackend, Value: !Ref FlashcardContentTable}
   QuizResultsTableName: {Condition: CreateQuizBackend, Value: !Ref FutureHistoryTable}

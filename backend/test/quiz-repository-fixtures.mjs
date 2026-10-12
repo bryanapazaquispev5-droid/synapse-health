@@ -19,6 +19,7 @@ export class MemoryAcademicClient {
       const all = [...this.records.entries()].filter(([key, item]) => key.startsWith(`${input.TableName}:`) &&
         (values[':area'] ? item.PK === values[':area'] && item.SK.startsWith(values[':prefix']) : item.userKey === values[':user'] && item.entryKey.startsWith(values[':prefix'])))
         .map(([, item]) => item).sort((a, b) => (a.SK ?? a.entryKey).localeCompare(b.SK ?? b.entryKey));
+      if (input.ScanIndexForward === false) all.reverse();
       const offset = input.ExclusiveStartKey ? all.findIndex(item => itemKey(input.TableName, item) === itemKey(input.TableName, input.ExclusiveStartKey)) + 1 : 0;
       const evaluated = all.slice(offset, offset + input.Limit);
       const last = evaluated.at(-1); const hasMore = offset + evaluated.length < all.length;

@@ -12,7 +12,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:health": "npm run build && node --test test/health.smoke.mjs",
-    "test:dynamodb": "npm run build && node --test test/flashcard-*.integration.mjs test/quiz-*.integration.mjs"
+    "test:dynamodb": "npm run build && node --test test/flashcard-*.integration.mjs test/quiz-*.integration.mjs test/academic-history.integration.mjs test/ranking.integration.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.1149.0",

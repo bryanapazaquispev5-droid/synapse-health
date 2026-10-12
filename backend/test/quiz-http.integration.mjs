@@ -11,6 +11,9 @@ import { createDynamoRateLimiter } from '../dist/flashcards/runtime.js';
 import { createQuizHandler } from '../dist/quizzes/controller.js';
 import { buildQuestionSnapshot } from '../dist/quizzes/scoring.js';
 import { DynamoQuizRepository } from '../dist/quizzes/repository.js';
+import { DynamoHistoryRepository } from '../dist/academic-history/repository.js';
+import { DynamoRankingRepository } from '../dist/ranking/repository.js';
+import { createAcademicHandler } from '../dist/academic/controller.js';
 import { fixtureQuiz, contentItem, uuid } from './quiz-repository-fixtures.mjs';
 const endpoint = process.env.DYNAMODB_LOCAL_ENDPOINT;
 if (!endpoint || !/^http:\/\/127\.0\.0\.1:\d+$/.test(endpoint)) throw new Error('Local loopback endpoint required.');
@@ -35,8 +38,15 @@ const identities = new Map([[ownerToken, 'local-owner'], [otherToken, 'local-oth
 const cognito = createCognitoRuntime({ env: { COGNITO_USER_POOL_ID: pool, COGNITO_CLIENT_ID: app },
   createVerifier: () => verifier, verifyUserStatus: async accessToken => identities.get(accessToken) });
 let now = new Date();
-const repo = new DynamoQuizRepository(client, content, results, buildQuestionSnapshot, () => now);
-const handler = withCors(createQuizHandler({ ...cognito, repository: repo, limiter: createDynamoRateLimiter(client, content) }), 'https://synapse.invalid');
+const ranking = new DynamoRankingRepository(client, results);
+const history = new DynamoHistoryRepository(client, results);
+const repo = new DynamoQuizRepository(client, content, results, buildQuestionSnapshot, () => now, undefined,
+  (subject, topic, date) => ranking.prepareCompletion(subject, topic, date));
+const limiter = createDynamoRateLimiter(client, content);
+const quizzesHandler = createQuizHandler({ ...cognito, repository: repo, limiter });
+const academicHandler = createAcademicHandler({ ...cognito, enabled: true, history, ranking, limiter });
+const handler = withCors(event => event.path.startsWith('/api/v1/history') || event.path.startsWith('/api/v1/ranking')
+  ? academicHandler(event) : quizzesHandler(event), 'https://synapse.invalid');
 const server = createServer(async (request, reply) => {
   try {
     const chunks = []; for await (const chunk of request) chunks.push(chunk);
@@ -89,4 +99,23 @@ test('real HTTP, signed JWTs and DynamoDB Local grade all question types and iso
   assert.equal(progress.items[0].activeAttempt.totalEarnedStars, 3); assert.equal(progress.items[0].activeAttempt.totalMaxStars, 5);
   const other = (await (await send('/api/v1/progress/me', 'GET', undefined, undefined, otherToken)).json()).data;
   assert.deepEqual(other.items, []);
+  const completed = (await (await send('/api/v1/ranking')).json()).data;
+  assert.equal(completed.items.length, 1); assert.equal(completed.items[0].rank, 1);
+  assert.equal(completed.items[0].totalStars, 3); assert.equal(completed.items[0].completedQuizzesCount, 1);
+  assert.equal(completed.items[0].totalQuizTimeSeconds, 30); assert.equal(completed.items[0].averageTimeSeconds, 30);
+  assert.ok(!JSON.stringify(completed).includes('local-owner'));
+  const personal = (await (await send('/api/v1/ranking/me')).json()).data;
+  assert.equal(personal.entry.publicId, completed.items[0].publicId); assert.equal(personal.entry.rank, 1);
+  assert.deepEqual((await (await send('/api/v1/ranking/me', 'GET', undefined, undefined, otherToken)).json()).data, { entry: null });
+  let cursor = null; const saved = [];
+  do {
+    const page = (await (await send('/api/v1/history?limit=1' + (cursor ? `&cursor=${cursor}` : ''))).json()).data;
+    saved.push(...page.items); cursor = page.nextCursor;
+  } while (cursor);
+  assert.equal(saved.length, 3); assert.equal(new Set(saved.map(item => item.id)).size, 3);
+  assert.deepEqual(saved.map(item => item.quizId), [...quizzes].reverse().map(quiz => quiz.id));
+  assert.equal(saved[0].status, 'submitted'); assert.equal(saved[0].durationSeconds, 10);
+  const detail = await send(`/api/v1/history/${saved[0].id}`); assert.equal(detail.status, 200);
+  assert.equal((await send(`/api/v1/history/${saved[0].id}`, 'GET', undefined, undefined, otherToken)).status, 404);
+  assert.equal((await send('/api/v1/ranking?totalStars=1000')).status, 400);
 });

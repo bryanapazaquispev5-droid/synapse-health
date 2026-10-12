@@ -4,10 +4,10 @@ import { ApiError } from '../http.mjs';
 import type { AcademicClient } from './catalog.js';
 import type { ProgressListOptions, ProgressPage, TopicProgress } from './model.js';
 import { decode, encodeLocator, invalidQuiz, topicKey, unavailable, userKey } from './keys.js';
-export interface StoredTopic extends TopicProgress { inFlight: Record<string, string>; catalogFingerprint: string }
+export interface StoredTopic extends TopicProgress { inFlight: Record<string, string>; catalogFingerprint: string; catalogQuestionCount: number }
 export interface RequestRecord { operation: string; attemptId?: string; progress?: TopicProgress }
 export function publicTopic(topic: StoredTopic): TopicProgress {
-  const { inFlight: _flight, catalogFingerprint: _catalog, ...progress } = topic; return progress;
+  const { inFlight: _flight, catalogFingerprint: _catalog, catalogQuestionCount: _count, ...progress } = topic; return progress;
 }
 export class AcademicPrivateStore {
   constructor(readonly client: AcademicClient, readonly tableName: string) {}
@@ -24,6 +24,7 @@ export class AcademicPrivateStore {
       ...(version === undefined ? {} : { ExpressionAttributeNames: { '#version': 'version' }, ExpressionAttributeValues: { ':version': version } }) } };
   }
   async transact(items: NonNullable<TransactWriteCommandInput['TransactItems']>): Promise<void> {
+    if (!items.length || items.length > 100) throw unavailable();
     for (const item of items) {
       if (item.Put && Buffer.byteLength(JSON.stringify(item.Put.Item), 'utf8') > 256_000) throw unavailable();
     }
