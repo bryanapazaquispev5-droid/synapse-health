@@ -38,6 +38,8 @@ class HistoryResult extends StatelessWidget {
               'Estrellas obtenidas',
               '${entry.earnedStars} / ${entry.maxStars}',
             ),
+            if (entry.score != null) _field('Puntuación', '${entry.score}'),
+            if (entry.status != null) _field('Estado', 'Registrado'),
             _field('Intento', '${entry.attemptNumber}'),
             _field('Fecha', historyDate(entry.answeredAt)),
             _field(
@@ -49,11 +51,13 @@ class HistoryResult extends StatelessWidget {
           ],
         ),
       ),
-      const SizedBox(height: 14),
-      const Text(
-        'Se conservan el intento actual y hasta tres anteriores.',
-        style: TextStyle(fontSize: 13, color: AppColors.textMuted),
-      ),
+      if (entry.status != 'submitted') ...[
+        const SizedBox(height: 14),
+        const Text(
+          'Se conservan el intento actual y hasta tres anteriores.',
+          style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+        ),
+      ],
     ],
   );
   Widget _field(String label, String value) => Padding(

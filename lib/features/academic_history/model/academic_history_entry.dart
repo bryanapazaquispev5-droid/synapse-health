@@ -11,6 +11,10 @@ class AcademicHistoryEntry {
     required this.earnedStars,
     required this.maxStars,
     required this.selectedOptionIndex,
+    this.durationSeconds,
+    this.score,
+    this.status,
+    this.quizTitle,
   });
 
   final String id;
@@ -24,10 +28,23 @@ class AcademicHistoryEntry {
   final int maxStars;
   final int? selectedOptionIndex;
 
-  /// The existing persisted answers do not record reliable elapsed time.
-  int? get durationSeconds => null;
+  /// Optional server measurements; legacy Firebase records remain unavailable.
+  final int? durationSeconds;
+  final int? score;
+  final String? status;
+  final String? quizTitle;
 
   factory AcademicHistoryEntry.fromJson(Map<String, dynamic> json) {
+    final duration = json['status'] == 'submitted'
+        ? json['durationSeconds']
+        : null;
+    final score = json['score'];
+    final status = json['status'];
+    if (duration != null && (duration is! int || duration < 0) ||
+        score != null && (score is! int || !{0, 1}.contains(score)) ||
+        status != null && status != 'submitted') {
+      throw const FormatException('Invalid history result.');
+    }
     return AcademicHistoryEntry(
       id: json['id'] as String,
       areaId: json['areaId'] as String,
@@ -41,6 +58,10 @@ class AcademicHistoryEntry {
       earnedStars: json['earnedStars'] as int,
       maxStars: json['maxStars'] as int,
       selectedOptionIndex: json['selectedOptionIndex'] as int?,
+      durationSeconds: duration as int?,
+      score: score as int?,
+      status: status as String?,
+      quizTitle: json['quizTitle'] as String?,
     );
   }
 
@@ -55,6 +76,9 @@ class AcademicHistoryEntry {
     'earnedStars': earnedStars,
     'maxStars': maxStars,
     'selectedOptionIndex': selectedOptionIndex,
-    'durationSeconds': null,
+    'durationSeconds': durationSeconds,
+    if (score != null) 'score': score,
+    if (status != null) 'status': status,
+    if (quizTitle != null) 'quizTitle': quizTitle,
   };
 }
