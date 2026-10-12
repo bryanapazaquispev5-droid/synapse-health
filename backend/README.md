@@ -81,7 +81,7 @@ The client uses current Firebase ID tokens in memory, one forced refresh after40
 
 ## Infrastructure and later deployment
 
-`template.yaml` defines API Gateway REST, Lambda Node.js22/ARM64, IAM and CloudWatch. The optional encrypted/PITR DynamoDB table has `EnableDynamoHistory=false` by default. Turning it on creates a table but does not migrate records or switch the backend. Cognito is only a documented future authentication alternative.
+`template.yaml` defines API Gateway REST, Lambda Node.js22/ARM64, IAM and CloudWatch. The optional encrypted/PITR DynamoDB table has `EnableDynamoHistory=false` by default. Turning it on creates a table but does not migrate records or switch the backend. Cognito now has a conditional User Pool/public client and a staged Flutter flow; Firebase remains active. Production activation and identity/data migration are not enabled. See ../docs/AWS_PARTE_2_COGNITO.md.
 
 Initial phase5 validation used cfn-lint. AWS Part1 now also executed SAM CLI1.168.0 validate --lint after correcting gateway response header syntax. AWS CLI and Docker remain unavailable; no sam local/docker build or AWS account validation is claimed.
 
@@ -99,3 +99,11 @@ sam deploy --guided
 Supply the existing secret ARN, Firebase project and approved web origin during deployment. Keep DynamoDB disabled until its migration/store adapter is implemented and verified. Review region/account, existing resources, IAM/KMS, estimated API/Lambda/Firestore/Secrets Manager/log costs, budget alerts and staging token tests before confirming deployment. No deployment command was executed in this phase.
 
 Data model, diagram, migration and verification results: `../docs/FASE_5_HISTORIAL_AWS.md`.
+
+## Cognito / AWS Part 2
+
+EnableCognitoAuth remains false. When a deployment is authorized, the template prepares email-based User Pool and public client, password policy, verification/recovery, short-lived tokens and refresh rotation. No mobile client secret or admin IAM grant is added.
+
+GET /api/v1/auth/session uses COGNITO_USER_POOL_ID/COGNITO_CLIENT_ID and accepts Cognito access tokens only. aws-jwt-verify checks signature/JWKS/issuer/client/token_use/expiration/subject; GetUser checks revocation/disableduser and subject match. It never converts sub to a Firebase UID or uses the Firebase credential secret. Shared Gateway throttling applies; no per-user Cognito counter is added.
+
+Firebase tokens still protect history/profile. Tests use local RSA keys/JWKS and simulated provider transport, not deployed Cognito. TypeScript build,119 backend tests,4 HTTP health and SAM validation passed; runtime dependency audit is clean. Flutter staging/production guards and rollout prerequisites: ../docs/AWS_PARTE_2_COGNITO.md.

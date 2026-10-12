@@ -321,3 +321,20 @@
 - Sin despliegues AWS. Cognito y adaptador/migración DynamoDB pendientes; tabla condicional sigue desactivada.
 - Archivos: backend/test/health.smoke.mjs, backend/package.json, backend/template.yaml, backend/README.md y este plan.
 - Siguiente paso solo tras autorización: preparar la siguiente parte; despliegue requiere autorización independiente. Detenerse aquí.
+
+## Prompt 7 — AWS Parte 2: Cognito (2026-10-12)
+
+- User Pool/cliente móvil preparados en SAM, EnableCognitoAuth=false; email/código/recuperación, contraseña12, cliente sin secreto, tokens15min/refresh7d y rotación. Sin despliegue.
+- Flutter modular: registro, login, confirmación/reenvío, reset, logout, restauración/renovación; formulario reutiliza componentes y AppTheme.
+- Tokens Keychain/Android cifrado, sin contraseñas persistidas; errores seguros, protección de concurrencia/dispose y sesión expirada offline.
+- Selector predeterminado Firebase; Cognito solo opt-in debug con staging explícito, prohibido release. Google y datos académicos Firebase conservados.
+- GET /api/v1/auth/session: firma JWKS/claims/exp/sub y GetUser para revocación; Cognito separado de UID/validación Firebase. Rate limit Gateway existente; no cuota Cognito por usuario añadida.
+- Backend usa aws-jwt-verify; sin SDK/dependencias Flutter nuevos. IAM sin permisos administrativos Cognito.
+- Validación: flutter analyze sin incidencias;206 tests Flutter;119 backend Node22 +4 HTTP health; TypeScript y SAM correctos; audit producción0.
+- iPhone17: compilación real19,9s/sync128ms; vista Cognito local sin AWS23,1s/sync110ms y captura identificada; app real Firebase restaurada build18,9s/sync125ms.
+- No usuarios/credenciales ficticias en producción ni pruebas reales en AWS; dependencias simuladas en tests, criptografía RSA/JWKS real offline en backend.
+- Informe/configuración/seguridad/migración Google y validación AWS: docs/AWS_PARTE_2_COGNITO.md.
+- Pendiente de autorización: despliegue y cuentas/correos/rotación reales, mapeo auditado de identidades y activación de producción. No avanzar a AWS Parte3.
+- Backend publicado: b9103a43662da23b0355f1dd39dfde046964d6d0 — feat(auth): prepare Cognito pool and access token verification.
+- Flutter publicado: 24bb3556a2d6ecad48c77640bf1f2da2bfaf1b5b — feat(auth): integrate staged Cognito flows and secure sessions.
+- Push c566c79 → 24bb355 verificado por GitHub API y git ls-remote; documentación/captura en commit separado. Revisión30 archivos sin secretos detectados.
