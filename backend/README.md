@@ -111,3 +111,9 @@ Firebase tokens still protect history/profile. Tests use local RSA keys/JWKS and
 ## DynamoDB / AWS Part 3
 
 Opt-in authenticated flashcard CRUD reuses the Lambda/API Gateway and existing Flutter REST transport. Firebase catalog and academic flows remain active. `EnableFlashcardCrud=false` by default, requires Cognito; no deployment performed. See [data model, endpoints, permissions and local verification](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md). `npm test` now builds first; `DYNAMODB_LOCAL_ENDPOINT=http://127.0.0.1:8000 npm run test:dynamodb` verifies persistence, HTTP CRUD and distributed quota locally.
+
+## Academic quizzes / AWS Part 4
+
+`EnableQuizBackend=false` prepares Cognito-authenticated quiz reads, server-started attempts, grading, idempotent submissions, topic retries and personal progress. The shared academic table and previously prepared private table are reused; the same Lambda serves all routes. No deployment or Firebase/UI switch occurred. Safe quiz DTOs never become answer-bearing Flutter QuizModel objects.
+
+The existing [DynamoDB/API document](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md#aws-parte-4--quizzes-resultados-y-progreso-2026-10-12) now includes scoring rules, request bodies, private keys, the updated diagram and limits. `npm run test:dynamodb` includes quiz repository and actual HTTP/RSA/JWKS integrations. GetUser account status uses a local fixture; no real Cognito/AWS account is claimed. Catalog loading and staging deployment need separate authorization.

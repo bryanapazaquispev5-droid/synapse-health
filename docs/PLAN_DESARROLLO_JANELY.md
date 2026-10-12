@@ -354,3 +354,22 @@
 - Backend publicado: cd2dc1349e812bb1f88a8ec7b7ba523e105ec236 — feat(api): implement authenticated DynamoDB flashcard CRUD.
 - Flutter publicado: 5ff5846d8851c75791d7249540201c0ca737c732 — feat(flutter): prepare Cognito flashcard REST client.
 - Push b9f7cf6 → 5ff5846 verificado por GitHub API. Identidad janelyapazasencia95-sketch con permisos de push; remoto original conservado. Revisión de31 archivos sin secretos detectados.
+
+## Prompt 9 — AWS Parte 4: quizzes, resultados y progreso (2026-10-12)
+
+- Partes1–3 publicadas/integradas auditadas; base94b8018 y rama feat/janely-synapse-development limpia al inicio.
+- GET /api/v1/quizzes y/{id}; POST /{id}/attempts; GET /api/v1/progress/me. Auxiliares mínimos: inicio, recuperación propia y reintento por tema. Cognito firmado y autorización por sub.
+- Scoring Lambda: opción1/0; matching por pares correctos; ordering por posiciones; pregunta correcta solo si completa. No se aceptan estrellas/puntuaciones/tiempos enviados por Flutter.
+- Snapshot privado, banco/denominador fijados por ciclo e IDs aleatorios; cambio de banco requiere reintento explícito. Soluciones/rationale/bloques numerados ocultos. Fechas y duración wall-clock de servidor, incluyendo pausas; sin nuevo límite de examen.
+- Tablas existentes compartida/privada reutilizadas. Intento, respuesta y resultado persistidos; proyección de progreso sincronizada por transacciones condicionadas; sin Scan ni nuevo índice.
+- Idempotencia, recuperación sin reiniciar reloj, aislamiento de resultados, pregunta bloqueada por ciclo, reintentos ilimitados, FIFO3 y estrellas activas sin sumar históricos.
+- SAM EnableQuizBackend=false exige Cognito; IAM por operaciones/tablas exactas; CORS/rate limiting/CloudWatch reutilizados. Sin despliegue ni catálogo clínico importado.
+- Flutter adaptadores/DTO seguros y proveedor Cognito compartido; estadísticas/modelos existentes reutilizados. Firebase y UI siguen activos sin migración.
+- Pruebas ejecutadas:237 backend Node22 +4 HTTP health;7 integraciones DynamoDB Local incluyendo HTTP y firmaRSA real con GetUser simulado; TypeScript y SAM correctos;272 Flutter y analyze sin incidencias.
+- iPhone17: flutter run debug compilación real19,6s/sync126ms, proveedor Firebase conservado.
+- API, diagrama, reglas y límites ampliados en docs/AWS_PARTE_3_DYNAMODB_CRUD.md; sin documentos paralelos duplicados.
+- Límites técnicos:100 elementos por pregunta,500 preguntas/tema,200 páginas por denominador y256000bytes/registro; excesos fallan503. Antes de migrar, revisar orden/índice por tema, publicación de catálogo estable y carga real; no afirmar consumo AWS en producción.
+- Pendientes: despliegue autorizado/costos, pruebas IAM/tokens reales, política de versionado del catálogo y migración/mapeo auditados. No avanzar a AWS Parte5.
+- Backend publicado:2bf3ab882a44becefebb36b7f2243aba6faa7638 — feat(quizzes): add server grading and DynamoDB progress.
+- Flutter publicado:74ac377e3d8b2b47c1f6c9708ed15cdd3f05529c — feat(flutter): prepare secure quiz and progress REST clients.
+- Push94b8018 →74ac377 verificado por GitHub API; cuenta janelyapazasencia95-sketch con permisos. Revisión33 archivos sin secretos; npm audit producción0 vulnerabilidades; tablas de prueba limpiadas y DynamoDB Local detenido.
