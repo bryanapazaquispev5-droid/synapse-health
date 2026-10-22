@@ -19,7 +19,9 @@ class HistoryLabels {
       topics[(entry.areaId, entry.topicId)] ?? 'Tema no disponible';
   String quiz(AcademicHistoryEntry entry) =>
       quizzes[(entry.areaId, entry.topicId, entry.quizId)] ??
-      'Quiz no disponible';
+      (entry.quizTitle?.trim().isNotEmpty == true
+          ? entry.quizTitle!
+          : 'Quiz no disponible');
 }
 
 /// Catalog subscriptions are shared across entries from the same area/topic.

@@ -17,6 +17,8 @@ enum ApiFailure {
   disabled,
   unauthenticated,
   forbidden,
+  conflict,
+  invalidRequest,
   notFound,
   rateLimited,
   unavailable,

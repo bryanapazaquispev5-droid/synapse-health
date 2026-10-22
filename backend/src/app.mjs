@@ -1,7 +1,7 @@
 import { ApiError, header, parsePatch, response } from './http.mjs';
 import { parseHistoryQuery, validateHistoryId } from './history-repository.mjs';
 
-export function createHandler({ verifyToken, profiles, history, limiter, logger = console }) {
+export function createHandler({ verifyToken, verifyCognitoToken, profiles, history, limiter, logger = console }) {
   return async (event) => {
     const requestId = event.requestContext?.requestId ?? 'unavailable';
     try {
@@ -10,7 +10,8 @@ export function createHandler({ verifyToken, profiles, history, limiter, logger 
       const isHistory = path === '/api/v1/history';
       const historyId = path.startsWith('/api/v1/history/') ? path.slice(16) : null;
       const isHealth = path === '/api/v1/health';
-      if (!isProfile && !isHistory && !historyId && !isHealth) {
+      const isCognitoSession = path === '/api/v1/auth/session';
+      if (!isProfile && !isHistory && !historyId && !isHealth && !isCognitoSession) {
         throw new ApiError(404, 'not_found', 'Endpoint not found.');
       }
       if (!(isProfile ? ['GET', 'PATCH'] : ['GET']).includes(event.httpMethod)) {
@@ -28,6 +29,14 @@ export function createHandler({ verifyToken, profiles, history, limiter, logger 
       const authorization = header(event.headers, 'authorization');
       const match = typeof authorization === 'string' && /^Bearer\s+([^\s]+)$/i.exec(authorization);
       if (!match) throw new ApiError(401, 'unauthenticated', 'Authentication is required.');
+      if (isCognitoSession) {
+        if (!verifyCognitoToken) throw new ApiError(503, 'unavailable', 'Authentication service is not configured.');
+        const identity = await verifyCognitoToken(match[1]);
+        if (typeof identity?.sub !== 'string' || !identity.sub.trim()) {
+          throw new ApiError(401, 'unauthenticated', 'Authentication is required.');
+        }
+        return response(200, {data: {sub: identity.sub}, requestId});
+      }
       const identity = await verifyToken(match[1]);
       if (typeof identity?.uid !== 'string' || !identity.uid.length) {
         throw new ApiError(401, 'unauthenticated', 'Authentication is required.');

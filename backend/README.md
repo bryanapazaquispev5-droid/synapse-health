@@ -12,6 +12,7 @@ npm ci --ignore-scripts
 npm run typecheck
 npm run build
 npm test
+npm run test:health
 ```
 
 From the repository root, with Java 21+ and the security test dependencies installed:
@@ -23,6 +24,23 @@ JAVA_HOME=/path/to/jdk security/node_modules/.bin/firebase emulators:exec \
 ```
 
 The integration script refuses non-loopback emulators. Fixture accounts and records exist only in the demo project. Emulator tokens do not prove production JWT signing or deployed IAM; valid production-token verification remains a staging acceptance check.
+
+## AWS Part 1 verification
+
+The base and health route are reused from the existing backend. This part adds no authentication, quiz or progress migration and makes no Flutter changes. Cognito and DynamoDB remain future transition work; earlier authorized endpoints are preserved.
+
+`npm run test:health` builds the TypeScript entry and tests the compiled Lambda through a temporary loopback HTTP server. It verifies HTTP200 JSON without Firebase/AWS credentials,405 for unsupported methods,400 for query parameters and the exact-origin CORS restriction. The server closes after the tests. This is local verification, not a deployed AWS URL or database readiness check.
+
+SAM CLI1.168.0 was installed in an isolated temporary tooling environment and executed with telemetry disabled:
+
+```sh
+SAM_CLI_TELEMETRY=0 AWS_EC2_METADATA_DISABLED=true \
+  sam validate --lint --template-file backend/template.yaml --region us-east-1
+```
+
+Run that validation from the repository root. The actual SAM transform detected invalid flattened gateway response headers left in the earlier template. They now use nested `ResponseParameters.Headers`, as required by [AWS SAM response configuration](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-controlling-access-to-apis-customize-response.html). The corrected template passes SAM CLI validation. Prior cfn-lint results alone did not detect this error.
+
+Verification:78 backend regression tests plus4 compiled health HTTP tests passed on Node.js22; TypeScript typecheck/build passed; Flutter analyze had no issues and all166 Flutter tests passed. Runtime dependencies, Firebase services and Flutter code remain unchanged. No AWS deployment or migration was executed.
 
 ## REST endpoints
 
@@ -63,9 +81,9 @@ The client uses current Firebase ID tokens in memory, one forced refresh after40
 
 ## Infrastructure and later deployment
 
-`template.yaml` defines API Gateway REST, Lambda Node.js22/ARM64, IAM and CloudWatch. The optional encrypted/PITR DynamoDB table has `EnableDynamoHistory=false` by default. Turning it on creates a table but does not migrate records or switch the backend. Cognito is only a documented future authentication alternative.
+`template.yaml` defines API Gateway REST, Lambda Node.js22/ARM64, IAM and CloudWatch. The optional encrypted/PITR DynamoDB table has `EnableDynamoHistory=false` by default. Turning it on creates a table but does not migrate records or switch the backend. Cognito now has a conditional User Pool/public client and a staged Flutter flow; Firebase remains active. Production activation and identity/data migration are not enabled. See ../docs/AWS_PARTE_2_COGNITO.md.
 
-Validation executed here uses cfn-lint, which applies the SAM transform and validates the generated CloudFormation. AWS CLI, SAM CLI and Docker were not installed in the execution environment; no sam local/docker build or AWS account validation is claimed.
+Initial phase5 validation used cfn-lint. AWS Part1 now also executed SAM CLI1.168.0 validate --lint after correcting gateway response header syntax. AWS CLI and Docker remain unavailable; no sam local/docker build or AWS account validation is claimed.
 
 After explicit deployment authorization, a reproducible workflow is:
 
@@ -81,3 +99,27 @@ sam deploy --guided
 Supply the existing secret ARN, Firebase project and approved web origin during deployment. Keep DynamoDB disabled until its migration/store adapter is implemented and verified. Review region/account, existing resources, IAM/KMS, estimated API/Lambda/Firestore/Secrets Manager/log costs, budget alerts and staging token tests before confirming deployment. No deployment command was executed in this phase.
 
 Data model, diagram, migration and verification results: `../docs/FASE_5_HISTORIAL_AWS.md`.
+
+## Cognito / AWS Part 2
+
+EnableCognitoAuth remains false. When a deployment is authorized, the template prepares email-based User Pool and public client, password policy, verification/recovery, short-lived tokens and refresh rotation. No mobile client secret or admin IAM grant is added.
+
+GET /api/v1/auth/session uses COGNITO_USER_POOL_ID/COGNITO_CLIENT_ID and accepts Cognito access tokens only. aws-jwt-verify checks signature/JWKS/issuer/client/token_use/expiration/subject; GetUser checks revocation/disableduser and subject match. It never converts sub to a Firebase UID or uses the Firebase credential secret. Shared Gateway throttling applies; no per-user Cognito counter is added.
+
+Firebase tokens still protect history/profile. Tests use local RSA keys/JWKS and simulated provider transport, not deployed Cognito. TypeScript build,119 backend tests,4 HTTP health and SAM validation passed; runtime dependency audit is clean. Flutter staging/production guards and rollout prerequisites: ../docs/AWS_PARTE_2_COGNITO.md.
+
+## DynamoDB / AWS Part 3
+
+Opt-in authenticated flashcard CRUD reuses the Lambda/API Gateway and existing Flutter REST transport. Firebase catalog and academic flows remain active. `EnableFlashcardCrud=false` by default, requires Cognito; no deployment performed. See [data model, endpoints, permissions and local verification](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md). `npm test` now builds first; `DYNAMODB_LOCAL_ENDPOINT=http://127.0.0.1:8000 npm run test:dynamodb` verifies persistence, HTTP CRUD and distributed quota locally.
+
+## Academic quizzes / AWS Part 4
+
+`EnableQuizBackend=false` prepares Cognito-authenticated quiz reads, server-started attempts, grading, idempotent submissions, topic retries and personal progress. The shared academic table and previously prepared private table are reused; the same Lambda serves all routes. No deployment or Firebase/UI switch occurred. Safe quiz DTOs never become answer-bearing Flutter QuizModel objects.
+
+The existing [DynamoDB/API document](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md#aws-parte-4--quizzes-resultados-y-progreso-2026-10-12) now includes scoring rules, request bodies, private keys, the updated diagram and limits. `npm run test:dynamodb` includes quiz repository and actual HTTP/RSA/JWKS integrations. GetUser account status uses a local fixture; no real Cognito/AWS account is claimed. Catalog loading and staging deployment need separate authorization.
+
+## Academic history and global ranking / AWS Part 5
+
+`EnableAcademicViews=false` preserves the Firebase implementation of the canonical `/api/v1/history` routes. Explicit activation requires Cognito and quiz storage; Cognito history uses submitted immutable DynamoDB results. `/api/v1/ranking` and `/api/v1/ranking/me` use a pseudonymous counted ordering projection, atomically updated only on a complete validated topic cycle. No new table, GSI, scan or client-controlled scoring is introduced.
+
+The existing [academic data/API document](../docs/AWS_PARTE_3_DYNAMODB_CRUD.md) describes cumulative ranking rules, history retention, transaction limits, cursor protection, concurrency, local tests and deployment limitations. `npm run test:dynamodb` now includes history and ranking tests. No deployment, real-data migration or automatic historical backfill was executed.

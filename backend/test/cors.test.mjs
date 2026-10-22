@@ -6,6 +6,7 @@ test('approved HTTPS origin receives exact CORS header', async () => {
   const result = await withCors(ok, 'https://app.example')({headers: {Origin: 'https://app.example'}});
   assert.equal(result.headers['Access-Control-Allow-Origin'], 'https://app.example');
   assert.equal(result.headers.Vary, 'Origin');
+  assert.equal(result.headers['Access-Control-Expose-Headers'], 'ETag,Retry-After,Location');
 });
 test('unapproved origin is denied before backend work', async () => {
   let called = false;
