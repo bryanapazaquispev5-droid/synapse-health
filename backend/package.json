@@ -1,5 +1,5 @@
 {
-  "name": "synapse-health-aws-backend",
+  "name": "synapse-health-aws-api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,22 +7,22 @@
     "node": ">=22 <27"
   },
   "scripts": {
+    "start": "node src/aws/local-server.mjs",
+    "admin": "node admin/server.mjs",
+    "package:aws": "powershell -NoProfile -File scripts/package-aws.ps1",
+    "test:aws": "npm run build && node --test test/aws-*.test.mjs test/cognito-*.test.mjs",
+    "build": "node scripts/check.mjs && node infra/build-template.mjs",
+    "migrate:catalog": "node scripts/migrate-catalog-to-split-tables.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
-    "test:emulator": "node --test test/emulator.integration.mjs",
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:health": "npm run build && node --test test/health.smoke.mjs",
-    "test:dynamodb": "npm run build && node --test test/flashcard-*.integration.mjs test/quiz-*.integration.mjs test/academic-history.integration.mjs test/ranking.integration.mjs"
+    "test:health": "node --test test/aws-api.test.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "3.1149.0",
     "@aws-sdk/client-dynamodb": "3.1149.0",
-    "@aws-sdk/client-secrets-manager": "^3.0.0",
     "@aws-sdk/lib-dynamodb": "3.1149.0",
-    "aws-jwt-verify": "5.2.1",
-    "firebase-admin": "14.5.0"
+    "aws-jwt-verify": "5.2.1"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.0",
-    "typescript": "^5.9.0"
+    "@huggingface/transformers": "^4.3.1"
   }
 }
