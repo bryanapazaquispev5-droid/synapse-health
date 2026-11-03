@@ -1,11 +1,13 @@
 // ============================================================================
-// Archivo: auth_screen.dart
-// Propósito: Pantalla principal de interfaz de usuario para el flujo de autenticacion [auth_screen].
+// File: auth_screen.dart
+// Purpose: Main user interface screen for the authentication flow [auth_screen].
 // ============================================================================
 
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../api/auth_lockout_manager.dart';
+import '../api/remembered_email_store.dart';
 import '../api/auth_service.dart';
 import '../model/auth_flow_handler.dart';
 import '../utils/auth_snackbar_helper.dart';
@@ -16,9 +18,8 @@ import 'widgets/auth_lockout_banner.dart';
 import 'widgets/auth_login_form.dart';
 import 'widgets/auth_mode_selector.dart';
 import 'widgets/auth_register_form.dart';
-import 'widgets/cupertino_google_account_sheet.dart';
 
-// Pantalla de interfaz de usuario [AuthScreen]
+// User interface screen [AuthScreen]
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -26,24 +27,32 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [AuthScreen]
+// Reactive state and lifecycle management for [AuthScreen]
 class _AuthScreenState extends State<AuthScreen> {
   final AuthService _authService = AuthService();
   final AuthLockoutManager _lockoutManager = AuthLockoutManager();
+  final RememberedEmailStore _rememberedEmailStore = RememberedEmailStore();
 
   bool _isLogin = true;
   bool _isLoading = false;
   int _createdAccountsOnDevice = 0;
   bool _isCaptchaVerified = false;
+  bool _rememberEmail = false;
+  bool _rememberEmailWasChanged = false;
 
   final TextEditingController _loginEmailController = TextEditingController();
-  final TextEditingController _loginPasswordController = TextEditingController();
+  final TextEditingController _loginPasswordController =
+      TextEditingController();
 
   final TextEditingController _registerNameController = TextEditingController();
-  final TextEditingController _registerEmailController = TextEditingController();
-  final TextEditingController _registerCareerController = TextEditingController();
-  final TextEditingController _registerPasswordController = TextEditingController();
-  final TextEditingController _registerConfirmPasswordController = TextEditingController();
+  final TextEditingController _registerEmailController =
+      TextEditingController();
+  final TextEditingController _registerCareerController =
+      TextEditingController();
+  final TextEditingController _registerPasswordController =
+      TextEditingController();
+  final TextEditingController _registerConfirmPasswordController =
+      TextEditingController();
   String _registerGender = 'Hombre';
 
   late final AuthFlowHandler _flowHandler = AuthFlowHandler(
@@ -51,10 +60,11 @@ class _AuthScreenState extends State<AuthScreen> {
     lockoutManager: _lockoutManager,
   );
 
-  // Inicializacion de dependencias y estado local del componente
+  // Initialize component dependencies and local state
   @override
   void initState() {
     super.initState();
+    _restoreRememberedEmail();
     _lockoutManager.loadSecurityState(
       onStateLoaded: (created, failed) {
         if (mounted) setState(() => _createdAccountsOnDevice = created);
@@ -63,6 +73,32 @@ class _AuthScreenState extends State<AuthScreen> {
         if (mounted) setState(() {});
       },
     );
+  }
+
+  Future<void> _restoreRememberedEmail() async {
+    try {
+      final email = await _rememberedEmailStore.load();
+      if (email == null || !mounted || _rememberEmailWasChanged) return;
+      _loginEmailController.text = email;
+      setState(() => _rememberEmail = true);
+    } catch (_) {}
+  }
+
+  Future<void> _saveRememberedEmail(String? email) async {
+    try {
+      await _rememberedEmailStore.save(email);
+    } catch (_) {}
+  }
+
+  Future<void> _setRememberEmail(bool enabled) async {
+    _rememberEmailWasChanged = true;
+    setState(() => _rememberEmail = enabled);
+    await _saveRememberedEmail(enabled ? _loginEmailController.text : null);
+  }
+
+  void _handleLoginEmailChanged(String email) {
+    _rememberEmailWasChanged = true;
+    if (_rememberEmail) _saveRememberedEmail(email);
   }
 
   void _showFeedback(String message, {bool isError = false}) {
@@ -81,6 +117,10 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _handleSubmitEmailAuth() async {
     setState(() => _isLoading = true);
     if (_isLogin) {
+      await _saveRememberedEmail(
+        _rememberEmail ? _loginEmailController.text : null,
+      );
+      if (!mounted) return;
       await _flowHandler.handleLogin(
         context: context,
         email: _loginEmailController.text,
@@ -108,22 +148,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  Future<void> _handleGoogleSignInPressed() async {
-    if (!mounted) return;
-    await CupertinoGoogleAccountSheet.show(
-      context: context,
-      onSelectAccount: (email) => _handleGoogleSignIn(hintEmail: email),
-      onSelectOtherAccount: () => _handleGoogleSignIn(),
-    );
-  }
-
-  Future<void> _handleGoogleSignIn({String? hintEmail}) async {
-    setState(() => _isLoading = true);
-    await _flowHandler.handleGoogleSignIn(context: context, hintEmail: hintEmail);
-    if (mounted) setState(() => _isLoading = false);
-  }
-
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Release controllers and resources to prevent memory leaks
   @override
   void dispose() {
     _lockoutManager.dispose();
@@ -137,7 +162,7 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Reactive widget tree rendering
   @override
   Widget build(BuildContext context) {
     final bool isLockoutActive = _isLogin && _lockoutManager.lockoutSeconds > 0;
@@ -147,7 +172,10 @@ class _AuthScreenState extends State<AuthScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 20.0,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
@@ -170,6 +198,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       emailController: _loginEmailController,
                       passwordController: _loginPasswordController,
                       onForgotPassword: _handleOpenForgotPasswordDialog,
+                      rememberEmail: _rememberEmail,
+                      onRememberEmailChanged: _setRememberEmail,
+                      onEmailChanged: _handleLoginEmailChanged,
                     )
                   else
                     AuthRegisterForm(
@@ -177,12 +208,15 @@ class _AuthScreenState extends State<AuthScreen> {
                       emailController: _registerEmailController,
                       careerController: _registerCareerController,
                       passwordController: _registerPasswordController,
-                      confirmPasswordController: _registerConfirmPasswordController,
+                      confirmPasswordController:
+                          _registerConfirmPasswordController,
                       selectedGender: _registerGender,
-                      onGenderChanged: (val) => setState(() => _registerGender = val),
+                      onGenderChanged: (val) =>
+                          setState(() => _registerGender = val),
                       requireCaptcha: _createdAccountsOnDevice >= 1,
                       isCaptchaVerified: _isCaptchaVerified,
-                      onCaptchaVerified: (val) => setState(() => _isCaptchaVerified = val),
+                      onCaptchaVerified: (val) =>
+                          setState(() => _isCaptchaVerified = val),
                       onStateUpdate: () => setState(() {}),
                     ),
                   const SizedBox(height: 24),
@@ -192,7 +226,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     isLockoutActive: isLockoutActive,
                     lockoutSeconds: _lockoutManager.lockoutSeconds,
                     onSubmitEmailAuth: _handleSubmitEmailAuth,
-                    onGoogleSignIn: _handleGoogleSignInPressed,
                   ),
                 ],
               ),

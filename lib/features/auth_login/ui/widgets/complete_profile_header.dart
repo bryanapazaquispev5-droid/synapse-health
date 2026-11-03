@@ -1,19 +1,19 @@
 // ============================================================================
-// Archivo: complete_profile_header.dart
-// Propósito: Widget visual de soporte [complete_profile_header] para el formulario y flujo de inicio de sesion.
+// File: complete_profile_header.dart
+// Purpose: Supporting visual widget [complete_profile_header] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [CompleteProfileHeader]
+// Main definition of class [CompleteProfileHeader]
 class CompleteProfileHeader extends StatelessWidget {
   final VoidCallback onCancel;
 
   const CompleteProfileHeader({super.key, required this.onCancel});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -30,7 +30,7 @@ class CompleteProfileHeader extends StatelessWidget {
                   Icon(CupertinoIcons.chevron_back, size: 20, color: AppColors.textMuted),
                   SizedBox(width: 4),
                   Text(
-                    'Cancelar',
+                    'Cancel',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -73,7 +73,7 @@ class CompleteProfileHeader extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         const Text(
-          'Completa tu Perfil',
+          'Complete Your Profile',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
@@ -83,7 +83,7 @@ class CompleteProfileHeader extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         const Text(
-          'Personaliza tu experiencia médica indicando tu carrera y preferencias',
+          'Personalize your medical learning experience by choosing your degree and preferences',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,
