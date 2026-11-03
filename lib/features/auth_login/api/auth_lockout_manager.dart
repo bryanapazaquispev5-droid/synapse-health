@@ -1,20 +1,20 @@
 // ============================================================================
-// Archivo: auth_lockout_manager.dart
-// Propósito: Servicio de autenticacion con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
+// File: auth_lockout_manager.dart
+// Purpose: Manage failed attempts, temporary security lockouts, and session protection.
 // ============================================================================
 
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 
-// Definicion principal de la clase [AuthLockoutManager]
+// Main definition of class [AuthLockoutManager]
 class AuthLockoutManager {
   int failedAttemptsCount = 0;
   int lockoutSeconds = 0;
   Timer? _lockoutTimer;
 
   Future<void> loadSecurityState({required Function(int created, int failed) onStateLoaded, required Function(int seconds) onLockoutUpdate}) async {
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Section: Protected execution of an asynchronous operation
     try {
       final prefs = await SharedPreferences.getInstance();
       final created = prefs.getInt(AppConstants.PREF_CREATED_ACCOUNTS) ?? 0;
@@ -50,7 +50,7 @@ class AuthLockoutManager {
 
   Future<int?> recordFailedLogin(Function(int seconds) onLockoutUpdate) async {
     failedAttemptsCount++;
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Section: Protected execution of an asynchronous operation
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(AppConstants.PREF_FAILED_LOGIN_ATTEMPTS, failedAttemptsCount);
@@ -76,7 +76,7 @@ class AuthLockoutManager {
     failedAttemptsCount = 0;
     lockoutSeconds = 0;
     _lockoutTimer?.cancel();
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Section: Protected execution of an asynchronous operation
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(AppConstants.PREF_FAILED_LOGIN_ATTEMPTS);
@@ -84,7 +84,7 @@ class AuthLockoutManager {
     } catch (_) {}
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Release controllers and resources to prevent memory leaks
   void dispose() {
     _lockoutTimer?.cancel();
   }

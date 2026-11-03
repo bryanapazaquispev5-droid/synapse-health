@@ -12,16 +12,31 @@ class CognitoSession {
     required this.expiresAt,
     this.email,
     this.name,
+    this.picture,
+    this.emailVerified = false,
   });
   final String sub;
   final String? email;
   final String? name;
+  final String? picture;
+  final bool emailVerified;
   final String accessToken;
   final String idToken;
   final String refreshToken;
   final DateTime expiresAt;
   bool isExpired(DateTime now) =>
       !expiresAt.isAfter(now.add(const Duration(seconds: 30)));
+  CognitoSession copyWith({bool? emailVerified}) => CognitoSession(
+    sub: sub,
+    accessToken: accessToken,
+    idToken: idToken,
+    refreshToken: refreshToken,
+    expiresAt: expiresAt,
+    email: email,
+    name: name,
+    picture: picture,
+    emailVerified: emailVerified ?? this.emailVerified,
+  );
   String encode() => jsonEncode({
     'AccessToken': accessToken,
     'IdToken': idToken,
@@ -74,11 +89,13 @@ class CognitoSession {
         expiresAt: expiry,
         email: i['email'] is String ? i['email'] as String : null,
         name: i['name'] is String ? i['name'] as String : null,
+        picture: i['picture'] is String ? i['picture'] as String : null,
+        emailVerified: i['email_verified'] == true,
       );
     } catch (_) {
       throw const CognitoAuthException(
         'invalid_session',
-        'Tu sesión no es válida. Inicia sesión nuevamente.',
+        'Your session is invalid. Please sign in again.',
       );
     }
   }

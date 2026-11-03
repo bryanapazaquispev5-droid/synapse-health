@@ -24,7 +24,7 @@ class CognitoHttpTransport implements CognitoTransport {
     if (!config.isValid) {
       throw const CognitoAuthException(
         'configuration',
-        'La autenticación aún no está configurada.',
+        'Authentication is not configured yet.',
       );
     }
     final client = HttpClient()..connectionTimeout = _timeout;
@@ -35,17 +35,17 @@ class CognitoHttpTransport implements CognitoTransport {
     } on SocketException {
       throw const CognitoAuthException(
         'offline',
-        'No hay conexión. Revisa tu conexión e inténtalo nuevamente.',
+        'No connection. Check your network and try again.',
       );
     } on TimeoutException {
       throw const CognitoAuthException(
         'timeout',
-        'La solicitud tardó demasiado. Inténtalo nuevamente.',
+        'The request timed out. Try again.',
       );
     } catch (_) {
       throw const CognitoAuthException(
         'service_unavailable',
-        'No se pudo completar la solicitud. Inténtalo nuevamente.',
+        'Could not complete the request. Try again.',
       );
     } finally {
       client.close(force: true);
@@ -57,6 +57,7 @@ class CognitoHttpTransport implements CognitoTransport {
     String operation,
     Map<String, dynamic> parameters,
   ) async {
+    // El endpoint HTTPS protege las credenciales mientras viajan a Cognito.
     final request = await client.postUrl(config.endpoint);
     request.followRedirects = false;
     request.headers.set('Content-Type', 'application/x-amz-json-1.1');
@@ -71,7 +72,7 @@ class CognitoHttpTransport implements CognitoTransport {
       if (bytes.length + chunk.length > 65536) {
         throw const CognitoAuthException(
           'service_unavailable',
-          'No se pudo completar la solicitud.',
+          'Could not complete the request.',
         );
       }
       bytes.addAll(chunk);

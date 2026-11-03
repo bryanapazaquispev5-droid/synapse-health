@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+
 import '../model/cognito_auth_exception.dart';
 import '../model/cognito_config.dart';
 import '../model/cognito_session.dart';
 import 'cognito_token_store.dart';
 import 'cognito_transport.dart';
+
+part 'cognito_registration.dart';
+part 'cognito_user_api.dart';
+
 class CognitoAuthService {
   CognitoAuthService({
     required this.config,
@@ -26,53 +31,11 @@ class CognitoAuthService {
   Future<void> _storageTail = Future<void>.value();
   CognitoSession? get currentSession => _session;
   Stream<CognitoSession?> get sessionChanges => _changes.stream;
-  Future<void> register({
+  Future<CognitoSession> signIn({
     required String email,
     required String password,
-    required String name,
   }) async {
-    await _send('SignUp', {
-      'Username': email.trim(),
-      'Password': password,
-      'UserAttributes': [
-        {'Name': 'email', 'Value': email.trim()},
-        {'Name': 'name', 'Value': name.trim()},
-      ],
-    });
-  }
-
-  Future<void> confirmRegistration({required String email, required String code}) async {
-    await _send('ConfirmSignUp', {'Username': email.trim(), 'ConfirmationCode': code.trim()});
-  }
-
-  Future<void> resendConfirmation(String email) async {
-    await _send('ResendConfirmationCode', {'Username': email.trim()});
-  }
-
-  Future<void> forgotPassword(String email) async {
-    // Match service enumeration protection with a non-disclosing UI result.
-    try {
-      await _send('ForgotPassword', {'Username': email.trim()});
-    } on CognitoAuthException catch (error) {
-      if (error.code != 'authentication_failed') {
-        rethrow;
-      }
-    }
-  }
-
-  Future<void> confirmPasswordReset({
-    required String email,
-    required String code,
-    required String newPassword,
-  }) async {
-    await _send('ConfirmForgotPassword', {
-      'Username': email.trim(),
-      'ConfirmationCode': code.trim(),
-      'Password': newPassword,
-    });
-  }
-
-  Future<CognitoSession> signIn({required String email, required String password}) async {
+    // Cognito verifica la contraseña y devuelve tokens si las credenciales son válidas.
     final generation = ++_generation;
     final result = await _send('InitiateAuth', {
       'AuthFlow': 'USER_PASSWORD_AUTH',
@@ -81,10 +44,14 @@ class CognitoAuthService {
     if (result['ChallengeName'] != null) {
       throw const CognitoAuthException(
         'challenge_required',
-        'La cuenta necesita un paso de verificación adicional.',
+        'The account requires an additional verification step.',
       );
     }
-    final session = CognitoSession.parse(_authentication(result), config, _clock());
+    final session = CognitoSession.parse(
+      _authentication(result),
+      config,
+      _clock(),
+    );
     await _save(session, generation);
     return session;
   }
@@ -100,7 +67,12 @@ class CognitoAuthService {
     }
     try {
       final decoded = jsonDecode(stored) as Map<String, dynamic>;
-      final session = CognitoSession.parse(decoded, config, _clock(), allowExpired: true);
+      final session = CognitoSession.parse(
+        decoded,
+        config,
+        _clock(),
+        allowExpired: true,
+      );
       if (session.isExpired(_clock())) {
         return await _refresh(session, generation);
       }
@@ -150,7 +122,8 @@ class CognitoAuthService {
       return await future;
     } on CognitoAuthException catch (error) {
       if (generation == _generation &&
-          (error.code == 'authentication_failed' || error.code == 'invalid_session')) {
+          (error.code == 'authentication_failed' ||
+              error.code == 'invalid_session')) {
         await _clear();
       }
       rethrow;
@@ -159,8 +132,13 @@ class CognitoAuthService {
     }
   }
 
-  Future<CognitoSession?> _refresh(CognitoSession session, int generation) async {
-    final result = await _send('GetTokensFromRefreshToken', {'RefreshToken': session.refreshToken});
+  Future<CognitoSession?> _refresh(
+    CognitoSession session,
+    int generation,
+  ) async {
+    final result = await _send('GetTokensFromRefreshToken', {
+      'RefreshToken': session.refreshToken,
+    });
     final updated = CognitoSession.parse(
       _authentication(result),
       config,
@@ -170,7 +148,7 @@ class CognitoAuthService {
     if (updated.sub != session.sub) {
       throw const CognitoAuthException(
         'invalid_session',
-        'Tu sesión no es válida. Inicia sesión nuevamente.',
+        'Your session is invalid. Please sign in again.',
       );
     }
     await _save(updated, generation);
@@ -185,21 +163,29 @@ class CognitoAuthService {
       return const CognitoSignOutResult(remoteRevoked: false);
     }
     try {
-      await _transport.send('GlobalSignOut', {'AccessToken': session.accessToken});
+      await _transport.send('GlobalSignOut', {
+        'AccessToken': session.accessToken,
+      });
       return const CognitoSignOutResult(remoteRevoked: true);
     } on CognitoAuthException {
       return const CognitoSignOutResult(remoteRevoked: false);
     }
   }
 
-  Future<Map<String, dynamic>> _send(String operation, Map<String, dynamic> fields) {
+  Future<Map<String, dynamic>> _send(
+    String operation,
+    Map<String, dynamic> fields,
+  ) {
     if (_disposed) {
-      throw const CognitoAuthException('cancelled', 'La solicitud de sesión fue cancelada.');
+      throw const CognitoAuthException(
+        'cancelled',
+        'The sign-in request was canceled.',
+      );
     }
     if (!config.isValid) {
       throw const CognitoAuthException(
         'configuration',
-        'La autenticación aún no está configurada.',
+        'Authentication is not configured yet.',
       );
     }
     return _transport.send(operation, {'ClientId': config.clientId, ...fields});
@@ -208,24 +194,32 @@ class CognitoAuthService {
   Map<String, dynamic> _authentication(Map<String, dynamic> result) {
     final auth = result['AuthenticationResult'];
     if (auth is! Map<String, dynamic>) {
-      throw const CognitoAuthException('invalid_session', 'No se pudo iniciar la sesión.');
+      throw const CognitoAuthException('invalid_session', 'Could not sign in.');
     }
     return auth;
   }
 
-  Future<void> _save(CognitoSession session, int generation) => _storageOperation(() async {
-    if (_disposed || generation != _generation) {
-      throw const CognitoAuthException('cancelled', 'La solicitud de sesión fue cancelada.');
-    }
-    await _store.write(session.encode());
-    if (_disposed || generation != _generation) {
-      throw const CognitoAuthException('cancelled', 'La solicitud de sesión fue cancelada.');
-    }
-    _session = session;
-    if (!_changes.isClosed) {
-      _changes.add(session);
-    }
-  });
+  Future<void> _save(CognitoSession session, int generation) =>
+      _storageOperation(() async {
+        if (_disposed || generation != _generation) {
+          throw const CognitoAuthException(
+            'cancelled',
+            'The sign-in request was canceled.',
+          );
+        }
+        await _store.write(session.encode());
+        if (_disposed || generation != _generation) {
+          throw const CognitoAuthException(
+            'cancelled',
+            'The sign-in request was canceled.',
+          );
+        }
+        _session = session;
+        if (!_changes.isClosed) {
+          _changes.add(session);
+        }
+      });
+
   Future<void> _clear() {
     _session = null;
     if (!_changes.isClosed) {
@@ -236,7 +230,10 @@ class CognitoAuthService {
 
   Future<void> _storageOperation(Future<void> Function() action) {
     final pending = _storageTail.then((_) => action());
-    _storageTail = pending.then<void>((_) {}, onError: (Object _, StackTrace _) {});
+    _storageTail = pending.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
     return pending;
   }
 

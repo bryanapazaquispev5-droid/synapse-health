@@ -9,32 +9,32 @@ class CognitoAuthException implements Exception {
     return switch (code) {
       'UserNotConfirmedException' => const CognitoAuthException(
         'confirmation_required',
-        'Confirma tu correo antes de iniciar sesión.',
+        'Confirm your email before signing in.',
       ),
       'CodeMismatchException' ||
       'ExpiredCodeException' => const CognitoAuthException(
         'invalid_code',
-        'El código no es válido o ha vencido. Solicita uno nuevo.',
+        'The code is invalid or has expired. Request a new one.',
       ),
       'TooManyRequestsException' ||
       'LimitExceededException' ||
       'TooManyFailedAttemptsException' => const CognitoAuthException(
         'rate_limited',
-        'Espera un momento antes de volver a intentarlo.',
+        'Wait a moment before trying again.',
       ),
       'InvalidPasswordException' => const CognitoAuthException(
         'invalid_password',
-        'La contraseña no cumple los requisitos de seguridad.',
+        'Your password does not meet the security requirements.',
       ),
       'NotAuthorizedException' ||
       'UserNotFoundException' ||
       'UsernameExistsException' => const CognitoAuthException(
         'authentication_failed',
-        'No se pudo completar la solicitud. Revisa tus datos o recupera tu contraseña.',
+        'Could not complete the request. Check your details or reset your password.',
       ),
       _ => const CognitoAuthException(
         'service_unavailable',
-        'No se pudo completar la solicitud. Inténtalo nuevamente.',
+        'Could not complete the request. Try again.',
       ),
     };
   }

@@ -1,202 +1,71 @@
-// ============================================================================
-// Archivo: auth_service.dart
-// Propósito: Servicio de autenticacion con Firebase Auth, control de sesiones y llamadas a la API de seguridad.
-// ============================================================================
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/services/google_accounts_service.dart';
+import '../../../core/auth/app_auth.dart';
+import '../../../core/api/own_profile_repository.dart';
 import '../../../core/services/user_local_profile_service.dart';
 
-// Servicio para la gestion de operaciones de [AuthService]
+/// App-facing authentication backed exclusively by Cognito.
 class AuthService {
-  AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-      : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  AuthService({AppAuth? auth, OwnProfileRepository? profiles})
+    : _auth = auth ?? AppAuth.instance,
+      profiles = profiles ?? OwnProfileRepository();
+  final AppAuth _auth;
+  final OwnProfileRepository profiles;
+  AppAuth get auth => _auth;
 
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
-
-  FirebaseAuth get auth => _auth;
-  FirebaseFirestore get firestore => _firestore;
-
-  /// Inicia sesión con correo y contraseña
-  Future<UserCredential> signInWithEmailAndPassword({
+  Future<AppUserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
-    final userCredential = await _auth.signInWithEmailAndPassword(
-      email: email.trim().toLowerCase(),
-      password: password.trim(),
+    final credential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
     );
-
-    final user = userCredential.user;
+    final user = credential.user;
     if (user != null) {
       try {
-        final doc = await _firestore.collection(AppConstants.FIRESTORE_USERS).doc(user.uid).get();
-        final data = doc.data();
-        if (data != null) {
-          await UserLocalProfileService().saveProfile(
-            uid: user.uid,
-            name: data['name'] ?? user.displayName ?? '',
-            email: data['email'] ?? user.email ?? '',
-            career: data['career'] ?? 'Medicina Humana',
-            gender: data['gender'] ?? 'Hombre',
-            photoUrl: user.photoURL,
-          );
-        }
-      } catch (_) {}
+        final data = await profiles.fetch(user.uid);
+        await UserLocalProfileService().saveProfile(
+          uid: user.uid,
+          name: data['name'] as String? ?? user.displayName ?? '',
+          email: user.email ?? '',
+          career: data['career'] as String? ?? '',
+          gender: data['gender'] as String? ?? '',
+          photoUrl: user.photoURL,
+        );
+      } catch (_) {
+        /* Profile loading is retried by the authenticated session gate. */
+      }
     }
-
-    return userCredential;
+    return credential;
   }
 
-  /// Registra una nueva cuenta médica
-  Future<UserCredential> registerWithEmailAndPassword({
+  Future<void> registerWithEmailAndPassword({
     required String name,
     required String email,
     required String career,
     required String gender,
     required String password,
-  }) async {
-    final userCredential = await _auth.createUserWithEmailAndPassword(
-      email: email.trim().toLowerCase(),
-      password: password.trim(),
-    );
+  }) => _auth.service.register(
+    email: email.trim().toLowerCase(),
+    password: password,
+    name: name,
+  );
 
-    final user = userCredential.user;
-    if (user != null) {
-      await user.updateDisplayName(name.trim());
-      await user.sendEmailVerification();
+  Future<void> confirmRegistration(String email, String code) =>
+      _auth.service.confirmRegistration(email: email, code: code);
+  Future<void> resendConfirmation(String email) =>
+      _auth.resendConfirmation(email);
+  Future<void> sendPasswordResetEmail(String email) =>
+      _auth.sendPasswordResetEmail(email: email);
+  Future<void> confirmPasswordReset(
+    String email,
+    String code,
+    String password,
+  ) => _auth.service.confirmPasswordReset(
+    email: email,
+    code: code,
+    newPassword: password,
+  );
 
-      await _firestore.collection(AppConstants.FIRESTORE_USERS).doc(user.uid).set({
-        'uid': user.uid,
-        'name': name.trim(),
-        'email': email.trim().toLowerCase(),
-        'career': career.trim(),
-        'gender': gender,
-        'studyStreakDays': 0,
-        'createdAt': FieldValue.serverTimestamp(),
-        'authProvider': 'password',
-      }, SetOptions(merge: true));
-
-      await UserLocalProfileService().saveProfile(
-        uid: user.uid,
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        career: career.trim(),
-        gender: gender,
-        photoUrl: user.photoURL,
-      );
-    }
-
-    return userCredential;
-  }
-
-  /// Envía correo para recuperar contraseña
-  Future<void> sendPasswordResetEmail(String email) async {
-    try {
-      await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
-    } on FirebaseAuthException catch (error) {
-      // Do not reveal whether an email belongs to a registered account.
-      if (error.code != 'user-not-found') rethrow;
-    }
-  }
-
-  /// Flujo OAuth2 Google Sign-In (Token directo via AccountManager / Fallback / Nativo)
-  Future<UserCredential?> signInWithGoogle({String? hintEmail}) async {
-    UserCredential? userCredential;
-
-    if (hintEmail != null) {
-      bool authenticated = false;
-      try {
-        final String? token = await GoogleAccountsService.getGoogleAuthToken(hintEmail);
-        if (token != null && token.isNotEmpty) {
-          final credential = GoogleAuthProvider.credential(accessToken: token);
-          userCredential = await _auth.signInWithCredential(credential);
-          authenticated = true;
-        }
-      } catch (_) {}
-
-      if (!authenticated) {
-        final GoogleSignIn googleSignIn = GoogleSignIn();
-        GoogleSignInAccount? googleUser = await googleSignIn.signInSilently();
-
-        if (googleUser == null || googleUser.email != hintEmail) {
-          await googleSignIn.signOut();
-          googleUser = await googleSignIn.signIn();
-        }
-
-        if (googleUser == null) return null;
-
-        final googleAuth = await googleUser.authentication;
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-        userCredential = await _auth.signInWithCredential(credential);
-      }
-    } else {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return null;
-
-      final googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      userCredential = await _auth.signInWithCredential(credential);
-    }
-
-    if (userCredential == null) return null;
-
-    final user = userCredential.user;
-    if (user != null) {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        if (user.email != null) await prefs.setString('last_google_email', user.email!);
-        if (user.displayName != null) await prefs.setString('last_google_name', user.displayName!);
-        if (user.photoURL != null) await prefs.setString('last_google_photo', user.photoURL!);
-      } catch (_) {}
-    }
-
-    return userCredential;
-  }
-
-  /// Inicia sesión como Invitado temporal (Anonymous)
-  Future<UserCredential> signInAnonymously() async {
-    final userCredential = await _auth.signInAnonymously();
-    final user = userCredential.user;
-
-    if (user != null) {
-      await _firestore.collection(AppConstants.FIRESTORE_USERS).doc(user.uid).set({
-        'uid': user.uid,
-        'name': 'Invitado Temporal',
-        'email': 'invitado@synapse.app',
-        'career': 'Visitante de Salud',
-        'studyStreakDays': 0,
-        'createdAt': FieldValue.serverTimestamp(),
-        'authProvider': 'anonymous',
-      }, SetOptions(merge: true));
-    }
-
-    return userCredential;
-  }
-
-  /// Cancela el registro y elimina la cuenta temporal
-  Future<void> cancelAndRollbackAccount(User user) async {
-    try {
-      await user.delete();
-    } catch (_) {}
-    try {
-      await GoogleSignIn().signOut();
-    } catch (_) {}
-    try {
-      await _auth.signOut();
-    } catch (_) {}
-  }
+  /// Cancelling onboarding signs out; existing accounts and data stay intact.
+  Future<void> cancelAndRollbackAccount(AppUser user) => _auth.signOut();
 }
