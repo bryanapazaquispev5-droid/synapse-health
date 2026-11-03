@@ -1,21 +1,21 @@
 // ============================================================================
-// Archivo: welcome_profile_card.dart
-// Propósito: Widget visual de soporte [welcome_profile_card] para el formulario y flujo de inicio de sesion.
+// File: welcome_profile_card.dart
+// Purpose: Supporting visual widget [welcome_profile_card] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../../core/auth/app_auth.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [WelcomeProfileCard]
+// Modular visual component [WelcomeProfileCard]
 class WelcomeProfileCard extends StatelessWidget {
-  final User user;
+  final AppUser user;
   final String name;
   final String email;
   final String career;
   final int streak;
-  final bool isGoogleUser;
   final bool isAnonymous;
 
   const WelcomeProfileCard({
@@ -25,7 +25,6 @@ class WelcomeProfileCard extends StatelessWidget {
     required this.email,
     required this.career,
     required this.streak,
-    required this.isGoogleUser,
     required this.isAnonymous,
   });
 
@@ -37,11 +36,19 @@ class WelcomeProfileCard extends StatelessWidget {
   }) {
     return Column(
       children: [
-        Icon(icon, size: 20, color: isHighlight ? const Color(0xFFFF9500) : AppColors.accent),
+        Icon(
+          icon,
+          size: 20,
+          color: isHighlight ? const Color(0xFFFF9500) : AppColors.accent,
+        ),
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
@@ -59,8 +66,8 @@ class WelcomeProfileCard extends StatelessWidget {
     );
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -90,14 +97,23 @@ class WelcomeProfileCard extends StatelessWidget {
                   backgroundColor: AppColors.accent.withValues(alpha: 0.12),
                   child: Text(
                     name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.accent),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.accent,
+                    ),
                   ),
                 ),
           const SizedBox(height: 14),
           Text(
             name,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary, letterSpacing: -0.4),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+              letterSpacing: -0.4,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -121,8 +137,8 @@ class WelcomeProfileCard extends StatelessWidget {
               Expanded(
                 child: _buildInfoItem(
                   icon: CupertinoIcons.flame_fill,
-                  label: 'Racha de Estudio',
-                  value: '$streak días',
+                  label: 'Study Streak',
+                  value: '$streak days',
                   isHighlight: true,
                 ),
               ),
@@ -139,22 +155,20 @@ class WelcomeProfileCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  isGoogleUser
-                      ? Icons.g_mobiledata_rounded
-                      : isAnonymous
-                          ? CupertinoIcons.person
-                          : CupertinoIcons.mail,
+                  isAnonymous ? CupertinoIcons.person : CupertinoIcons.mail,
                   size: 18,
                   color: AppColors.accent,
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  isGoogleUser
-                      ? 'Autenticado con Google'
-                      : isAnonymous
-                          ? 'Acceso de Invitado'
-                          : 'Cuenta con Correo y Clave',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+                  isAnonymous
+                      ? 'Guest Access'
+                      : 'Email and Password Account',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
                 ),
               ],
             ),

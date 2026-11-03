@@ -1,15 +1,16 @@
 // ============================================================================
-// Archivo: password_strength_bar.dart
-// Propósito: Widget visual de soporte [password_strength_bar] para el formulario y flujo de inicio de sesion.
+// File: password_strength_bar.dart
+// Purpose: Supporting visual widget [password_strength_bar] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../utils/auth_validators.dart';
 
-// Enumerador que define las opciones y variantes de [PasswordStrength]
+// Enum defining the available [PasswordStrength] variants.
 enum PasswordStrength { NONE, FORBIDDEN, WEAK, MEDIUM, STRONG }
 
-// Componente visual modular [PasswordStrengthBar]
+// Modular visual component [PasswordStrengthBar]
 class PasswordStrengthBar extends StatelessWidget {
   final String password;
   final String? email;
@@ -32,6 +33,9 @@ class PasswordStrengthBar extends StatelessWidget {
   PasswordStrength get strength {
     if (password.isEmpty) return PasswordStrength.NONE;
     if (_isSameAsEmail) return PasswordStrength.FORBIDDEN;
+    if (AuthValidators.meetsCognitoPasswordPolicy(password)) {
+      return PasswordStrength.STRONG;
+    }
 
     int score = 0;
     if (password.length >= 6) score++;
@@ -61,20 +65,20 @@ class PasswordStrengthBar extends StatelessWidget {
   String _formatStrengthLabel(PasswordStrength strength) {
     switch (strength) {
       case PasswordStrength.FORBIDDEN:
-        return '¡Peligro! La contraseña no puede ser igual a tu correo';
+        return 'Warning! Your password cannot match your email address';
       case PasswordStrength.WEAK:
-        return 'Seguridad: Débil (Agrega números y mayúsculas)';
+        return 'Security: Weak (Add numbers and uppercase letters)';
       case PasswordStrength.MEDIUM:
-        return 'Seguridad: Media (Agrega símbolos o más longitud)';
+        return 'Security: Medium (Add symbols or use a longer password)';
       case PasswordStrength.STRONG:
-        return 'Seguridad: Excelente para cuenta médica';
+        return 'Security: Excellent for a medical account';
       case PasswordStrength.NONE:
         return '';
     }
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final currentStrength = strength;

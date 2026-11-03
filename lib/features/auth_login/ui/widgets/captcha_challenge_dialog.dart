@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: captcha_challenge_dialog.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// File: captcha_challenge_dialog.dart
+// Purpose: Interactive CAPTCHA verification module to protect sign-up and sign-in.
 // ============================================================================
 
 import 'dart:math';
@@ -10,7 +10,7 @@ import '../../model/captcha_challenges_data.dart';
 import '../../model/captcha_models.dart';
 import 'captcha_tile_widget.dart';
 
-/// Diálogo interactivo del desafío de selección de imágenes (reCAPTCHA Grid Challenge)
+/// Interactive image selection challenge dialog (reCAPTCHA Grid Challenge)
 class CaptchaChallengeDialog extends StatefulWidget {
   const CaptchaChallengeDialog({super.key});
 
@@ -18,7 +18,7 @@ class CaptchaChallengeDialog extends StatefulWidget {
   State<CaptchaChallengeDialog> createState() => _CaptchaChallengeDialogState();
 }
 
-// Estado reactivo y control de ciclo de vida para [CaptchaChallengeDialog]
+// Reactive state and lifecycle management for [CaptchaChallengeDialog]
 class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
   late int _currentChallengeIndex;
   final Set<int> _selectedIndices = {};
@@ -27,7 +27,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
 
   final List<CaptchaChallenge> _challenges = CaptchaChallengesData.challenges;
 
-  // Inicializacion de dependencias y estado local del componente
+  // Initialize component dependencies and local state
   @override
   void initState() {
     super.initState();
@@ -67,14 +67,14 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
       HapticFeedback.heavyImpact();
       setState(() {
         _hasError = true;
-        _errorMessage = 'Por favor, vuelve a intentarlo. Selecciona todas las imágenes correctas.';
+        _errorMessage = 'Please try again. Select all the correct images.';
         _selectedIndices.clear();
         _currentChallengeIndex = (_currentChallengeIndex + 1) % _challenges.length;
       });
     }
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Reactive widget tree rendering
   @override
   Widget build(BuildContext context) {
     final challenge = _challenges[_currentChallengeIndex];
@@ -100,7 +100,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Selecciona todas las imágenes que contengan',
+                    'Select all images containing',
                     style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 4),
@@ -168,13 +168,13 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded, color: Color(0xFF5F6368), size: 22),
-                    tooltip: 'Cambiar desafío',
+                    tooltip: 'Change challenge',
                     onPressed: _handleNextChallenge,
                     visualDensity: VisualDensity.compact,
                   ),
                   IconButton(
                     icon: const Icon(Icons.headphones_rounded, color: Color(0xFF5F6368), size: 22),
-                    tooltip: 'Accesibilidad de audio',
+                    tooltip: 'Audio accessibility',
                     onPressed: () {},
                     visualDensity: VisualDensity.compact,
                   ),
@@ -195,7 +195,7 @@ class _CaptchaChallengeDialogState extends State<CaptchaChallengeDialog> {
                     ),
                     onPressed: _handleVerifyChallenge,
                     child: const Text(
-                      'VERIFICAR',
+                      'VERIFY',
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.5),
                     ),
                   ),

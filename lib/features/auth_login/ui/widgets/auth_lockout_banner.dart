@@ -1,11 +1,11 @@
 // ============================================================================
-// Archivo: auth_lockout_banner.dart
-// Propósito: Gestor de seguridad para prevenir ataques de fuerza bruta mediante bloqueo temporal tras intentos fallidos.
+// File: auth_lockout_banner.dart
+// Purpose: Security manager to prevent brute-force attacks with temporary lockouts after failed attempts.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 
-// Definicion principal de la clase [AuthLockoutBanner]
+// Main definition of class [AuthLockoutBanner]
 class AuthLockoutBanner extends StatelessWidget {
   final int failedAttemptsCount;
   final int lockoutSeconds;
@@ -16,8 +16,8 @@ class AuthLockoutBanner extends StatelessWidget {
     required this.lockoutSeconds,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -34,7 +34,7 @@ class AuthLockoutBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Demasiados intentos fallidos ($failedAttemptsCount). Espera $lockoutSeconds segundos...',
+              'Too many failed attempts ($failedAttemptsCount). Wait $lockoutSeconds seconds...',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

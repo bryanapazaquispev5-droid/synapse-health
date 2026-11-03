@@ -1,19 +1,19 @@
 // ============================================================================
-// Archivo: auth_header_widget.dart
-// Propósito: Widget visual de soporte [auth_header_widget] para el formulario y flujo de inicio de sesion.
+// File: auth_header_widget.dart
+// Purpose: Supporting visual widget [auth_header_widget] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [AuthHeaderWidget]
+// Modular visual component [AuthHeaderWidget]
 class AuthHeaderWidget extends StatelessWidget {
   final bool isLogin;
 
   const AuthHeaderWidget({super.key, required this.isLogin});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -43,7 +43,7 @@ class AuthHeaderWidget extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text(
-          isLogin ? 'Iniciar Sesión' : 'Crear Cuenta',
+          isLogin ? 'Sign In' : 'Create Account',
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 26,
@@ -55,8 +55,8 @@ class AuthHeaderWidget extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           isLogin
-              ? 'Accede a tus fichas y quizzes'
-              : 'Únete para registrar tu racha y progreso',
+              ? 'Access your study notes and quizzes'
+              : 'Join to track your streak and progress',
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 13,

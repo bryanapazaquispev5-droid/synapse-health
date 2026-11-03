@@ -1,26 +1,24 @@
 // ============================================================================
-// Archivo: auth_forgot_password_sheet.dart
-// Propósito: Widget visual de soporte [auth_forgot_password_sheet] para el formulario y flujo de inicio de sesion.
+// File: auth_forgot_password_sheet.dart
+// Purpose: Supporting visual widget [auth_forgot_password_sheet] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../../core/auth/app_auth.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../api/auth_service.dart';
 import '../../utils/auth_validators.dart';
 import 'auth_text_field.dart';
+import 'auth_code_dialog.dart';
 
-// Componente visual modular [AuthForgotPasswordSheet]
+// Modular visual component [AuthForgotPasswordSheet]
 class AuthForgotPasswordSheet extends StatefulWidget {
   final String initialEmail;
   final ValueChanged<String> onSuccess;
 
-  const AuthForgotPasswordSheet({
-    super.key,
-    required this.initialEmail,
-    required this.onSuccess,
-  });
+  const AuthForgotPasswordSheet({super.key, required this.initialEmail, required this.onSuccess});
 
   static Future<void> show({
     required BuildContext context,
@@ -30,10 +28,7 @@ class AuthForgotPasswordSheet extends StatefulWidget {
     return showCupertinoModalPopup<void>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => AuthForgotPasswordSheet(
-        initialEmail: initialEmail,
-        onSuccess: onSuccess,
-      ),
+      builder: (context) => AuthForgotPasswordSheet(initialEmail: initialEmail, onSuccess: onSuccess),
     );
   }
 
@@ -41,7 +36,7 @@ class AuthForgotPasswordSheet extends StatefulWidget {
   State<AuthForgotPasswordSheet> createState() => _AuthForgotPasswordSheetState();
 }
 
-// Estado reactivo y control de ciclo de vida para [AuthForgotPasswordSheet]
+// Reactive state and lifecycle management for [AuthForgotPasswordSheet]
 class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
   late final TextEditingController _resetEmailController;
   final AuthService _authService = AuthService();
@@ -63,11 +58,11 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
   Future<void> _handleSendReset() async {
     final email = _resetEmailController.text.trim().toLowerCase();
     if (email.isEmpty) {
-      setState(() => _localError = 'Ingresa un correo electrónico.');
+      setState(() => _localError = 'Enter an email address.');
       return;
     }
     if (!AuthValidators.isValidEmail(email)) {
-      setState(() => _localError = 'Formato de correo no válido.');
+      setState(() => _localError = 'Invalid email format.');
       return;
     }
 
@@ -78,22 +73,32 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
 
     try {
       await _authService.sendPasswordResetEmail(email);
+      if (!mounted) return;
+      final confirmed = await AuthCodeDialog.show(
+        context,
+        email: email,
+        isReset: true,
+        onSubmit: (code, password) => _authService.confirmPasswordReset(email, code, password),
+      );
       if (mounted) {
-        Navigator.pop(context);
-        widget.onSuccess('Si existe una cuenta con ese correo, recibirás un enlace. Revisa tu bandeja o spam.');
+        setState(() => _isChecking = false);
+        if (confirmed) {
+          Navigator.pop(context);
+          widget.onSuccess('Password updated. You can now sign in.');
+        }
       }
-    } on FirebaseAuthException catch (e) {
+    } on AppAuthException catch (e) {
       if (mounted) {
         setState(() {
           _isChecking = false;
-          _localError = AuthValidators.getFirebaseAuthErrorMessage(e.code);
+          _localError = e.message;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isChecking = false;
-          _localError = 'No se pudo solicitar el enlace. Inténtalo de nuevo.';
+          _localError = 'Could not request the code. Try again.';
         });
       }
     }
@@ -106,12 +111,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 12,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
+      padding: EdgeInsets.only(left: 20, right: 20, top: 12, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
       child: SafeArea(
         top: false,
         child: Material(
@@ -124,15 +124,12 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
                 child: Container(
                   width: 36,
                   height: 5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1D1D6),
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
+                  decoration: BoxDecoration(color: const Color(0xFFD1D1D6), borderRadius: BorderRadius.circular(2.5)),
                 ),
               ),
               const SizedBox(height: 18),
               const Text(
-                'Recuperar Contraseña',
+                'Reset password',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,
@@ -143,15 +140,15 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Ingresa tu correo registrado y verificaremos tu cuenta antes de enviarte el enlace.',
+                'Enter your registered email and we will verify your account before sending the code.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: AppColors.textMuted),
               ),
               const SizedBox(height: 18),
               AuthTextField(
                 controller: _resetEmailController,
-                label: 'Correo Electrónico',
-                hint: 'ej. estudiante@gmail.com',
+                label: 'Email',
+                hint: 'e.g., student@gmail.com',
                 prefixIcon: CupertinoIcons.mail,
                 keyboardType: TextInputType.emailAddress,
                 onChanged: (_) {
@@ -176,11 +173,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
                       Expanded(
                         child: Text(
                           _localError!,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF991B1B),
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF991B1B), fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -197,7 +190,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
                   child: _isChecking
                       ? const CupertinoActivityIndicator(color: AppColors.surface)
                       : const Text(
-                          'Enviar Enlace de Recuperación',
+                          'Send Recovery Link',
                           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.surface),
                         ),
                 ),
@@ -211,7 +204,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
                   borderRadius: BorderRadius.circular(14),
                   onPressed: () => Navigator.pop(context),
                   child: const Text(
-                    'Cancelar',
+                    'Cancel',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary),
                   ),
                 ),

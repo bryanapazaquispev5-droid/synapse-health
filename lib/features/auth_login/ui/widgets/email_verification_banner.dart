@@ -1,20 +1,22 @@
 // ============================================================================
-// Archivo: email_verification_banner.dart
-// Propósito: Widget visual de soporte [email_verification_banner] para el formulario y flujo de inicio de sesion.
+// File: email_verification_banner.dart
+// Purpose: Supporting visual widget [email_verification_banner] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-// Definicion principal de la clase [EmailVerificationBanner]
+import '../../../../core/auth/app_auth.dart';
+import 'auth_code_dialog.dart';
+
+// Main definition of [EmailVerificationBanner].
 class EmailVerificationBanner extends StatelessWidget {
-  final User user;
+  final AppUser user;
 
   const EmailVerificationBanner({super.key, required this.user});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -26,14 +28,18 @@ class EmailVerificationBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(CupertinoIcons.mail_solid, color: Color(0xFFD97706), size: 22),
+          const Icon(
+            CupertinoIcons.mail_solid,
+            color: Color(0xFFD97706),
+            size: 22,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  'Verifica tu correo electrónico',
+                  'Verify your email address',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -42,7 +48,7 @@ class EmailVerificationBanner extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'Revisa tu bandeja de entrada para activar todas las funciones.',
+                  'Verify your email to enable account recovery.',
                   style: TextStyle(fontSize: 11, color: Color(0xFFB45309)),
                 ),
               ],
@@ -51,19 +57,27 @@ class EmailVerificationBanner extends StatelessWidget {
           CupertinoButton(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             onPressed: () async {
-              await user.sendEmailVerification();
-              if (context.mounted) {
-                // Bloque: Despliegue de notificación visual o SnackBar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Correo de verificación reenviado.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
+              try {
+                await user.sendEmailVerification();
+                if (!context.mounted) return;
+                await AuthCodeDialog.show(
+                  context,
+                  email: user.email ?? '',
+                  isEmailVerification: true,
+                  onResend: user.sendEmailVerification,
+                  onSubmit: (code, _) => user.verifyEmail(code),
                 );
+                await user.reload();
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Could not verify email: $error')),
+                  );
+                }
               }
             },
             child: const Text(
-              'Reenviar',
+              'Verify',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
