@@ -1,27 +1,22 @@
-// ============================================================================
-// Archivo: auth_flow_handler.dart
-// Propósito: Modelo de datos y entidades inmutables para el modulo de autenticacion [auth_flow_handler].
-// ============================================================================
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/auth/app_auth.dart';
 import '../../../core/constants/app_constants.dart';
 import '../api/auth_lockout_manager.dart';
-import '../api/auth_oauth_helper.dart';
 import '../api/auth_service.dart';
+import 'registration_flow_status.dart';
+import '../ui/widgets/auth_code_dialog.dart';
 import '../utils/auth_snackbar_helper.dart';
 import '../utils/auth_validators.dart';
 
-// Definicion principal de la clase [AuthFlowHandler]
 class AuthFlowHandler {
-  final AuthService authService;
-  final AuthLockoutManager lockoutManager;
-
   const AuthFlowHandler({
     required this.authService,
     required this.lockoutManager,
   });
+  final AuthService authService;
+  final AuthLockoutManager lockoutManager;
 
   Future<bool> handleLogin({
     required BuildContext context,
@@ -30,43 +25,59 @@ class AuthFlowHandler {
     required VoidCallback onLockoutTicked,
   }) async {
     FocusScope.of(context).unfocus();
-
-    if (lockoutManager.lockoutSeconds > 0) {
-      AuthSnackbarHelper.show(context, 'Acceso bloqueado. Espera ${lockoutManager.lockoutSeconds} s.', isError: true);
+    if (lockoutManager.lockoutSeconds > 0) return false;
+    if (email.trim().isEmpty || password.isEmpty) {
+      AuthSnackbarHelper.show(
+        context,
+        'Please enter your email and password',
+        isError: true,
+      );
       return false;
     }
-
-    final cleanEmail = email.trim().toLowerCase();
-    final cleanPassword = password.trim();
-
-    if (cleanEmail.isEmpty || cleanPassword.isEmpty) {
-      AuthSnackbarHelper.show(context, 'Por favor ingresa correo y contraseña', isError: true);
-      return false;
-    }
-
     try {
-      final creds = await authService.signInWithEmailAndPassword(email: cleanEmail, password: cleanPassword);
-      await lockoutManager.clearLockout();
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, '¡Bienvenido de nuevo, ${creds.user?.email}!');
+      try {
+        await authService.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } on AppAuthException catch (error) {
+        if (error.code != 'confirmation_required' || !context.mounted) rethrow;
+        final confirmed = await _confirm(context, email);
+        if (!confirmed) return false;
+        await authService.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
       }
+      await lockoutManager.clearLockout();
       return true;
-    } on FirebaseAuthException catch (e) {
-      final lockDuration = await lockoutManager.recordFailedLogin((sec) => onLockoutTicked());
+    } on AppAuthException catch (error) {
+      if (error.code == 'authentication_failed') {
+        await lockoutManager.recordFailedLogin((_) => onLockoutTicked());
+      }
       if (context.mounted) {
-        if (lockDuration != null) {
-          AuthSnackbarHelper.show(context, 'Demasiados intentos fallidos. Espera $lockDuration segundos.', isError: true);
-        }
-        AuthSnackbarHelper.show(context, AuthValidators.getFirebaseAuthErrorMessage(e.code), isError: true);
+        AuthSnackbarHelper.show(context, error.message, isError: true);
       }
       return false;
-    } catch (e) {
+    } catch (_) {
       if (context.mounted) {
-        AuthSnackbarHelper.show(context, 'Error inesperado: $e', isError: true);
+        AuthSnackbarHelper.show(
+          context,
+          'Could not sign in. Try again.',
+          isError: true,
+        );
       }
       return false;
     }
   }
+
+  Future<bool> _confirm(BuildContext context, String email) =>
+      AuthCodeDialog.show(
+        context,
+        email: email,
+        onSubmit: (code, _) => authService.confirmRegistration(email, code),
+        onResend: () => authService.resendConfirmation(email),
+      );
 
   Future<int?> handleRegister({
     required BuildContext context,
@@ -80,122 +91,71 @@ class AuthFlowHandler {
     required bool isCaptchaVerified,
   }) async {
     FocusScope.of(context).unfocus();
-
+    String? error;
     if (createdAccountsOnDevice >= 1 && !isCaptchaVerified) {
-      AuthSnackbarHelper.show(context, 'Por seguridad anti-bots, marca la casilla "No soy un robot".', isError: true);
+      error = 'For security, check the "I am not a robot" box.';
+    } else if ([
+      name,
+      email,
+      career,
+      password,
+      confirmPassword,
+    ].any((v) => v.trim().isEmpty)) {
+      error = 'Please complete all fields';
+    } else if (!AuthValidators.isValidEmail(email.trim())) {
+      error = 'Please enter a valid email address';
+    } else if (password != confirmPassword) {
+      error = 'Passwords do not match';
+    } else if (!AuthValidators.meetsCognitoPasswordPolicy(password)) {
+      error = 'Use 12 characters, including an uppercase letter, a lowercase letter, a number, and a symbol.';
+    } else if (AuthValidators.isPasswordEqualToEmail(password, email)) {
+      error = 'Your password cannot match your email address.';
+    }
+    if (error != null) {
+      AuthSnackbarHelper.show(context, error, isError: true);
       return null;
     }
-
-    final cleanName = name.trim();
     final cleanEmail = email.trim().toLowerCase();
-    final cleanCareer = career.trim();
-    final cleanPassword = password.trim();
-    final cleanConfirm = confirmPassword.trim();
-
-    if (cleanName.isEmpty || cleanEmail.isEmpty || cleanCareer.isEmpty || cleanPassword.isEmpty || cleanConfirm.isEmpty) {
-      AuthSnackbarHelper.show(context, 'Por favor completa todos los campos', isError: true);
-      return null;
-    }
-
-    if (!AuthValidators.isValidEmail(cleanEmail)) {
-      AuthSnackbarHelper.show(context, 'Por favor ingresa un correo electrónico válido', isError: true);
-      return null;
-    }
-
-    if (cleanPassword != cleanConfirm) {
-      AuthSnackbarHelper.show(context, 'Las contraseñas no coinciden', isError: true);
-      return null;
-    }
-
-    if (cleanPassword.length < 6) {
-      AuthSnackbarHelper.show(context, 'La contraseña debe tener mínimo 6 caracteres', isError: true);
-      return null;
-    }
-
-    if (AuthValidators.isPasswordEqualToEmail(cleanPassword, cleanEmail)) {
-      AuthSnackbarHelper.show(context, 'Por seguridad, la contraseña no puede ser igual a tu correo.', isError: true);
-      return null;
-    }
-
+    RegistrationFlowStatus.isSavingProfile.value = true;
     try {
       await authService.registerWithEmailAndPassword(
-        name: cleanName,
+        name: name,
         email: cleanEmail,
-        career: cleanCareer,
+        career: career,
         gender: gender,
-        password: cleanPassword,
+        password: password,
       );
-
-      int updatedCount = createdAccountsOnDevice + 1;
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final current = prefs.getInt(AppConstants.PREF_CREATED_ACCOUNTS) ?? 0;
-        updatedCount = current + 1;
-        await prefs.setInt(AppConstants.PREF_CREATED_ACCOUNTS, updatedCount);
-      } catch (_) {}
-
+      if (!context.mounted) return null;
+      final credential = await authService.signInWithEmailAndPassword(
+        email: cleanEmail,
+        password: password,
+      );
+      await authService.profiles.save(
+        credential.user!.uid,
+        name: name,
+        career: career,
+        gender: gender,
+      );
+      final prefs = await SharedPreferences.getInstance();
+      final count = (prefs.getInt(AppConstants.PREF_CREATED_ACCOUNTS) ?? 0) + 1;
+      await prefs.setInt(AppConstants.PREF_CREATED_ACCOUNTS, count);
+      return count;
+    } on AppAuthException catch (error) {
       if (context.mounted) {
-        AuthSnackbarHelper.show(context, '¡Cuenta médica creada! Te enviamos un correo de verificación.');
-      }
-      return updatedCount;
-    } on FirebaseAuthException catch (e) {
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, AuthValidators.getFirebaseAuthErrorMessage(e.code), isError: true);
-      }
-      return null;
-    } catch (e) {
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, 'Error inesperado: $e', isError: true);
+        AuthSnackbarHelper.show(context, error.message, isError: true);
       }
       return null;
-    }
-  }
-
-  Future<void> handleGoogleSignIn({
-    required BuildContext context,
-    String? hintEmail,
-  }) async {
-    try {
-      final creds = await authService.signInWithGoogle(hintEmail: hintEmail);
-      if (creds == null) return;
-
-      await lockoutManager.clearLockout();
-      final user = creds.user;
-
-      if (context.mounted && user != null) {
-        await AuthOAuthHelper.syncGoogleUserAndNavigate(
-          context: context,
-          authService: authService,
-          user: user,
+    } catch (_) {
+      if (context.mounted) {
+        AuthSnackbarHelper.show(
+          context,
+          'Could not complete registration. Try again.',
+          isError: true,
         );
       }
-
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, '¡Conectado con Google: ${user?.displayName ?? user?.email}!');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, 'Error al acceder con Google: $e', isError: true);
-      }
-    }
-  }
-
-  Future<void> handleGuestSignIn({
-    required BuildContext context,
-  }) async {
-    try {
-      await authService.signInAnonymously();
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, '¡Acceso concedido como Invitado temporal!');
-      }
-    } on FirebaseAuthException catch (e) {
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, AuthValidators.getFirebaseAuthErrorMessage(e.code), isError: true);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        AuthSnackbarHelper.show(context, 'Error en modo invitado: $e', isError: true);
-      }
+      return null;
+    } finally {
+      RegistrationFlowStatus.isSavingProfile.value = false;
     }
   }
 }

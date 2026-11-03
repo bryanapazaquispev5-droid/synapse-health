@@ -1,11 +1,11 @@
 // ============================================================================
-// Archivo: captcha_models.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// File: captcha_models.dart
+// Purpose: Interactive CAPTCHA verification module to protect sign-up and sign-in.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
-/// Modelo de un mosaico individual dentro del desafío reCAPTCHA
+/// Model for an individual tile in the reCAPTCHA challenge
 class CaptchaTile {
   final String imageUrl;
   final IconData fallbackIcon;
@@ -18,7 +18,7 @@ class CaptchaTile {
   });
 }
 
-/// Modelo de un desafío de imágenes (ej. "semáforos", "ambulancias", "bicicletas")
+/// Model for an image challenge (e.g., "traffic lights," "ambulances," or "bicycles")
 class CaptchaChallenge {
   final String keyword;
   final String subtitle;
@@ -27,7 +27,7 @@ class CaptchaChallenge {
 
   const CaptchaChallenge({
     required this.keyword,
-    this.subtitle = 'Haz clic en Verificar cuando no quede ninguna.',
+    this.subtitle = 'Click Verify when none remain.',
     required this.tiles,
     required this.correctIndices,
   });

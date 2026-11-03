@@ -1,24 +1,24 @@
 // ============================================================================
-// Archivo: captcha_challenges_data.dart
-// Propósito: Modulo de verificacion humana con Captcha interactivo para proteger el registro e inicio de sesion.
+// File: captcha_challenges_data.dart
+// Purpose: Interactive CAPTCHA verification module to protect sign-up and sign-in.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'captcha_models.dart';
 
-/// Lista predefinida de desafíos visuales para reCAPTCHA
+/// Predefined list of visual challenges for reCAPTCHA
 class CaptchaChallengesData {
   static final List<CaptchaChallenge> challenges = [
-    // 1. Desafío: Semáforos
+    // 1. Challenge: traffic lights
     CaptchaChallenge(
-      keyword: 'semáforos',
-      subtitle: 'Haz clic en todas las imágenes que contengan semáforos.',
+      keyword: 'traffic lights',
+      subtitle: 'Select all images containing traffic lights.',
       correctIndices: const {0, 4, 7},
       tiles: const [
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1508873696983-2df5703bc2e0?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.traffic_rounded,
-          label: 'Semáforo',
+          label: 'Traffic light',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=300&q=80',
@@ -38,12 +38,12 @@ class CaptchaChallengesData {
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.traffic_rounded,
-          label: 'Semáforo',
+          label: 'Traffic light',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.directions_car_rounded,
-          label: 'Automóvil',
+          label: 'Car',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=300&q=80',
@@ -53,7 +53,7 @@ class CaptchaChallengesData {
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.traffic_rounded,
-          label: 'Semáforo',
+          label: 'Traffic light',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=300&q=80',
@@ -63,10 +63,10 @@ class CaptchaChallengesData {
       ],
     ),
 
-    // 2. Desafío: Ambulancias
+    // 2. Challenge: ambulances
     CaptchaChallenge(
       keyword: 'ambulancias',
-      subtitle: 'Haz clic en todas las imágenes que contengan ambulancias.',
+      subtitle: 'Select all images containing ambulances.',
       correctIndices: const {1, 3, 8},
       tiles: const [
         CaptchaTile(
@@ -82,7 +82,7 @@ class CaptchaChallengesData {
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.directions_bus_rounded,
-          label: 'Autobús',
+          label: 'Bus',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=300&q=80',
@@ -117,10 +117,10 @@ class CaptchaChallengesData {
       ],
     ),
 
-    // 3. Desafío: Bicicletas
+    // 3. Challenge: bicycles
     CaptchaChallenge(
       keyword: 'bicicletas',
-      subtitle: 'Haz clic en todas las imágenes que contengan bicicletas.',
+      subtitle: 'Select all images containing bicycles.',
       correctIndices: const {0, 2, 6, 7},
       tiles: const [
         CaptchaTile(
@@ -171,10 +171,10 @@ class CaptchaChallengesData {
       ],
     ),
 
-    // 4. Desafío: Instrumental Médico
+    // 4. Challenge: Medical Instruments
     CaptchaChallenge(
-      keyword: 'instrumentos médicos',
-      subtitle: 'Haz clic en todas las imágenes relacionadas a salud y medicina.',
+      keyword: 'medical instruments',
+      subtitle: 'Select all images related to healthcare and medicine.',
       correctIndices: const {2, 4, 8},
       tiles: const [
         CaptchaTile(
@@ -185,7 +185,7 @@ class CaptchaChallengesData {
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.coffee_rounded,
-          label: 'Café',
+          label: 'Coffee',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=300&q=80',
@@ -200,7 +200,7 @@ class CaptchaChallengesData {
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.medication_rounded,
-          label: 'Medicamento',
+          label: 'Medication',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=300&q=80',
@@ -210,7 +210,7 @@ class CaptchaChallengesData {
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=300&q=80',
           fallbackIcon: Icons.park_rounded,
-          label: 'Árboles',
+          label: 'Trees',
         ),
         CaptchaTile(
           imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=300&q=80',
