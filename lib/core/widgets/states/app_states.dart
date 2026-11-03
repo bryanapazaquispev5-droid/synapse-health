@@ -6,7 +6,7 @@ import 'app_message_state.dart';
 class AppLoadingState extends StatelessWidget {
   const AppLoadingState({
     super.key,
-    this.message = 'Cargando…',
+    this.message = 'Loading…',
     this.compact = false,
   });
 
@@ -78,7 +78,7 @@ class AppEmptyState extends StatelessWidget {
 class AppErrorState extends StatelessWidget {
   const AppErrorState({
     super.key,
-    this.message = 'No se pudo cargar el contenido. Inténtalo de nuevo.',
+    this.message = 'Could not load the content. Please try again.',
     this.onRetry,
   });
 
@@ -87,10 +87,10 @@ class AppErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppMessageState(
-    title: 'No se pudo cargar el contenido',
+    title: 'Could not load the content',
     message: message,
     icon: CupertinoIcons.exclamationmark_circle,
-    actionLabel: onRetry == null ? null : 'Reintentar',
+    actionLabel: onRetry == null ? null : 'Retry',
     onAction: onRetry,
   );
 }
@@ -98,7 +98,7 @@ class AppErrorState extends StatelessWidget {
 class AppOfflineState extends StatelessWidget {
   const AppOfflineState({
     super.key,
-    this.message = 'Comprueba tu conexión a Internet para cargar el contenido.',
+    this.message = 'Check your internet connection to load the content.',
     this.onRetry,
   });
 
@@ -107,10 +107,10 @@ class AppOfflineState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppMessageState(
-    title: 'Sin conexión a Internet',
+    title: 'No internet connection',
     message: message,
     icon: CupertinoIcons.wifi_slash,
-    actionLabel: onRetry == null ? null : 'Reintentar',
+    actionLabel: onRetry == null ? null : 'Retry',
     onAction: onRetry,
   );
 }

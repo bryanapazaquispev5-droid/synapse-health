@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../theme/app_theme.dart';
+import '../../auth/app_auth.dart';
+import '../../api/aws_api_contract.dart';
 import 'app_async_stream_builder.dart';
 import 'app_states.dart';
 
@@ -14,21 +15,16 @@ export 'app_states.dart';
 bool isNetworkFailure(Object? error) =>
     error is SocketException ||
     error is TimeoutException ||
-    (error is FirebaseException &&
-        [
-          'unavailable',
-          'deadline-exceeded',
-          'network-request-failed',
-        ].contains(error.code));
+    (error is AwsApiException && {ApiFailure.offline, ApiFailure.timeout, ApiFailure.unavailable}.contains(error.failure)) ||
+    (error is AppAuthException && {'offline', 'timeout', 'service_unavailable'}.contains(error.code));
 
 String safeContentError(Object? error, String fallback) {
-  if (error is FirebaseException) {
-    if (error.code == 'permission-denied') {
-      return 'No tienes permiso para ver este contenido.';
-    }
-    if (error.code == 'unauthenticated') {
-      return 'Inicia sesión para acceder a este contenido.';
-    }
+  if (error is AwsApiException) {
+    if (error.failure == ApiFailure.forbidden) return 'You do not have permission to view this content.';
+    if (error.failure == ApiFailure.unauthenticated) return 'Sign in to access this content.';
+  }
+  if (error is AppAuthException && isContentAccessFailure(error)) {
+    return 'Sign in to access this content.';
   }
   return fallback;
 }
@@ -42,7 +38,7 @@ class AppAsyncStatus<T> extends StatelessWidget {
     required this.emptyTitle,
     required this.emptyMessage,
     this.emptyIcon = CupertinoIcons.folder_badge_minus,
-    this.errorMessage = 'No se pudo cargar el contenido. Inténtalo de nuevo.',
+    this.errorMessage = 'Could not load the content. Please try again.',
   });
 
   final AppAsyncSnapshot<T> snapshot;
@@ -61,7 +57,7 @@ class AppAsyncStatus<T> extends StatelessWidget {
       );
     }
     if (snapshot.isRetrying) {
-      return const AppLoadingState(message: 'Reintentando…');
+      return const AppLoadingState(message: 'Retrying…');
     }
     if (snapshot.hasError) {
       if (!snapshot.isOnline && isNetworkFailure(snapshot.error)) {
@@ -107,12 +103,12 @@ class AppAsyncNotice<T> extends StatelessWidget {
     }
     if (snapshot.isOnline && !snapshot.hasError) return const SizedBox.shrink();
     final message = !snapshot.hasData
-        ? 'No se pudo cargar el contenido. Inténtalo de nuevo.'
+        ? 'Could not load the content. Please try again.'
         : snapshot.hasError && !isNetworkFailure(snapshot.error)
-        ? 'No se pudo actualizar el contenido. Mostrando datos ya cargados.'
+        ? 'Could not refresh the content. Showing previously loaded data.'
         : snapshot.isOnline
-        ? 'No se pudo actualizar el contenido. Inténtalo de nuevo.'
-        : 'Sin conexión. Mostrando datos ya cargados.';
+        ? 'Could not refresh the content. Please try again.'
+        : 'Offline. Showing previously loaded data.';
     return Semantics(
       liveRegion: true,
       child: Padding(
@@ -143,7 +139,7 @@ class AppAsyncNotice<T> extends StatelessWidget {
               child: const Icon(
                 CupertinoIcons.arrow_clockwise,
                 size: 20,
-                semanticLabel: 'Reintentar',
+                semanticLabel: 'Retry',
               ),
             ),
           ],

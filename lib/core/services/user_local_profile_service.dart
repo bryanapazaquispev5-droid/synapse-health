@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: user_local_profile_service.dart
-// Propósito: Servicio de almacenamiento local en cache para la persistencia rapida de datos del perfil de usuario.
+// File: user_local_profile_service.dart
+// Purpose: Local cache storage service for fast persistence of user profile data.
 // ============================================================================
 
 import 'dart:convert';
@@ -9,7 +9,7 @@ import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Definicion principal de la clase [LocalUserProfile]
+// Main definition of the [LocalUserProfile] class
 class LocalUserProfile {
   final String name;
   final String email;
@@ -28,7 +28,7 @@ class LocalUserProfile {
   });
 }
 
-/// Servicio seguro para almacenar datos del usuario con cifrado por hardware (OWASP MASVS Sección 9.2).
+/// Secure service for storing user data with hardware encryption (OWASP MASVS Section 9.2).
 /// Utiliza Android Keystore (EncryptedSharedPreferences) e iOS Keychain.
 class UserLocalProfileService {
   static final UserLocalProfileService _instance = UserLocalProfileService._internal();
@@ -52,7 +52,7 @@ class UserLocalProfileService {
     required String gender,
     String? photoUrl,
   }) async {
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Block: Protected execution of an asynchronous operation
     try {
       if (name.isNotEmpty) await _secureStorage.write(key: 'user_name_$uid', value: name);
       if (email.isNotEmpty) await _secureStorage.write(key: 'user_email_$uid', value: email);
@@ -66,7 +66,7 @@ class UserLocalProfileService {
   }
 
   Future<void> _downloadAndCachePhoto(String uid, String url) async {
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Block: Protected execution of an asynchronous operation
     try {
       final client = HttpClient();
       final request = await client.getUrl(Uri.parse(url)).timeout(const Duration(seconds: 4));
@@ -87,7 +87,7 @@ class UserLocalProfileService {
     String? fallbackEmail,
     String? fallbackPhotoUrl,
   }) async {
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Block: Protected execution of an asynchronous operation
     try {
       // 1. Intentar lectura cifrada desde FlutterSecureStorage
       String? name = await _secureStorage.read(key: 'user_name_$uid');
@@ -97,9 +97,9 @@ class UserLocalProfileService {
       String? photoUrl = await _secureStorage.read(key: 'user_photo_url_$uid');
       String? photoBase64 = await _secureStorage.read(key: 'user_photo_base64_$uid');
 
-      // 2. Fallback de migración transparente desde SharedPreferences si aún no fue migrado
+      // 2. Transparent migration fallback from SharedPreferences if migration has not completed yet
       if (name == null || email == null) {
-        // Bloque: Ejecución protegida de operación asíncrona
+        // Block: Protected execution of an asynchronous operation
         try {
           final prefs = await SharedPreferences.getInstance();
           name ??= prefs.getString('user_name_$uid');
@@ -109,7 +109,7 @@ class UserLocalProfileService {
           photoUrl ??= prefs.getString('user_photo_url_$uid');
           photoBase64 ??= prefs.getString('user_photo_base64_$uid');
 
-          // Migrar automáticamente al almacenamiento cifrado
+          // Automatically migrate to encrypted storage
           if (name != null) await _secureStorage.write(key: 'user_name_$uid', value: name);
           if (email != null) await _secureStorage.write(key: 'user_email_$uid', value: email);
           if (career != null) await _secureStorage.write(key: 'user_career_$uid', value: career);
@@ -120,26 +120,26 @@ class UserLocalProfileService {
 
       Uint8List? photoBytes;
       if (photoBase64 != null && photoBase64.isNotEmpty) {
-        // Bloque: Ejecución protegida de operación asíncrona
+        // Block: Protected execution of an asynchronous operation
         try {
           photoBytes = base64Decode(photoBase64);
         } catch (_) {}
       }
 
       return LocalUserProfile(
-        name: name ?? fallbackName ?? 'Estudiante de Salud',
-        email: email ?? fallbackEmail ?? 'estudiante@synapse.app',
-        career: career ?? 'Medicina Humana',
-        gender: gender ?? 'Hombre',
+        name: name ?? fallbackName ?? 'Health Sciences Student',
+        email: email ?? fallbackEmail ?? 'student@synapse.app',
+        career: career ?? 'Human Medicine',
+        gender: gender ?? 'Male',
         photoUrl: photoUrl ?? fallbackPhotoUrl,
         photoBytes: photoBytes,
       );
     } catch (_) {
       return LocalUserProfile(
-        name: fallbackName ?? 'Estudiante de Salud',
-        email: fallbackEmail ?? 'estudiante@synapse.app',
-        career: 'Medicina Humana',
-        gender: 'Hombre',
+        name: fallbackName ?? 'Health Sciences Student',
+        email: fallbackEmail ?? 'student@synapse.app',
+        career: 'Human Medicine',
+        gender: 'Male',
         photoUrl: fallbackPhotoUrl,
       );
     }

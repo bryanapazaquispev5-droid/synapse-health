@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: connectivity_service.dart
-// Propósito: Servicio reactivo para monitorear el estado de conexion a internet y detectar transiciones offline/online.
+// File: connectivity_service.dart
+// Purpose: Reactive service for monitoring internet connectivity and detecting offline/online transitions.
 // ============================================================================
 
 import 'dart:async';
@@ -8,7 +8,7 @@ import 'dart:developer' as developer;
 
 import 'internet_connection_probe.dart';
 
-/// Servicio singleton para monitoreo de conexión a internet en tiempo real
+/// Singleton service for real-time internet connectivity monitoring
 class ConnectivityService {
   static final ConnectivityService _instance = ConnectivityService._internal();
   factory ConnectivityService() => _instance;
@@ -27,7 +27,7 @@ class ConnectivityService {
 
   void _init() {
     _checkInBackground();
-    // Verificación continua cada 2.5 segundos
+    // Continuous check every 2.5 seconds
     _timer = Timer.periodic(const Duration(milliseconds: 2500), (_) {
       _checkInBackground();
     });
@@ -64,7 +64,7 @@ class ConnectivityService {
     }
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Release controllers and resources to prevent memory leaks
   void dispose() {
     _timer?.cancel();
     _controller.close();

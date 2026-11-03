@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: ios_top_banner.dart
-// Propósito: Notificación tipo banner / cápsula superior estilo Apple HIG con animación suave y desenfoque translúcido.
+// File: ios_top_banner.dart
+// Purpose: Apple HIG-style top banner/pill notification with smooth animation and translucent blur.
 // ============================================================================
 
 import 'dart:async';
@@ -10,10 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
-/// Tipologías semánticas de notificación Apple HIG
+/// Apple HIG semantic notification types
 enum IosBannerType { info, success, warning, error }
 
-/// Orquestador para mostrar banners flotantes en la parte superior estilo iOS
+/// Orchestrator for displaying floating banners at the top in an iOS style
 class IosTopBanner {
   static OverlayEntry? _currentEntry;
 

@@ -1,12 +1,11 @@
 // ============================================================================
-// Archivo: push_notification_payload.dart
-// Propósito: Entidad inmutable fuertemente tipada para parsear, representar y transferir cargas utiles de notificaciones remotas.
+// File: push_notification_payload.dart
+// Purpose: Strongly typed immutable entity for local notification content.
 // ============================================================================
 
 import 'dart:convert';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
-/// Tipos de notificaciones soportadas por Synapse Health
+/// Notification types supported by Synapse Health
 enum NotificationType {
   medicalAlert,
   dailyQuiz,
@@ -49,7 +48,7 @@ enum NotificationType {
   }
 }
 
-/// Entidad inmutable tipada que encapsula la carga útil de una notificación push
+/// Typed immutable entity that encapsulates a local notification payload
 class PushNotificationPayload {
   final String id;
   final String title;
@@ -73,51 +72,7 @@ class PushNotificationPayload {
     required this.receivedAt,
   });
 
-  /// Construye un payload tipado a partir de un RemoteMessage de Firebase
-  factory PushNotificationPayload.fromRemoteMessage(RemoteMessage message) {
-    final Map<String, dynamic> data = Map<String, dynamic>.from(message.data);
-    final notification = message.notification;
-
-    final String title = notification?.title?.trim().isNotEmpty == true
-        ? notification!.title!
-        : (data['title']?.toString() ?? 'Synapse Health');
-
-    final String body = notification?.body?.trim().isNotEmpty == true
-        ? notification!.body!
-        : (data['body']?.toString() ?? 'Nueva actualización disponible');
-
-    final NotificationType parsedType = NotificationType.fromString(
-      data['type']?.toString() ?? data['notification_type']?.toString(),
-    );
-
-    final String channelId = notification?.android?.channelId ??
-        data['channel_id']?.toString() ??
-        parsedType.defaultChannelId;
-
-    final String? route = data['route']?.toString() ??
-        data['click_action']?.toString() ??
-        data['screen']?.toString();
-
-    final String? targetId =
-        data['target_id']?.toString() ?? data['id']?.toString();
-
-    final String id = message.messageId ??
-        DateTime.now().millisecondsSinceEpoch.toString();
-
-    return PushNotificationPayload(
-      id: id,
-      title: title,
-      body: body,
-      type: parsedType,
-      channelId: channelId,
-      route: route,
-      targetId: targetId,
-      data: data,
-      receivedAt: message.sentTime ?? DateTime.now(),
-    );
-  }
-
-  /// Deserializa desde un Map JSON
+  /// Deserializes from a JSON Map
   factory PushNotificationPayload.fromJson(Map<String, dynamic> json) {
     final parsedType = NotificationType.fromString(json['type']?.toString());
     return PushNotificationPayload(
@@ -137,7 +92,7 @@ class PushNotificationPayload {
     );
   }
 
-  /// Serializa a Map JSON
+  /// Serializes to a JSON Map
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -152,13 +107,13 @@ class PushNotificationPayload {
     };
   }
 
-  /// Serializa a String JSON codificado para flutter_local_notifications payload
+  /// Serializes to a JSON-encoded String for the flutter_local_notifications payload
   String toJsonString() => jsonEncode(toJson());
 
-  /// Deserializa desde un String JSON codificado
+  /// Deserializes from a JSON-encoded String
   static PushNotificationPayload? fromJsonString(String? source) {
     if (source == null || source.trim().isEmpty) return null;
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Block: Protected execution of an asynchronous operation
     try {
       final decoded = jsonDecode(source);
       if (decoded is Map<String, dynamic>) {

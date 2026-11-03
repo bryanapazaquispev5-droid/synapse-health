@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../services/connectivity_service.dart';
+import '../../auth/app_auth.dart';
+import '../../api/aws_api_contract.dart';
 
 bool isContentAccessFailure(Object? error) =>
-    error is FirebaseException &&
-    ['permission-denied', 'unauthenticated'].contains(error.code);
+    (error is AwsApiException && {ApiFailure.unauthenticated, ApiFailure.forbidden}.contains(error.failure)) ||
+    (error is AppAuthException && {'unauthenticated', 'authentication_failed', 'invalid_session'}.contains(error.code));
 
 /// Data already delivered by the stream is retained across transient failures.
 class AppAsyncSnapshot<T> {

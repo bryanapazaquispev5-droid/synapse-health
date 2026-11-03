@@ -1,43 +1,29 @@
 // ============================================================================
-// Archivo: app_constants.dart
-// Propósito: Definicion de constantes globales del sistema, rutas, nombres de colecciones y configuraciones inmutables.
+// File: app_constants.dart
+// Purpose: Defines global constants and local preferences.
 // ============================================================================
 
-/// Constantes globales de la aplicación Synapse Health
-/// Siguiendo los lineamientos de UPPER_SNAKE_CASE del Manual Maestro de Arquitectura (Sección 5.6)
+/// Global Synapse Health application constants
+/// Following the UPPER_SNAKE_CASE guidelines in the Architecture Master Guide (Section 5.6)
 class AppConstants {
-  // Nombres de la Aplicación
+  // Application Names
   static const String APP_NAME = 'Synapse Health';
-  static const String APP_TAGLINE = 'Plataforma de Alto Rendimiento en Salud';
+  static const String APP_TAGLINE = 'High-Performance Health Learning Platform';
 
-  // Colecciones de Firestore
-  static const String FIRESTORE_USERS = 'users';
-  static const String FIRESTORE_MEDICAL_AREAS = 'medical_areas';
-  static const String FIRESTORE_TOPICS = 'topics';
-  static const String FIRESTORE_CHEATSHEETS = 'cheatsheets';
-  static const String FIRESTORE_QUIZZES = 'quizzes';
-  static const String FIRESTORE_LEADERBOARD = 'leaderboard';
-
-  // Preferencias Locales (SharedPreferences Keys)
+  // Local Preferences (SharedPreferences Keys)
   static const String PREF_CREATED_ACCOUNTS = 'created_accounts_on_device';
   static const String PREF_FAILED_LOGIN_ATTEMPTS = 'failed_login_attempts';
   static const String PREF_LOGIN_LOCKOUT_UNTIL = 'login_lockout_until';
 
-  // Tiempos y Límites de Seguridad
+  // Security Timeouts and Limits
   static const int LOCKOUT_TIER_1_SECONDS = 30;
   static const int LOCKOUT_TIER_2_SECONDS = 60;
   static const int LOCKOUT_TIER_3_SECONDS = 120;
   static const int MAX_PASSWORD_MIN_LENGTH = 6;
 
-  // Alias para compatibilidad hacia atrás
+  // Backward Compatibility Aliases
   static const String appName = APP_NAME;
   static const String appTagline = APP_TAGLINE;
-  static const String firestoreUsers = FIRESTORE_USERS;
-  static const String firestoreMedicalAreas = FIRESTORE_MEDICAL_AREAS;
-  static const String firestoreTopics = FIRESTORE_TOPICS;
-  static const String firestoreCheatsheets = FIRESTORE_CHEATSHEETS;
-  static const String firestoreQuizzes = FIRESTORE_QUIZZES;
-  static const String firestoreLeaderboard = FIRESTORE_LEADERBOARD;
   static const String prefCreatedAccounts = PREF_CREATED_ACCOUNTS;
   static const String prefFailedLoginAttempts = PREF_FAILED_LOGIN_ATTEMPTS;
   static const String prefLoginLockoutUntil = PREF_LOGIN_LOCKOUT_UNTIL;

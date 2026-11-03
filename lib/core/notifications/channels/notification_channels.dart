@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: notification_channels.dart
-// Propósito: Configuracion y declaracion de canales de notificaciones locales de Android para prioridades medicas y recordatorios.
+// File: notification_channels.dart
+// Purpose: Configuration and declaration of Android local notification channels for medical priorities and reminders.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/push_notification_payload.dart';
 
-/// Canales de notificación Android oficiales de Synapse Health
+/// Official Synapse Health Android notification channels
 class NotificationChannels {
   static const String medicalAlertsId = 'synapse_medical_alerts';
   static const String dailyQuizzesId = 'synapse_daily_quizzes';
@@ -15,52 +15,52 @@ class NotificationChannels {
 
   static const Color accentColor = Color(0xFF0052CC);
 
-  /// Canal de máxima prioridad para emergencias médicas y guías críticas
+  /// Highest-priority channel for medical emergencies and critical guides
   static const AndroidNotificationChannel medicalAlerts =
       AndroidNotificationChannel(
     medicalAlertsId,
-    'Alertas Médicas Críticas',
+    'Critical Medical Alerts',
     description:
-        'Notificaciones de emergencias médicas, guías clínicas y alertas de alta prioridad.',
+        'Notifications about medical emergencies, clinical guides, and high-priority alerts.',
     importance: Importance.max,
     playSound: true,
     enableVibration: true,
     showBadge: true,
   );
 
-  /// Canal de alta prioridad para quizzes diarios y recordatorio de rachas
+  /// High-priority channel for daily quizzes and streak reminders
   static const AndroidNotificationChannel dailyQuizzes =
       AndroidNotificationChannel(
     dailyQuizzesId,
-    'Quizzes Diarios y Rachas',
+    'Daily Quizzes and Streaks',
     description:
-        'Recordatorios diarios para repaso activo, preguntas del día y preservación de rachas.',
+        'Daily reminders for active review, question of the day, and maintaining study streaks.',
     importance: Importance.high,
     playSound: true,
     enableVibration: true,
     showBadge: true,
   );
 
-  /// Canal de prioridad estándar para novedades, fichas y anuncios de la plataforma
+  /// Standard-priority channel for updates, study notes, and platform announcements
   static const AndroidNotificationChannel announcements =
       AndroidNotificationChannel(
     announcementsId,
     'Anuncios y Novedades',
     description:
-        'Actualizaciones académicas, nuevas fichas médicas y avisos del sistema.',
+        'Academic updates, new medical study notes, and system announcements.',
     importance: Importance.defaultImportance,
     playSound: true,
     showBadge: true,
   );
 
-  /// Lista de todos los canales que deben crearse en el sistema Android
+  /// List of all channels to create on the Android system
   static List<AndroidNotificationChannel> get allChannels => [
         medicalAlerts,
         dailyQuizzes,
         announcements,
       ];
 
-  /// Devuelve el canal apropiado según el ID solicitado con fallback seguro
+  /// Returns the appropriate channel for the requested ID, with a safe fallback
   static AndroidNotificationChannel getChannelById(String? channelId) {
     switch (channelId) {
       case medicalAlertsId:
@@ -74,7 +74,7 @@ class NotificationChannels {
     }
   }
 
-  /// Devuelve el canal apropiado según el tipo de notificación
+  /// Returns the appropriate channel for the notification type
   static AndroidNotificationChannel getChannelForType(NotificationType type) {
     switch (type) {
       case NotificationType.medicalAlert:
@@ -88,7 +88,7 @@ class NotificationChannels {
     }
   }
 
-  /// Construye los NotificationDetails para mostrar heads-up banners en primer plano
+  /// Builds NotificationDetails for displaying heads-up banners in the foreground
   static NotificationDetails buildDetails({
     required PushNotificationPayload payload,
   }) {

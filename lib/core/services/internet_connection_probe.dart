@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
 
-/// A successful HTTPS response proves reachability, not Firestore availability.
+/// A successful HTTPS response proves reachability, not API availability.
 /// Unlike DNS alone this cannot report a cached DNS record as Internet access.
 Future<bool> probeInternetConnection({HttpClient? httpClient}) async {
   final client = httpClient ?? HttpClient();
