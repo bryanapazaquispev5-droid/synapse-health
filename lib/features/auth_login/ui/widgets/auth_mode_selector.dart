@@ -1,12 +1,12 @@
 // ============================================================================
-// Archivo: auth_mode_selector.dart
-// Propósito: Widget visual de soporte [auth_mode_selector] para el formulario y flujo de inicio de sesion.
+// File: auth_mode_selector.dart
+// Purpose: Supporting visual widget [auth_mode_selector] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [AuthModeSelector]
+// Main definition of class [AuthModeSelector]
 class AuthModeSelector extends StatelessWidget {
   final bool isLogin;
   final ValueChanged<bool> onModeChanged;
@@ -17,8 +17,8 @@ class AuthModeSelector extends StatelessWidget {
     required this.onModeChanged,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -32,7 +32,7 @@ class AuthModeSelector extends StatelessWidget {
           true: Padding(
             padding: EdgeInsets.symmetric(vertical: 9),
             child: Text(
-              'Iniciar Sesión',
+              'Sign In',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -44,7 +44,7 @@ class AuthModeSelector extends StatelessWidget {
           false: Padding(
             padding: EdgeInsets.symmetric(vertical: 9),
             child: Text(
-              'Registrarse',
+              'Sign Up',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

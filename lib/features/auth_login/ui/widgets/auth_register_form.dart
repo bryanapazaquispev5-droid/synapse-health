@@ -1,15 +1,17 @@
 // ============================================================================
-// Archivo: auth_register_form.dart
-// Propósito: Widget visual de soporte [auth_register_form] para el formulario y flujo de inicio de sesion.
+// File: auth_register_form.dart
+// Purpose: Supporting visual widget [auth_register_form] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import 'auth_text_field.dart';
 import 'password_strength_bar.dart';
 import 'recaptcha_card.dart';
+import 'career_dropdown_field.dart';
 
-// Definicion principal de la clase [AuthRegisterForm]
+// Main definition of class [AuthRegisterForm]
 class AuthRegisterForm extends StatefulWidget {
   final TextEditingController nameController;
   final TextEditingController emailController;
@@ -42,13 +44,13 @@ class AuthRegisterForm extends StatefulWidget {
   State<AuthRegisterForm> createState() => _AuthRegisterFormState();
 }
 
-// Estado reactivo y control de ciclo de vida para [AuthRegisterForm]
+// Reactive state and lifecycle management for [AuthRegisterForm]
 class _AuthRegisterFormState extends State<AuthRegisterForm> {
   bool _isPasswordObscured = true;
   bool _isConfirmPasswordObscured = true;
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -56,28 +58,26 @@ class _AuthRegisterFormState extends State<AuthRegisterForm> {
       children: [
         AuthTextField(
           controller: widget.nameController,
-          label: 'Nombre Completo',
+          label: 'Full Name',
           hint: 'ej. Bryan Apaza',
           prefixIcon: CupertinoIcons.person,
         ),
         const SizedBox(height: 14),
         AuthTextField(
           controller: widget.emailController,
-          label: 'Correo Electrónico',
-          hint: 'ej. estudiante@gmail.com',
+          label: 'Email',
+          hint: 'e.g., student@gmail.com',
           prefixIcon: CupertinoIcons.mail,
           keyboardType: TextInputType.emailAddress,
           onChanged: (_) => widget.onStateUpdate(),
         ),
         const SizedBox(height: 14),
-        AuthTextField(
+        CareerDropdownField(
           controller: widget.careerController,
-          label: 'Carrera o Especialidad',
-          hint: 'ej. Medicina Humana / Enfermería',
-          prefixIcon: CupertinoIcons.book,
+          onChanged: widget.onStateUpdate,
         ),
         const SizedBox(height: 14),
-        // Selector de Género
+        // Gender Selector
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
@@ -98,7 +98,7 @@ class _AuthRegisterFormState extends State<AuthRegisterForm> {
               const Padding(
                 padding: EdgeInsets.only(left: 2, bottom: 8),
                 child: Text(
-                  'Género del Estudiante',
+                  'Student Gender',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -119,9 +119,20 @@ class _AuthRegisterFormState extends State<AuthRegisterForm> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(CupertinoIcons.person_fill, size: 16, color: AppColors.primary),
+                          Icon(
+                            CupertinoIcons.person_fill,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
                           SizedBox(width: 6),
-                          Text('Hombre', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                          Text(
+                            'Hombre',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -130,9 +141,20 @@ class _AuthRegisterFormState extends State<AuthRegisterForm> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(CupertinoIcons.person_alt, size: 16, color: AppColors.primary),
+                          Icon(
+                            CupertinoIcons.person_alt,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
                           SizedBox(width: 6),
-                          Text('Mujer', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                          Text(
+                            'Mujer',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -148,19 +170,22 @@ class _AuthRegisterFormState extends State<AuthRegisterForm> {
         const SizedBox(height: 14),
         AuthTextField(
           controller: widget.passwordController,
-          label: 'Crear Contraseña',
-          hint: 'Mínimo 6 caracteres',
+          label: 'Crear Password',
+          hint: '12 characters, uppercase letter, number, and symbol',
           prefixIcon: CupertinoIcons.lock,
           obscureText: _isPasswordObscured,
           onChanged: (_) => widget.onStateUpdate(),
           suffixIcon: CupertinoButton(
             padding: EdgeInsets.zero,
             child: Icon(
-              _isPasswordObscured ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+              _isPasswordObscured
+                  ? CupertinoIcons.eye_slash
+                  : CupertinoIcons.eye,
               color: AppColors.primary,
               size: 20,
             ),
-            onPressed: () => setState(() => _isPasswordObscured = !_isPasswordObscured),
+            onPressed: () =>
+                setState(() => _isPasswordObscured = !_isPasswordObscured),
           ),
         ),
         PasswordStrengthBar(
@@ -170,18 +195,22 @@ class _AuthRegisterFormState extends State<AuthRegisterForm> {
         const SizedBox(height: 14),
         AuthTextField(
           controller: widget.confirmPasswordController,
-          label: 'Confirmar Contraseña',
-          hint: 'Repite tu contraseña',
+          label: 'Confirm password',
+          hint: 'Re-enter your password',
           prefixIcon: CupertinoIcons.lock_shield,
           obscureText: _isConfirmPasswordObscured,
           suffixIcon: CupertinoButton(
             padding: EdgeInsets.zero,
             child: Icon(
-              _isConfirmPasswordObscured ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+              _isConfirmPasswordObscured
+                  ? CupertinoIcons.eye_slash
+                  : CupertinoIcons.eye,
               color: AppColors.primary,
               size: 20,
             ),
-            onPressed: () => setState(() => _isConfirmPasswordObscured = !_isConfirmPasswordObscured),
+            onPressed: () => setState(
+              () => _isConfirmPasswordObscured = !_isConfirmPasswordObscured,
+            ),
           ),
         ),
         if (widget.requireCaptcha) ...[

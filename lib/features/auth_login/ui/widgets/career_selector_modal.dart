@@ -1,12 +1,12 @@
 // ============================================================================
-// Archivo: career_selector_modal.dart
-// Propósito: Widget visual de soporte [career_selector_modal] para el formulario y flujo de inicio de sesion.
+// File: career_selector_modal.dart
+// Purpose: Supporting visual widget [career_selector_modal] for the sign-in and registration form flow.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [CareerSelectorModal]
+// Main definition of class [CareerSelectorModal]
 class CareerSelectorModal {
   static void show({
     required BuildContext context,
@@ -18,7 +18,7 @@ class CareerSelectorModal {
       builder: (BuildContext sheetContext) {
         return CupertinoActionSheet(
           title: const Text(
-            'Selecciona tu Carrera o Especialidad',
+            'Select your degree or specialty',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -26,7 +26,7 @@ class CareerSelectorModal {
             ),
           ),
           message: const Text(
-            'Esto personalizará tu plan de estudio y banco de preguntas.',
+            'This will personalize your study plan and question bank.',
             style: TextStyle(fontSize: 13, color: AppColors.textMuted),
           ),
           actions: careers.map((career) {
@@ -48,7 +48,7 @@ class CareerSelectorModal {
           cancelButton: CupertinoActionSheetAction(
             isDestructiveAction: true,
             onPressed: () => Navigator.pop(sheetContext),
-            child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.w700)),
+            child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         );
       },
