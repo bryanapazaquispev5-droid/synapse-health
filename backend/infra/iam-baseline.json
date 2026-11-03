@@ -1,0 +1,7 @@
+{
+  "generator": "iam-policy-autopilot 0.3.0",
+  "source": "src/aws/store.mjs (analyzed through identical .js copy because .mjs is unsupported)",
+  "generatedActions": ["dynamodb:ConditionCheckItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:ReadDataForReplication", "dynamodb:UpdateItem", "dynamodb:WriteDataForReplication", "kms:Decrypt"],
+  "runtimeActions": ["dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:TransactWriteItems", "dynamodb:UpdateItem"],
+  "refinement": "Scope to AppTable ARN; omit unused explicit ConditionCheck operations, replication actions and KMS decrypt (DynamoDB-managed encryption, no customer key or direct KMS calls). Logging scoped separately to the API Lambda log group. No policies uploaded."
+}
