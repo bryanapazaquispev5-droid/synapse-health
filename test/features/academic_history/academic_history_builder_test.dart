@@ -126,11 +126,11 @@ void main() {
   });
 
   test('canonical identifier matches the backend tuple without padding', () {
-    final id = canonicalHistoryEntryId('área/1', 'tema_2', 3, 'quiz?4');
+    final id = canonicalHistoryEntryId('area/1', 'topic_2', 3, 'quiz?4');
     expect(id, isNot(contains('=')));
     expect(jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(id)))), [
-      'área/1',
-      'tema_2',
+      'area/1',
+      'topic_2',
       3,
       'quiz?4',
     ]);

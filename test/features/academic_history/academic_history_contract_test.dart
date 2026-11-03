@@ -7,7 +7,7 @@ import 'package:synapse_health/features/quizzes/model/quiz_topic_progress_model.
 
 void main() {
   test(
-    'Flutter and Lambda share canonical IDs and retained history DTO contract',
+    'Flutter and AWS share canonical IDs and retained history DTO contract',
     () {
       final fixture = jsonDecode(
         File('test/fixtures/history_contract.json').readAsStringSync(),

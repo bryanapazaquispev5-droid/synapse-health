@@ -28,7 +28,7 @@ class AcademicHistoryEntry {
   final int maxStars;
   final int? selectedOptionIndex;
 
-  /// Optional server measurements; legacy Firebase records remain unavailable.
+  /// Optional measurements supplied by the AWS server.
   final int? durationSeconds;
   final int? score;
   final String? status;

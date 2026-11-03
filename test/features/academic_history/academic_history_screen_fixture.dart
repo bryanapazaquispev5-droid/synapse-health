@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synapse_health/core/auth/app_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
@@ -13,7 +13,7 @@ import 'package:synapse_health/features/quizzes/model/quiz_model.dart';
 
 import '../../core/widgets/fixtures/async_content_fixture.dart';
 
-class HistoryTestUser extends Fake implements User {
+class HistoryTestUser extends Fake implements AppUser {
   HistoryTestUser(this.uid);
   @override
   final String uid;
@@ -21,8 +21,8 @@ class HistoryTestUser extends Fake implements User {
 
 class HistoryScreenRepository extends Fake
     implements AcademicHistoryRepository {
-  User? user = HistoryTestUser('alice');
-  final sessions = StreamController<User?>.broadcast();
+  AppUser? user = HistoryTestUser('alice');
+  final sessions = StreamController<AppUser?>.broadcast();
   final histories = <String, StreamController<List<AcademicHistoryEntry>>>{};
   final historyReads = <String>[];
   int areaReads = 0, topicReads = 0, quizReads = 0;
@@ -31,12 +31,12 @@ class HistoryScreenRepository extends Fake
   int pageLoads = 0;
   List<AcademicHistoryEntry> nextEntries = [];
   Completer<void>? pageGate;
-  String areaName = 'Área de prueba';
+  String areaName = 'Test Area';
   Object? catalogError;
   @override
-  User? get currentUser => user;
+  AppUser? get currentUser => user;
   @override
-  Stream<User?> get sessionChanges => sessions.stream;
+  Stream<AppUser?> get sessionChanges => sessions.stream;
   @override
   Stream<List<AcademicHistoryEntry>> watchHistory(String uid) {
     historyReads.add(uid);
@@ -79,7 +79,7 @@ class HistoryScreenRepository extends Fake
               const TopicModel(
                 id: 't',
                 areaId: 'a',
-                title: 'Tema de prueba',
+                title: 'Test Topic',
                 order: 1,
               ),
             ]
@@ -101,8 +101,8 @@ class HistoryScreenRepository extends Fake
                 id: 'q',
                 areaId: 'a',
                 topicId: 't',
-                question: 'Pregunta de prueba',
-                options: ['Opción de prueba'],
+                question: 'Test Question',
+                options: ['Test Option'],
                 correctIndex: 0,
                 rationale: '',
                 sourceBook: '',

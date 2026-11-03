@@ -5,7 +5,7 @@ import '../../model/academic_history_entry.dart';
 import 'history_catalog.dart';
 
 String historyDate(DateTime? date) {
-  if (date == null) return 'Fecha no disponible';
+  if (date == null) return 'Date unavailable';
   final local = date.toLocal();
   String digits(int value) => value.toString().padLeft(2, '0');
   return '${digits(local.day)}/${digits(local.month)}/${local.year} '
@@ -60,18 +60,18 @@ class HistoryEntryCard extends StatelessWidget {
               runSpacing: 6,
               children: [
                 Text(
-                  'Intento ${entry.attemptNumber}',
+                  'Attempt ${entry.attemptNumber}',
                   style: const TextStyle(fontSize: 13, color: AppColors.accent),
                 ),
                 Text(
-                  entry.isCorrect ? 'Correcta' : 'Incorrecta',
+                  entry.isCorrect ? 'Correct' : 'Incorrect',
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.primary,
                   ),
                 ),
                 Text(
-                  '${entry.earnedStars} / ${entry.maxStars} estrellas',
+                  '${entry.earnedStars} / ${entry.maxStars} stars',
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.primary,

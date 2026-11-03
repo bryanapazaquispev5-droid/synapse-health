@@ -14,14 +14,14 @@ class HistoryLabels {
   final topics = <(String, String), String>{};
   final quizzes = <(String, String, String), String>{};
   String area(AcademicHistoryEntry entry) =>
-      areas[entry.areaId] ?? 'Área no disponible';
+      areas[entry.areaId] ?? 'Area unavailable';
   String topic(AcademicHistoryEntry entry) =>
-      topics[(entry.areaId, entry.topicId)] ?? 'Tema no disponible';
+      topics[(entry.areaId, entry.topicId)] ?? 'Topic unavailable';
   String quiz(AcademicHistoryEntry entry) =>
       quizzes[(entry.areaId, entry.topicId, entry.quizId)] ??
       (entry.quizTitle?.trim().isNotEmpty == true
           ? entry.quizTitle!
-          : 'Quiz no disponible');
+          : 'Quiz unavailable');
 }
 
 /// Catalog subscriptions are shared across entries from the same area/topic.
@@ -170,11 +170,11 @@ class _HistoryCatalogState extends State<HistoryCatalog> {
             children: [
               const Expanded(
                 child: Text(
-                  'Algunos nombres no están disponibles.',
+                  'Some names are unavailable.',
                   style: TextStyle(color: AppColors.textMuted, fontSize: 13),
                 ),
               ),
-              TextButton(onPressed: _retry, child: const Text('Reintentar')),
+              TextButton(onPressed: _retry, child: const Text('Retry')),
             ],
           ),
         ),

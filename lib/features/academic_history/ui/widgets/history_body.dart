@@ -97,12 +97,12 @@ class _HistoryBodyState extends State<HistoryBody> {
           isEmpty: selected.isEmpty,
           onRetry: retry,
           emptyTitle: widget.entryId == null
-              ? 'Aún no hay actividades'
-              : 'Resultado no disponible',
+              ? 'No activities yet'
+              : 'Result unavailable',
           emptyMessage: widget.entryId == null
-              ? 'Tus respuestas guardadas aparecerán aquí.'
-              : 'Este registro ya no está en el historial conservado.',
-          errorMessage: 'No se pudo cargar tu historial. Inténtalo de nuevo.',
+              ? 'Your saved answers will appear here.'
+              : 'This record is no longer in the retained history.',
+          errorMessage: 'Could not load your history. Please try again.',
         );
       }
       final visible = selected.take(_visibleCount).toList();
@@ -125,7 +125,7 @@ class _HistoryBodyState extends State<HistoryBody> {
                     const Padding(
                       padding: EdgeInsets.only(bottom: 14),
                       child: Text(
-                        'Respuestas de intentos conservados',
+                        'Answers from retained attempts',
                         style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textMuted,
@@ -150,10 +150,10 @@ class _HistoryBodyState extends State<HistoryBody> {
                                 children: [
                                   CupertinoActivityIndicator(radius: 8),
                                   SizedBox(width: 8),
-                                  Text('Cargando más…'),
+                                  Text('Loading more…'),
                                 ],
                               )
-                            : const Text('Mostrar más'),
+                            : const Text('Show more'),
                       ),
                   ],
                 );

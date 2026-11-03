@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synapse_health/core/api/aws_api_client.dart';
 
 import '../../core/widgets/fixtures/async_content_fixture.dart';
 import 'academic_history_screen_fixture.dart';
@@ -20,11 +20,11 @@ void main() {
   });
   testWidgets('loading then genuine empty history', (tester) async {
     await tester.pumpWidget(historyScreen(repo, connection));
-    expect(find.text('Cargando…'), findsOneWidget);
+    expect(find.text('Loading…'), findsOneWidget);
     repo.histories['alice']!.add([]);
     await historyFrames(tester);
-    expect(find.text('Aún no hay actividades'), findsOneWidget);
-    expect(find.text('Mi historial'), findsOneWidget);
+    expect(find.text('No activities yet'), findsOneWidget);
+    expect(find.text('My History'), findsOneWidget);
   });
   testWidgets('real saved values and catalog names without identifiers', (
     tester,
@@ -32,10 +32,10 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    expect(find.text('Pregunta de prueba'), findsOneWidget);
-    expect(find.text('Área de prueba · Tema de prueba'), findsOneWidget);
-    expect(find.text('Intento 2'), findsOneWidget);
-    expect(find.text('2 / 2 estrellas'), findsOneWidget);
+    expect(find.text('Test Question'), findsOneWidget);
+    expect(find.text('Test Area · Test Topic'), findsOneWidget);
+    expect(find.text('Attempt 2'), findsOneWidget);
+    expect(find.text('2 / 2 stars'), findsOneWidget);
     expect(find.text('11/10/2026 12:30'), findsOneWidget);
     expect(find.textContaining('private-record'), findsNothing);
   });
@@ -45,14 +45,14 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    await tester.tap(find.text('Pregunta de prueba'));
+    await tester.tap(find.text('Test Question'));
     await tester.pump(const Duration(milliseconds: 500));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    expect(find.text('Resultado'), findsWidgets);
-    expect(find.text('No registrado'), findsOneWidget);
-    expect(find.text('Correcta'), findsWidgets);
-    expect(find.text('Historial'), findsWidgets);
+    expect(find.text('Result'), findsWidgets);
+    expect(find.text('Not recorded'), findsOneWidget);
+    expect(find.text('Correct'), findsWidgets);
+    expect(find.text('History'), findsWidgets);
   });
   testWidgets('deleted retained record becomes unavailable in detail', (
     tester,
@@ -62,11 +62,11 @@ void main() {
     );
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    expect(find.text('Pregunta de prueba'), findsOneWidget);
+    expect(find.text('Test Question'), findsOneWidget);
     repo.histories['alice']!.add([]);
     await historyFrames(tester);
-    expect(find.text('Resultado no disponible'), findsOneWidget);
-    expect(find.text('Pregunta de prueba'), findsNothing);
+    expect(find.text('Result unavailable'), findsOneWidget);
+    expect(find.text('Test Question'), findsNothing);
   });
   testWidgets('server error is not rendered as empty and retry starts read', (
     tester,
@@ -75,12 +75,12 @@ void main() {
     repo.histories['alice']!.addError(StateError('private internal message'));
     await historyFrames(tester);
     expect(
-      find.text('No se pudo cargar tu historial. Inténtalo de nuevo.'),
+      find.text('Could not load your history. Please try again.'),
       findsOneWidget,
     );
     expect(find.textContaining('private internal'), findsNothing);
-    expect(find.text('Aún no hay actividades'), findsNothing);
-    await tester.tap(find.text('Reintentar'));
+    expect(find.text('There are no activities yet'), findsNothing);
+    await tester.tap(find.text('Retry'));
     await historyFrames(tester);
     expect(repo.historyReads, ['alice', 'alice']);
   });
@@ -89,7 +89,7 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.addError(const SocketException('network'));
     await historyFrames(tester);
-    expect(find.text('Sin conexión a Internet'), findsOneWidget);
+    expect(find.text('No internet connection'), findsOneWidget);
   });
   testWidgets('access revoked clears previously delivered entries', (
     tester,
@@ -98,14 +98,14 @@ void main() {
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
     repo.histories['alice']!.addError(
-      FirebaseException(plugin: 'test', code: 'permission-denied'),
+      const AwsApiException(ApiFailure.forbidden),
     );
     await historyFrames(tester);
     expect(
-      find.text('No tienes permiso para ver este contenido.'),
+      find.text('You do not have permission to view this content.'),
       findsOneWidget,
     );
-    expect(find.text('Pregunta de prueba'), findsNothing);
+    expect(find.text('Test Question'), findsNothing);
   });
   testWidgets('different session clears history and owner scoped detail', (
     tester,
@@ -122,9 +122,9 @@ void main() {
     await historyFrames(tester);
     repo.changeUser('bob');
     await historyFrames(tester);
-    expect(find.text('Pregunta de prueba'), findsNothing);
+    expect(find.text('Test Question'), findsNothing);
     expect(
-      find.text('Inicia sesión para acceder a este historial.'),
+      find.text('Sign in to access this history.'),
       findsOneWidget,
     );
     expect(repo.historyReads, ['alice']);
@@ -136,7 +136,7 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     expect(repo.historyReads, isEmpty);
     expect(
-      find.text('Inicia sesión para acceder a este historial.'),
+      find.text('Sign in to access this history.'),
       findsOneWidget,
     );
   });
@@ -147,12 +147,12 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add([entry(dated: false)]);
     await historyFrames(tester);
-    expect(find.text('Quiz no disponible'), findsOneWidget);
+    expect(find.text('Quiz unavailable'), findsOneWidget);
     expect(
-      find.text('Área no disponible · Tema no disponible'),
+      find.text('Area unavailable · Topic unavailable'),
       findsOneWidget,
     );
-    expect(find.text('Fecha no disponible'), findsOneWidget);
+    expect(find.text('Date unavailable'), findsOneWidget);
   });
   testWidgets('missing area name never exposes document fallback ID', (
     tester,
@@ -161,8 +161,8 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    expect(find.text('Área no disponible · Tema de prueba'), findsOneWidget);
-    expect(find.text('a · Tema de prueba'), findsNothing);
+    expect(find.text('Area unavailable · Test Topic'), findsOneWidget);
+    expect(find.text('a · Test Topic'), findsNothing);
   });
   testWidgets(
     'metadata queries are shared per area and topic across refreshes',
@@ -185,15 +185,15 @@ void main() {
       repo.histories['alice']!.add([entry()]);
       await historyFrames(tester);
       expect(
-        find.text('Algunos nombres no están disponibles.'),
+        find.text('Some names are unavailable.'),
         findsOneWidget,
       );
-      expect(find.text('2 / 2 estrellas'), findsOneWidget);
+      expect(find.text('2 / 2 stars'), findsOneWidget);
       repo.catalogError = null;
-      await tester.tap(find.text('Reintentar'));
+      await tester.tap(find.text('Retry'));
       await historyFrames(tester);
       expect(repo.areaReads, 2);
-      expect(find.text('Área de prueba · Tema de prueba'), findsOneWidget);
+      expect(find.text('Test Area · Test Topic'), findsOneWidget);
     },
   );
   testWidgets('narrow viewport with large text has no overflow', (

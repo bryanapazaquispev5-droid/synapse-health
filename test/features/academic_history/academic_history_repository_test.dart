@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synapse_health/core/auth/app_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/api/aws_api_client.dart';
 import 'package:synapse_health/features/academic_history/api/academic_history_repository.dart';
@@ -41,22 +41,19 @@ void main() {
         }),
       );
 
-  test(
-    'Firestore remains the live source when AWS is not configured',
-    () async {
-      final repo = repository();
-      final result = repo.watchHistory('alice').first;
-      await Future<void>.delayed(Duration.zero);
-      progress.sources['alice']!.add({'t': recordedProgress()});
-      expect((await result).single.quizId, entry['quizId']);
-      expect(repo.usesAws, isFalse);
-      expect(progress.reads, 1);
-    },
-  );
+  test('missing AWS endpoint fails without a legacy fallback', () async {
+    final repo = repository();
+    await expectLater(
+      repo.watchHistory('alice').first,
+      throwsA(isA<AwsApiException>()),
+    );
+    expect(repo.usesAwsApi, isTrue);
+    expect(progress.reads, 0);
+  });
   test('foreign UID blocked before opening the source', () async {
     await expectLater(
       repository().watchHistory('bob').first,
-      throwsA(isA<FirebaseAuthException>()),
+      throwsA(isA<AppAuthException>()),
     );
     expect(progress.reads, 0);
   });
@@ -64,11 +61,11 @@ void main() {
     progress.user = null;
     await expectLater(
       repository().watchHistory('alice').first,
-      throwsA(isA<FirebaseAuthException>()),
+      throwsA(isA<AppAuthException>()),
     );
     expect(progress.reads, 0);
   });
-  test('AWS pages load incrementally only after the More action', () async {
+  test('AWS API pages load incrementally only after the More action', () async {
     var calls = 0;
     final repo = repository(
       transport: (uri, headers, method, body) async {
@@ -95,7 +92,7 @@ void main() {
     await events.cancel();
   });
   test(
-    'AWS403 invalidates content and never falls back to Firestore',
+    'AWS API 403 invalidates content and never falls back to Firestore',
     () async {
       final repo = repository(
         transport: (_, _, _, _) async => const ApiResponse(403, '{}'),
@@ -103,10 +100,10 @@ void main() {
       await expectLater(
         repo.watchHistory('alice').first,
         throwsA(
-          isA<FirebaseException>().having(
-            (e) => e.code,
-            'code',
-            'permission-denied',
+          isA<AwsApiException>().having(
+            (e) => e.failure,
+            'failure',
+            ApiFailure.forbidden,
           ),
         ),
       );
@@ -120,10 +117,10 @@ void main() {
     await expectLater(
       repo.watchHistory('alice').first,
       throwsA(
-        isA<FirebaseException>().having(
-          (e) => e.code,
-          'code',
-          'network-request-failed',
+        isA<AwsApiException>().having(
+          (e) => e.failure,
+          'failure',
+          ApiFailure.offline,
         ),
       ),
     );
@@ -134,7 +131,7 @@ void main() {
       final pending = Completer<ApiResponse>();
       final repo = repository(transport: (_, _, _, _) => pending.future);
       final result = repo.watchHistory('alice').first;
-      final assertion = expectLater(result, throwsA(isA<FirebaseException>()));
+      final assertion = expectLater(result, throwsA(isA<AwsApiException>()));
       await Future<void>.delayed(Duration.zero);
       progress.changeUser('bob');
       pending.complete(page([entry]));
@@ -150,7 +147,7 @@ void main() {
       final events = StreamIterator(repo.watchHistory('alice'));
       expect(await events.moveNext(), isTrue);
       await repo.loadMore('alice');
-      await expectLater(events.moveNext(), throwsA(isA<FirebaseException>()));
+      await expectLater(events.moveNext(), throwsA(isA<AwsApiException>()));
       await events.cancel();
     },
   );
@@ -161,7 +158,7 @@ void main() {
     );
     await expectLater(
       repo.watchHistory('alice').first,
-      throwsA(isA<FirebaseException>()),
+      throwsA(isA<AwsApiException>()),
     );
   });
   test('detail calls owner-scoped AWS endpoint', () async {

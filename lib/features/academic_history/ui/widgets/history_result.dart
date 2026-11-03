@@ -33,19 +33,19 @@ class HistoryResult extends StatelessWidget {
               style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
             ),
             const SizedBox(height: 20),
-            _field('Resultado', entry.isCorrect ? 'Correcta' : 'Incorrecta'),
+            _field('Result', entry.isCorrect ? 'Correct' : 'Incorrect'),
             _field(
-              'Estrellas obtenidas',
+              'Stars earned',
               '${entry.earnedStars} / ${entry.maxStars}',
             ),
-            if (entry.score != null) _field('Puntuación', '${entry.score}'),
-            if (entry.status != null) _field('Estado', 'Registrado'),
-            _field('Intento', '${entry.attemptNumber}'),
-            _field('Fecha', historyDate(entry.answeredAt)),
+            if (entry.score != null) _field('Score', '${entry.score}'),
+            if (entry.status != null) _field('Status', 'Recorded'),
+            _field('Attempt', '${entry.attemptNumber}'),
+            _field('Date', historyDate(entry.answeredAt)),
             _field(
-              'Tiempo',
+              'Time',
               entry.durationSeconds == null
-                  ? 'No registrado'
+                  ? 'Not recorded'
                   : '${entry.durationSeconds} s',
             ),
           ],
@@ -54,7 +54,7 @@ class HistoryResult extends StatelessWidget {
       if (entry.status != 'submitted') ...[
         const SizedBox(height: 14),
         const Text(
-          'Se conservan el intento actual y hasta tres anteriores.',
+          'The current attempt and up to three previous attempts are retained.',
           style: TextStyle(fontSize: 13, color: AppColors.textMuted),
         ),
       ],

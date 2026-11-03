@@ -1,4 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/auth/app_auth.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +27,7 @@ class AcademicHistoryScreen extends StatefulWidget {
 
 class _AcademicHistoryScreenState extends State<AcademicHistoryScreen> {
   late final AcademicHistoryRepository _repository;
-  late final Stream<User?> _session;
+  late final Stream<AppUser?> _session;
   @override
   void initState() {
     super.initState();
@@ -39,24 +40,24 @@ class _AcademicHistoryScreenState extends State<AcademicHistoryScreen> {
     backgroundColor: AppColors.background,
     appBar: CupertinoNavigationBar(
       backgroundColor: AppColors.background,
-      middle: Text(widget.entryId == null ? 'Mi historial' : 'Resultado'),
-      previousPageTitle: widget.entryId == null ? 'Progreso' : 'Historial',
+      middle: Text(widget.entryId == null ? 'My History' : 'Result'),
+      previousPageTitle: widget.entryId == null ? 'Progress' : 'History',
     ),
     body: SafeArea(
-      child: StreamBuilder<User?>(
+      child: StreamBuilder<AppUser?>(
         stream: _session,
         initialData: _repository.currentUser,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const AppErrorState(
-              message: 'No se pudo verificar tu sesión.',
+              message: 'Could not verify your session.',
             );
           }
           final user = snapshot.data;
           if (user == null ||
               (widget.expectedUid != null && user.uid != widget.expectedUid)) {
             return const AppErrorState(
-              message: 'Inicia sesión para acceder a este historial.',
+              message: 'Sign in to access this history.',
             );
           }
           return HistoryBody(

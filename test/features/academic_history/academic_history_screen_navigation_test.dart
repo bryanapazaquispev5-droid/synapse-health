@@ -27,17 +27,17 @@ void main() {
           connectivity: connection,
           historyBuilder: (user) {
             openedUid = user.uid;
-            return const Scaffold(body: Text('Historial conectado'));
+            return const Scaffold(body: Text('Connected History'));
           },
         ),
       ),
     );
-    expect(find.text('Ranking global'), findsOneWidget);
-    await tester.tap(find.text('Mi historial'));
+    expect(find.text('Global leaderboard'), findsOneWidget);
+    await tester.tap(find.text('My History'));
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
     expect(openedUid, 'alice');
-    expect(find.text('Historial conectado'), findsOneWidget);
+    expect(find.text('Connected History'), findsOneWidget);
   });
   testWidgets('stale progress session cannot open former user history', (
     tester,
@@ -61,7 +61,7 @@ void main() {
       ),
     );
     repo.user = FakeIdentity('bob');
-    await tester.tap(find.text('Mi historial'));
+    await tester.tap(find.text('My History'));
     await historyFrames(tester);
     expect(opened, isFalse);
   });
@@ -75,7 +75,7 @@ void main() {
       List.generate(21, (index) => entry(id: 'answer-$index')),
     );
     await historyFrames(tester);
-    final showMore = find.text('Mostrar más');
+    final showMore = find.text('Show more');
     await tester.scrollUntilVisible(showMore, 400);
     await tester.pump();
     await tester.tap(showMore);
@@ -85,7 +85,7 @@ void main() {
     expect(repo.topicReads, 1);
     expect(repo.quizReads, 1);
   });
-  testWidgets('AWS pages load only after available rows have been revealed', (
+  testWidgets('Cloud Run pages load only after available rows have been revealed', (
     tester,
   ) async {
     final repo = HistoryScreenRepository();
@@ -98,7 +98,7 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add(repo.nextEntries.take(21).toList());
     await historyFrames(tester);
-    final more = find.text('Mostrar más');
+    final more = find.text('Show more');
     await tester.scrollUntilVisible(more, 400);
     await tester.tap(more);
     await historyFrames(tester);
@@ -107,11 +107,11 @@ void main() {
     await tester.tap(more);
     await historyFrames(tester);
     expect(repo.pageLoads, 1);
-    expect(find.text('Cargando más…'), findsOneWidget);
-    expect(find.text('Pregunta de prueba'), findsWidgets);
+    expect(find.text('Loading more…'), findsOneWidget);
+    expect(find.text('Test Question'), findsWidgets);
     repo.pageGate!.complete();
     await historyFrames(tester);
-    expect(find.text('Cargando más…'), findsNothing);
+    expect(find.text('Loading more…'), findsNothing);
     expect(more, findsNothing);
   });
   testWidgets('offline preserves already loaded records', (tester) async {
@@ -124,9 +124,9 @@ void main() {
     await historyFrames(tester);
     connection.setOnline(false);
     await historyFrames(tester);
-    expect(find.text('Pregunta de prueba'), findsOneWidget);
+    expect(find.text('Test Question'), findsOneWidget);
     expect(
-      find.text('Sin conexión. Mostrando datos ya cargados.'),
+      find.text('Offline. Showing previously loaded data.'),
       findsOneWidget,
     );
   });
@@ -142,10 +142,10 @@ void main() {
     await historyFrames(tester);
     repo.changeUser('bob');
     await historyFrames(tester);
-    expect(find.text('Pregunta de prueba'), findsNothing);
+    expect(find.text('Test Question'), findsNothing);
     expect(repo.historyReads, ['alice', 'bob']);
     repo.histories['bob']!.add([]);
     await historyFrames(tester);
-    expect(find.text('Aún no hay actividades'), findsOneWidget);
+    expect(find.text('No activities yet'), findsOneWidget);
   });
 }
