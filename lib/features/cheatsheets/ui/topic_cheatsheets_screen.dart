@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: topic_cheatsheets_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las fichas y resumenes medicos [topic_cheatsheets_screen].
+// File: topic_cheatsheets_screen.dart
+// Purpose: Screen for browsing study notes and medical summaries [topic_cheatsheets_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -14,7 +14,7 @@ import '../model/medical_area_model.dart';
 import '../model/topic_model.dart';
 import 'widgets/cheatsheet_item_card.dart';
 
-// Pantalla de interfaz de usuario [TopicCheatsheetsScreen]
+// User interface screen [TopicCheatsheetsScreen]
 class TopicCheatsheetsScreen extends StatefulWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -29,13 +29,13 @@ class TopicCheatsheetsScreen extends StatefulWidget {
   State<TopicCheatsheetsScreen> createState() => _TopicCheatsheetsScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [TopicCheatsheetsScreen]
+// Reactive state and lifecycle management for [TopicCheatsheetsScreen]
 class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
   late final Stream<List<CheatsheetModel>> _cheatsheetsStream;
 
-  // Inicializacion de dependencias y estado local del componente
-  // Bloque: Inicialización de controladores, listeners y estado local
+  // Initialize the component dependencies and local state
+  // Block: Initialize controllers, listeners, and local state
   @override
   void initState() {
     super.initState();
@@ -45,8 +45,8 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
     );
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,11 +125,11 @@ class _TopicCheatsheetsScreenState extends State<TopicCheatsheetsScreen> {
                       snapshot: snapshot,
                       isEmpty: cheatsheets.isEmpty,
                       onRetry: retry,
-                      emptyTitle: 'Sin fichas aún',
+                      emptyTitle: 'No study notes yet',
                       emptyMessage:
-                          'Todavía no hay fichas disponibles para este tema.',
+                          'There are no study notes available for this topic yet.',
                       emptyIcon: CupertinoIcons.doc_text,
-                      errorMessage: 'No se pudieron cargar las fichas. Inténtalo de nuevo.',
+                      errorMessage: 'Could not load study notes. Please try again.',
                     );
                   }
                   return Column(

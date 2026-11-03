@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: cheatsheet_list_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las fichas y resumenes medicos [cheatsheet_list_screen].
+// File: cheatsheet_list_screen.dart
+// Purpose: Screen for browsing study notes and medical summaries [cheatsheet_list_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -12,7 +12,7 @@ import '../api/medical_areas_service.dart';
 import '../model/medical_area_model.dart';
 import 'widgets/medical_area_card.dart';
 
-// Pantalla de interfaz de usuario [CheatsheetListScreen]
+// User interface screen [CheatsheetListScreen]
 class CheatsheetListScreen extends StatefulWidget {
   const CheatsheetListScreen({super.key});
 
@@ -20,7 +20,7 @@ class CheatsheetListScreen extends StatefulWidget {
   State<CheatsheetListScreen> createState() => _CheatsheetListScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [CheatsheetListScreen]
+// Reactive state and lifecycle management for [CheatsheetListScreen]
 class _CheatsheetListScreenState extends State<CheatsheetListScreen>
     with AutomaticKeepAliveClientMixin {
   final MedicalAreasService _service = MedicalAreasService();
@@ -31,21 +31,21 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen>
   @override
   bool get wantKeepAlive => true;
 
-  // Inicializacion de dependencias y estado local del componente
+  // Initialize the component dependencies and local state
   @override
   void initState() {
     super.initState();
     _areasStream = _service.getAreasStream();
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
+  // Release controllers and resources to prevent memory leaks
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Reactive rendering of the widget tree
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -81,7 +81,7 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen>
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         const Text(
-                          'Fichas',
+                          'Study Notes',
                           style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w800,
@@ -104,8 +104,8 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen>
                           ),
                           child: Text(
                             snapshot.hasData && !snapshot.isAccessFailure
-                                ? '${allAreas.length} Áreas'
-                                : 'Áreas',
+                                ? '${allAreas.length} Areas'
+                                : 'Areas',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -125,7 +125,7 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen>
                     ),
                     child: CupertinoSearchTextField(
                       controller: _searchController,
-                      placeholder: 'Buscar especialidad o código...',
+                      placeholder: 'Search specialties or codes...',
                       placeholderStyle: const TextStyle(
                         fontSize: 15,
                         color: AppColors.textMuted,
@@ -166,21 +166,21 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen>
                       snapshot: snapshot,
                       isEmpty: allAreas.isEmpty,
                       onRetry: retry,
-                      emptyTitle: 'No hay áreas médicas disponibles',
+                      emptyTitle: 'No medical areas available',
                       emptyMessage:
-                          'Todavía no hay especialidades para consultar.',
-                      errorMessage: 'No se pudieron cargar las especialidades. Inténtalo de nuevo.',
+                          'There are no specialties to browse yet.',
+                      errorMessage: 'Could not load specialties. Please try again.',
                     ),
                   )
                 else if (filtered.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: AppEmptyState(
-                      title: 'No se encontró "$_searchQuery"',
+                      title: 'No results found for "$_searchQuery"',
                       message:
-                          'Comprueba la ortografía o prueba con otro término.',
+                          'Check the spelling or try another term.',
                       icon: CupertinoIcons.search,
-                      actionLabel: 'Limpiar búsqueda',
+                      actionLabel: 'Clear search',
                       onAction: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');

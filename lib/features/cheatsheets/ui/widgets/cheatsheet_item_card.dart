@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: cheatsheet_item_card.dart
-// Propósito: Componente visual atómico [cheatsheet_item_card] para la visualizacion estructurada de contenido medico y resumenes.
+// File: cheatsheet_item_card.dart
+// Purpose: Atomic visual component [cheatsheet_item_card] for structured medical content and summaries.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +9,7 @@ import '../../model/cheatsheet_model.dart';
 import '../../model/medical_area_model.dart';
 import '../cheatsheet_detail_screen.dart';
 
-// Componente visual modular [CheatsheetItemCard]
+// Modular visual component [CheatsheetItemCard]
 class CheatsheetItemCard extends StatelessWidget {
   final CheatsheetModel cheatsheet;
   final MedicalAreaModel area;
@@ -22,13 +22,13 @@ class CheatsheetItemCard extends StatelessWidget {
     required this.index,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Bloque: Navegación y transición fluida hacia la siguiente pantalla
+        // Block: Navigate smoothly to the next screen
         Navigator.push(
           context,
           AppPageRoute(
@@ -63,7 +63,7 @@ class CheatsheetItemCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    'FICHA #$index',
+                    'STUDY NOTE #$index',
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -111,7 +111,7 @@ class CheatsheetItemCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
-            if (cheatsheet.sourceBook.isNotEmpty) ...[
+            if (_hasSource) ...[
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -143,7 +143,7 @@ class CheatsheetItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      '${cheatsheet.keyPoints.length} Puntos clave',
+                      '${cheatsheet.keyPoints.length} Key points',
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
                     ),
                   ),
@@ -157,7 +157,7 @@ class CheatsheetItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(
-                      'Mnemotecnia',
+                      'Mnemonic',
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.systemOrange),
                     ),
                   ),
@@ -171,4 +171,8 @@ class CheatsheetItemCard extends StatelessWidget {
       ),
     );
   }
+
+  bool get _hasSource =>
+      cheatsheet.sourceBook.trim().isNotEmpty &&
+      cheatsheet.sourceBook.trim().toLowerCase() != 'none';
 }

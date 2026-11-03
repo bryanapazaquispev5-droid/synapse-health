@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: topic_list_card.dart
-// Propósito: Componente visual atómico [topic_list_card] para la visualizacion estructurada de contenido medico y resumenes.
+// File: topic_list_card.dart
+// Purpose: Atomic visual component [topic_list_card] for structured medical content and summaries.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +9,7 @@ import '../../model/medical_area_model.dart';
 import '../../model/topic_model.dart';
 import '../topic_cheatsheets_screen.dart';
 
-// Componente visual modular [TopicListCard]
+// Modular visual component [TopicListCard]
 class TopicListCard extends StatelessWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -22,13 +22,13 @@ class TopicListCard extends StatelessWidget {
     required this.number,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Bloque: Navegación y transición fluida hacia la siguiente pantalla
+        // Block: Navigate smoothly to the next screen
         Navigator.push(
           context,
           AppPageRoute(

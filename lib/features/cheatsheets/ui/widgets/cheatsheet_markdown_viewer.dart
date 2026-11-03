@@ -1,19 +1,19 @@
 // ============================================================================
-// Archivo: cheatsheet_markdown_viewer.dart
-// Propósito: Componente visual atómico [cheatsheet_markdown_viewer] para la visualizacion estructurada de contenido medico y resumenes.
+// File: cheatsheet_markdown_viewer.dart
+// Purpose: Atomic visual component [cheatsheet_markdown_viewer] for structured medical content and summaries.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Pantalla de interfaz de usuario [CheatsheetMarkdownViewer]
+// User interface screen [CheatsheetMarkdownViewer]
 class CheatsheetMarkdownViewer extends StatelessWidget {
   final String markdownContent;
 
   const CheatsheetMarkdownViewer({super.key, required this.markdownContent});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final sections = markdownContent.split('\n');

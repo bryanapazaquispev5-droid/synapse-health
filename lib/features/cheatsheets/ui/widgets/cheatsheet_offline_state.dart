@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: cheatsheet_offline_state.dart
-// Propósito: Componente visual atómico [cheatsheet_offline_state] para la visualizacion estructurada de contenido medico y resumenes.
+// File: cheatsheet_offline_state.dart
+// Purpose: Atomic visual component [cheatsheet_offline_state] for structured medical content and summaries.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -10,7 +10,7 @@ import '../../../../core/widgets/states/app_states.dart';
 class CheatsheetOfflineState extends StatelessWidget {
   const CheatsheetOfflineState({
     super.key,
-    this.message = 'Comprueba tu conexión a Internet para cargar las fichas.',
+    this.message = 'Check your internet connection to load study notes.',
     this.onRetry,
   });
 

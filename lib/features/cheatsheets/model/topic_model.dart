@@ -1,9 +1,9 @@
 // ============================================================================
-// Archivo: topic_model.dart
-// Propósito: Modelo de datos que representa la estructura inmutable de fichas y areas clinicas [topic_model].
+// File: topic_model.dart
+// Purpose: Data model for the immutable structure of study notes and clinical areas [topic_model].
 // ============================================================================
 
-// Entidad inmutable que representa los datos de [TopicModel]
+// Immutable entity representing the data for [TopicModel]
 class TopicModel {
   final String id;
   final String areaId;

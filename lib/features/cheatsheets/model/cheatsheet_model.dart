@@ -1,9 +1,9 @@
 // ============================================================================
-// Archivo: cheatsheet_model.dart
-// Propósito: Modelo de datos que representa la estructura inmutable de fichas y areas clinicas [cheatsheet_model].
+// File: cheatsheet_model.dart
+// Purpose: Data model for the immutable structure of study notes and clinical areas [cheatsheet_model].
 // ============================================================================
 
-// Entidad inmutable que representa los datos de [CheatsheetModel]
+// Immutable entity representing the data for [CheatsheetModel]
 class CheatsheetModel {
   final String id;
   final String areaId;

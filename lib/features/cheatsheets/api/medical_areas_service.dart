@@ -1,73 +1,44 @@
-// ============================================================================
-// Archivo: medical_areas_service.dart
-// Propósito: Servicio de consulta a Firestore para obtener areas medicas, temas y fichas clinicas en tiempo real.
-// ============================================================================
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../core/api/aws_data_source.dart';
 import '../model/medical_area_model.dart';
 import '../model/topic_model.dart';
 import '../model/cheatsheet_model.dart';
 
-/// Servicio de Dominio / Datos para Áreas Médicas, Temas y Fichas.
-/// CERO persistencia local y CERO datos quemados en código:
-/// Todo se obtiene estrictamente en tiempo real desde Firestore.
+/// AWS catalogue data remains in memory for the lifetime of its subscriptions.
 class MedicalAreasService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  MedicalAreasService({AwsDataSource? source})
+    : source = source ?? AwsDataSource.instance;
+  final AwsDataSource source;
 
-  static const String areasCollection = AppConstants.firestoreMedicalAreas;
-
-  /// Stream reactivo en tiempo real de áreas médicas desde Firestore
-  Stream<List<MedicalAreaModel>> getAreasStream() {
-    return _firestore
-        .collection(areasCollection)
-        .snapshots()
-        .map((snapshot) {
-      final areas = snapshot.docs
-          .map((doc) => MedicalAreaModel.fromMap(doc.data(), doc.id))
-          .toList();
-
-      areas.sort((a, b) {
-        if (a.order != b.order) {
-          return a.order.compareTo(b.order);
-        }
-        return a.name.compareTo(b.name);
+  Stream<List<MedicalAreaModel>> getAreasStream() =>
+      source.watch('api/v1/areas').map((data) {
+        final areas = AwsDataSource.items(data)
+            .map((item) => MedicalAreaModel.fromMap(item, item['id'] as String))
+            .toList();
+        areas.sort(
+          (a, b) => a.order != b.order
+              ? a.order.compareTo(b.order)
+              : a.name.compareTo(b.name),
+        );
+        return areas;
       });
 
-      return areas;
-    });
-  }
+  Stream<List<TopicModel>> getTopicsStream(String areaId) =>
+      source.watch('api/v1/areas/$areaId/topics').map((data) {
+        final topics = AwsDataSource.items(data)
+            .map((item) => TopicModel.fromMap(item, item['id'] as String))
+            .toList();
+        topics.sort((a, b) => a.order.compareTo(b.order));
+        return topics;
+      });
 
-  /// Stream en tiempo real de subtemas para un área médica específica
-  Stream<List<TopicModel>> getTopicsStream(String areaId) {
-    return _firestore
-        .collection(areasCollection)
-        .doc(areaId)
-        .collection(AppConstants.firestoreTopics)
-        .snapshots()
-        .map((snapshot) {
-      final topics = snapshot.docs
-          .map((doc) => TopicModel.fromMap(doc.data(), doc.id))
-          .toList();
-
-      topics.sort((a, b) => a.order.compareTo(b.order));
-      return topics;
-    });
-  }
-
-  /// Stream en tiempo real de fichas clínicas para un tema específico
-  Stream<List<CheatsheetModel>> getTopicCheatsheetsStream(String areaId, String topicId) {
-    return _firestore
-        .collection(areasCollection)
-        .doc(areaId)
-        .collection(AppConstants.firestoreTopics)
-        .doc(topicId)
-        .collection(AppConstants.firestoreCheatsheets)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => CheatsheetModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
-  }
+  Stream<List<CheatsheetModel>> getTopicCheatsheetsStream(
+    String areaId,
+    String topicId,
+  ) => source
+      .watch('api/v1/areas/$areaId/topics/$topicId/study-notes')
+      .map(
+        (data) => AwsDataSource.items(data)
+            .map((item) => CheatsheetModel.fromMap(item, item['id'] as String))
+            .toList(),
+      );
 }

@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: cheatsheet_detail_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las fichas y resumenes medicos [cheatsheet_detail_screen].
+// File: cheatsheet_detail_screen.dart
+// Purpose: Screen for browsing study notes and medical summaries [cheatsheet_detail_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -12,7 +12,7 @@ import 'widgets/cheatsheet_key_points_card.dart';
 import 'widgets/cheatsheet_markdown_viewer.dart';
 import 'widgets/cheatsheet_mnemonics_card.dart';
 
-// Pantalla de interfaz de usuario [CheatsheetDetailScreen]
+// User interface screen [CheatsheetDetailScreen]
 class CheatsheetDetailScreen extends StatelessWidget {
   final CheatsheetModel cheatsheet;
   final MedicalAreaModel area;
@@ -23,8 +23,8 @@ class CheatsheetDetailScreen extends StatelessWidget {
     required this.area,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +46,7 @@ class CheatsheetDetailScreen extends StatelessWidget {
                         Icon(CupertinoIcons.chevron_back, size: 24, color: AppColors.accent),
                         SizedBox(width: 2),
                         Text(
-                          'Atrás',
+                          'Back',
                           style: TextStyle(
                             fontSize: 17,
                             color: AppColors.accent,
@@ -109,7 +109,7 @@ class CheatsheetDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                   ],
-                  if (cheatsheet.sourceBook.isNotEmpty) ...[
+                  if (_hasSource) ...[
                     Container(
                       margin: const EdgeInsets.only(bottom: 18),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -124,7 +124,7 @@ class CheatsheetDetailScreen extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Fuente oficial: ${cheatsheet.sourceBook}',
+                              'Source: ${cheatsheet.sourceBook}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -148,4 +148,8 @@ class CheatsheetDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  bool get _hasSource =>
+      cheatsheet.sourceBook.trim().isNotEmpty &&
+      cheatsheet.sourceBook.trim().toLowerCase() != 'none';
 }

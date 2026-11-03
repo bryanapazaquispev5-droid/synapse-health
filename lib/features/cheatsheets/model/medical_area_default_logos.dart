@@ -1,9 +1,9 @@
 // ============================================================================
-// Archivo: medical_area_default_logos.dart
-// Propósito: Modelo de datos que representa la estructura inmutable de fichas y areas clinicas [medical_area_default_logos].
+// File: medical_area_default_logos.dart
+// Purpose: Data model for the immutable structure of study notes and clinical areas [medical_area_default_logos].
 // ============================================================================
 
-// Los logos y contenido médico se obtienen 100% de Firestore en tiempo real (Cero persistencia local).
+// AWS medical-area entries currently provide no remote logo URL.
 class MedicalAreaDefaultLogos {
   static String? getLogo(String areaId) => null;
 }

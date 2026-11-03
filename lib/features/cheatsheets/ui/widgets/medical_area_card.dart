@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: medical_area_card.dart
-// Propósito: Componente visual atómico [medical_area_card] para la visualizacion estructurada de contenido medico y resumenes.
+// File: medical_area_card.dart
+// Purpose: Atomic visual component [medical_area_card] for structured medical content and summaries.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -8,20 +8,20 @@ import '../../../../core/theme/app_theme.dart';
 import '../../model/medical_area_model.dart';
 import '../area_topics_screen.dart';
 
-// Componente visual modular [MedicalAreaCard]
+// Modular visual component [MedicalAreaCard]
 class MedicalAreaCard extends StatelessWidget {
   final MedicalAreaModel area;
 
   const MedicalAreaCard({super.key, required this.area});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       key: ValueKey(area.id),
       onTap: () {
-        // Bloque: Navegación y transición fluida hacia la siguiente pantalla
+        // Block: Navigate smoothly to the next screen
         Navigator.push(
           context,
           AppPageRoute(
@@ -99,8 +99,8 @@ class MedicalAreaCard extends StatelessWidget {
                   children: [
                     Text(
                       area.topicsCount > 0
-                          ? '${area.topicsCount} ${area.topicsCount == 1 ? "tema" : "temas"}'
-                          : 'Disponible',
+                          ? '${area.topicsCount} ${area.topicsCount == 1 ? "topic" : "topics"}'
+                          : 'Available',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

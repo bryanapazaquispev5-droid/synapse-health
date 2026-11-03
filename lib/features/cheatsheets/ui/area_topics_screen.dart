@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: area_topics_screen.dart
-// Propósito: Pantalla de visualizacion y exploracion para las fichas y resumenes medicos [area_topics_screen].
+// File: area_topics_screen.dart
+// Purpose: Screen for browsing study notes and medical summaries [area_topics_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -13,7 +13,7 @@ import '../model/medical_area_model.dart';
 import '../model/topic_model.dart';
 import 'widgets/topic_list_card.dart';
 
-// Pantalla de interfaz de usuario [AreaTopicsScreen]
+// User interface screen [AreaTopicsScreen]
 class AreaTopicsScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -23,21 +23,21 @@ class AreaTopicsScreen extends StatefulWidget {
   State<AreaTopicsScreen> createState() => _AreaTopicsScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [AreaTopicsScreen]
+// Reactive state and lifecycle management for [AreaTopicsScreen]
 class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
   final MedicalAreasService _medicalService = MedicalAreasService();
   late final Stream<List<TopicModel>> _topicsStream;
 
-  // Inicializacion de dependencias y estado local del componente
-  // Bloque: Inicialización de controladores, listeners y estado local
+  // Initialize the component dependencies and local state
+  // Block: Initialize controllers, listeners, and local state
   @override
   void initState() {
     super.initState();
     _topicsStream = _medicalService.getTopicsStream(widget.area.id);
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,7 +71,7 @@ class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
                         ),
                         SizedBox(width: 2),
                         Text(
-                          'Atrás',
+                          'Back',
                           style: TextStyle(
                             fontSize: 17,
                             color: AppColors.accent,
@@ -127,10 +127,10 @@ class _AreaTopicsScreenState extends State<AreaTopicsScreen> {
                       snapshot: snapshot,
                       isEmpty: topics.isEmpty,
                       onRetry: retry,
-                      emptyTitle: 'Sin temas registrados aún',
-                      emptyMessage: 'Todavía no hay temas clínicos para esta especialidad.',
+                      emptyTitle: 'No topics yet',
+                      emptyMessage: 'There are no clinical topics for this specialty yet.',
                       emptyIcon: CupertinoIcons.layers_alt,
-                      errorMessage: 'No se pudieron cargar los temas. Inténtalo de nuevo.',
+                      errorMessage: 'Could not load topics. Please try again.',
                     );
                   }
                   return Column(

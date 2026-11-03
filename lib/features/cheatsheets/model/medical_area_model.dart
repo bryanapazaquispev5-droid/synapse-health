@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: medical_area_model.dart
-// Propósito: Modelo de datos que representa la estructura inmutable de fichas y areas clinicas [medical_area_model].
+// File: medical_area_model.dart
+// Purpose: Data model for the immutable structure of study notes and clinical areas [medical_area_model].
 // ============================================================================
 
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
-// Entidad inmutable que representa los datos de [MedicalAreaModel]
+// Immutable entity representing the data for [MedicalAreaModel]
 class MedicalAreaModel {
   final String id;
   final String name;
@@ -44,7 +44,7 @@ class MedicalAreaModel {
     if (_bytesCache.containsKey(clean)) {
       return _bytesCache[clean];
     }
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Block: Safely execute an asynchronous operation
     try {
       String raw = clean;
       if (raw.contains(',')) {

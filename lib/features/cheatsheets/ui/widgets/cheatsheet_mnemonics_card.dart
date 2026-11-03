@@ -1,19 +1,19 @@
 // ============================================================================
-// Archivo: cheatsheet_mnemonics_card.dart
-// Propósito: Componente visual atómico [cheatsheet_mnemonics_card] para la visualizacion estructurada de contenido medico y resumenes.
+// File: cheatsheet_mnemonics_card.dart
+// Purpose: Atomic visual component [cheatsheet_mnemonics_card] for structured medical content and summaries.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [CheatsheetMnemonicsCard]
+// Modular visual component [CheatsheetMnemonicsCard]
 class CheatsheetMnemonicsCard extends StatelessWidget {
   final List<String> mnemonics;
 
   const CheatsheetMnemonicsCard({super.key, required this.mnemonics});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     if (mnemonics.isEmpty) return const SizedBox.shrink();
@@ -41,7 +41,7 @@ class CheatsheetMnemonicsCard extends StatelessWidget {
               Icon(CupertinoIcons.lightbulb_fill, size: 16, color: AppColors.systemOrange),
               SizedBox(width: 8),
               Text(
-                'REGLA MNEMOTÉCNICA',
+                'MNEMONIC RULE',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
