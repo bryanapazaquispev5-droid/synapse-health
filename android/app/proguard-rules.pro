@@ -9,11 +9,6 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.** { *; }
 
-# Firebase Core & Auth & Firestore
--dontwarn com.google.firebase.**
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
-
 # Flutter Secure Storage
 -keep class com.it_nomads.fluttersecurestorage.** { *; }
 
