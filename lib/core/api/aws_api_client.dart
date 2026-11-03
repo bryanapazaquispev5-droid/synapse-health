@@ -2,26 +2,30 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import '../auth/app_auth.dart';
 
 import 'aws_api_contract.dart';
 import 'aws_http_transport.dart';
 
 export 'aws_api_contract.dart';
 
-/// Disabled until an HTTPS deployment URL is explicitly configured.
-/// Authentication failures never trigger a direct Firestore fallback.
+/// Sends authenticated app requests to the AWS HTTPS API.
+/// Authentication failures never trigger a legacy data-store fallback.
 class AwsApiClient {
   AwsApiClient({
-    String baseUrl = const String.fromEnvironment('SYNAPSE_API_BASE_URL'),
+    // Permite cambiar la URL al compilar con --dart-define-from-file=.env.
+    String baseUrl = const String.fromEnvironment(
+      'SYNAPSE_API_BASE_URL',
+      defaultValue: 'https://3ltqcw0kr3.execute-api.us-east-2.amazonaws.com',
+    ),
     ApiTokenSupplier? tokenSupplier,
     ApiTransport? transport,
     String? Function()? sessionUidSupplier,
     this.timeout = const Duration(seconds: 15),
   }) : _baseUrl = _validateBaseUrl(baseUrl),
-       _tokenSupplier = tokenSupplier ?? _firebaseToken,
+       _tokenSupplier = tokenSupplier ?? _sessionToken,
        _transport = transport ?? apiHttpTransport,
-       _sessionUidSupplier = sessionUidSupplier ?? _firebaseUid;
+       _sessionUidSupplier = sessionUidSupplier ?? _sessionUid;
 
   final Uri? _baseUrl;
   final ApiTokenSupplier _tokenSupplier;
@@ -71,10 +75,11 @@ class AwsApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? extraHeaders,
   }) {
-    if (!{'GET', 'POST', 'PATCH', 'DELETE'}.contains(method) ||
-        !RegExp(r'^api/v1/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*$')
+    if (!{'GET', 'POST', 'PUT', 'PATCH', 'DELETE'}.contains(method) ||
+        !RegExp(r'^(?:api/)?v1/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*$')
             .hasMatch(path) ||
-        (body != null && !{'POST', 'PATCH'}.contains(method))) {
+        (body != null &&
+            !{'POST', 'PUT', 'PATCH', 'DELETE'}.contains(method))) {
       throw ArgumentError('Invalid REST request.');
     }
     if (extraHeaders != null &&
@@ -147,7 +152,7 @@ class AwsApiClient {
       return decoded['data'] as Map<String, dynamic>;
     } on AwsApiException {
       rethrow;
-    } on FirebaseAuthException {
+    } on AppAuthException {
       throw const AwsApiException(ApiFailure.unauthenticated);
     } on TimeoutException {
       throw const AwsApiException(ApiFailure.timeout);
@@ -191,10 +196,10 @@ class AwsApiClient {
     ).timeout(timeout);
   }
 
-  static String? _firebaseUid() => FirebaseAuth.instance.currentUser?.uid;
+  static String? _sessionUid() => AppAuth.instance.currentUser?.uid;
 
-  static Future<String?> _firebaseToken(bool forceRefresh) async {
-    return FirebaseAuth.instance.currentUser?.getIdToken(forceRefresh);
+  static Future<String?> _sessionToken(bool forceRefresh) async {
+    return AppAuth.instance.currentUser?.getIdToken(forceRefresh);
   }
 
   static Uri? _validateBaseUrl(String value) {
