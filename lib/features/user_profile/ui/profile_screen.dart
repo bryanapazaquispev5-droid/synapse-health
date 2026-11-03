@@ -1,13 +1,11 @@
-// ============================================================================
-// Archivo: profile_screen.dart - Pantalla principal de perfil y configuraciones.
-// ============================================================================
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/auth/app_auth.dart';
 import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ios_top_banner.dart';
 import '../api/profile_api_service.dart';
+import 'profile_email_verification.dart';
 import 'widgets/profile_career_sheet.dart';
 import 'widgets/profile_edit_name_dialog.dart';
 import 'widgets/profile_gender_sheet.dart';
@@ -19,10 +17,9 @@ import 'widgets/profile_sign_out_dialog.dart';
 import 'widgets/profile_streak_badge.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final User user;
+  final AppUser user;
 
   const ProfileScreen({super.key, required this.user});
-
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -30,10 +27,14 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileApiService _profileApi = ProfileApiService();
   LocalUserProfile? _localProfile;
-
+  bool _emailVerified = false;
+  bool _isVerificationRequestActive = false;
   @override
   void initState() {
     super.initState();
+    ProfileEmailVerification.fetchStatus().then((verified) {
+      if (mounted) setState(() => _emailVerified = verified);
+    });
     _loadLocalProfile();
   }
 
@@ -49,28 +50,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showFeedback(String message, {bool isError = false}) {
     if (!mounted) return;
-    if (isError) {
-      IosTopBanner.error(context, message);
-    } else {
-      IosTopBanner.success(context, message);
-    }
+    (isError ? IosTopBanner.error : IosTopBanner.success)(context, message);
   }
 
-  // Bloque: Manejo del diálogo de confirmación y cierre de sesión seguro
-  Future<void> _handleSignOut() async {
-    final bool? confirm = await ProfileSignOutDialog.show(context);
-    if (confirm != true) return;
+  Future<void> _verifyEmail() => ProfileEmailVerification.verifyFromProfile(
+    context: context,
+    user: widget.user,
+    onRequestStateChanged: (isActive) {
+      if (mounted) setState(() => _isVerificationRequestActive = isActive);
+    },
+    onVerified: () {
+      if (!mounted) return;
+      setState(() => _emailVerified = true);
+      _showFeedback('Email verified.');
+    },
+    onError: (error) => _showFeedback(
+      'Could not verify email: ${ProfileEmailVerification.errorMessage(error)}',
+      isError: true,
+    ),
+  );
 
+  Future<void> _handleSignOut() async {
+    if (await ProfileSignOutDialog.show(context) != true) return;
     try {
       await _profileApi.signOut();
-    } catch (e) {
-      _showFeedback('Error al cerrar sesión: $e', isError: true);
+    } catch (error) {
+      _showFeedback('Error signing out: $error', isError: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+    return StreamBuilder<ProfileRecord>(
       stream: _profileApi.getUserProfileStream(widget.user.uid),
       builder: (context, snapshot) {
         final data = snapshot.data?.data();
@@ -81,36 +92,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final String g = data['gender'] ?? '';
           if (n.isNotEmpty || c.isNotEmpty || g.isNotEmpty) {
             UserLocalProfileService().saveProfile(
-              uid: widget.user.uid, name: n, email: e, career: c, gender: g, photoUrl: widget.user.photoURL,
+              uid: widget.user.uid,
+              name: n,
+              email: e,
+              career: c,
+              gender: g,
+              photoUrl: widget.user.photoURL,
             );
           }
         }
 
-        final String name = data?['name'] ?? _localProfile?.name ?? widget.user.displayName ?? 'Estudiante de Salud';
-        final String email = data?['email'] ?? _localProfile?.email ?? widget.user.email ?? 'invitado@synapse.app';
-        final String career = data?['career'] ?? _localProfile?.career ?? 'Medicina Humana';
-        final String gender = data?['gender'] ?? _localProfile?.gender ?? 'Hombre';
-        final int streakDays = data?['studyStreakDays'] ?? 0;
-        final bool isGoogle = widget.user.providerData.any((p) => p.providerId == 'google.com');
-        final bool isAnonymous = widget.user.isAnonymous;
-        final bool isEmailVerified = widget.user.emailVerified || isGoogle;
+        final String name =
+            data?['name'] ??
+            _localProfile?.name ??
+            widget.user.displayName ??
+            'Healthcare Student';
+        final String email =
+            data?['email'] ??
+            _localProfile?.email ??
+            widget.user.email ??
+            'invitado@synapse.app';
+        final String career =
+            data?['career'] ?? _localProfile?.career ?? 'Medicine';
+        final String gender =
+            data?['gender'] ?? _localProfile?.gender ?? 'Hombre';
 
         return Scaffold(
           resizeToAvoidBottomInset: false,
           backgroundColor: AppColors.background,
           body: SafeArea(
             child: CustomScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 12),
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 16,
+                      bottom: 12,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Text(
-                          'Perfil',
+                          'Profile',
                           style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w800,
@@ -118,14 +147,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             letterSpacing: -1.0,
                           ),
                         ),
-                        ProfileStreakBadge(streakDays: streakDays),
+                        ProfileStreakBadge(
+                          streakDays: data?['studyStreakDays'] ?? 0,
+                        ),
                       ],
                     ),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     child: ProfileHeaderCard(
                       name: name,
                       email: email,
@@ -137,11 +171,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         currentName: name,
                         onSave: (newName) async {
                           try {
-                            await _profileApi.updateName(user: widget.user, newName: newName, localProfile: _localProfile);
+                            await _profileApi.updateName(
+                              user: widget.user,
+                              newName: newName,
+                              localProfile: _localProfile,
+                            );
                             _loadLocalProfile();
-                            _showFeedback('¡Nombre actualizado!');
+                            _showFeedback('Name updated!');
                           } catch (e) {
-                            _showFeedback('Error al actualizar nombre: $e', isError: true);
+                            _showFeedback(
+                              'Error updating name: $e',
+                              isError: true,
+                            );
                           }
                         },
                       ),
@@ -153,19 +194,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     career: career,
                     gender: gender,
                     uid: widget.user.uid,
-                    isEmailVerified: isEmailVerified,
-                    isAnonymous: isAnonymous,
-                    isGoogle: isGoogle,
+                    isEmailVerified: _emailVerified,
+                    isVerificationPending: _isVerificationRequestActive,
+                    isAnonymous: widget.user.isAnonymous,
                     onEditCareer: () => ProfileCareerSheet.show(
                       context: context,
                       currentCareer: career,
                       onSelectCareer: (newCareer) async {
                         try {
-                          await _profileApi.updateCareer(user: widget.user, newCareer: newCareer, localProfile: _localProfile);
+                          await _profileApi.updateCareer(
+                            user: widget.user,
+                            newCareer: newCareer,
+                            localProfile: _localProfile,
+                          );
                           _loadLocalProfile();
-                          _showFeedback('¡Especialidad actualizada!');
+                          _showFeedback('Specialty updated!');
                         } catch (e) {
-                          _showFeedback('Error al actualizar: $e', isError: true);
+                          _showFeedback('Error updating: $e', isError: true);
                         }
                       },
                     ),
@@ -174,23 +219,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       currentGender: gender,
                       onSelectGender: (newGender) async {
                         try {
-                          await _profileApi.updateGender(user: widget.user, newGender: newGender, localProfile: _localProfile);
+                          await _profileApi.updateGender(
+                            user: widget.user,
+                            newGender: newGender,
+                            localProfile: _localProfile,
+                          );
                           _loadLocalProfile();
-                          _showFeedback('¡Género actualizado!');
+                          _showFeedback('Gender updated!');
                         } catch (e) {
                           _showFeedback('Error: $e', isError: true);
                         }
                       },
                     ),
-                    onResendEmail: () async {
-                      try {
-                        await widget.user.sendEmailVerification();
-                        _showFeedback('Enlace enviado a $email');
-                      } catch (e) {
-                        _showFeedback('Error: $e', isError: true);
-                      }
-                    },
-                    onOpenSettings: () => ProfileSettingsSheet.show(context: context),
+                    onResendEmail: _verifyEmail,
+                    onOpenSettings: () =>
+                        ProfileSettingsSheet.show(context: context),
                     onShowFeedback: (msg) => _showFeedback(msg),
                   ),
                 ),

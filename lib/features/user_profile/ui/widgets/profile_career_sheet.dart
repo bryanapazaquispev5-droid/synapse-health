@@ -1,21 +1,21 @@
 // ============================================================================
-// Archivo: profile_career_sheet.dart
-// Propósito: Componente de interfaz modular [profile_career_sheet] para la visualizacion de datos de usuario y ajustes.
+// File: profile_career_sheet.dart
+// Purpose: Modular interface component [profile_career_sheet] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'opaque_action_sheet.dart';
 
-// Componente visual modular [ProfileCareerSheet]
+// Modular visual component [ProfileCareerSheet]
 class ProfileCareerSheet {
   static const List<Map<String, dynamic>> careers = [
-    {'title': 'Medicina Humana', 'icon': CupertinoIcons.heart_fill, 'color': AppColors.systemRed},
-    {'title': 'Enfermería', 'icon': CupertinoIcons.bandage_fill, 'color': AppColors.systemTeal},
-    {'title': 'Odontología', 'icon': CupertinoIcons.sparkles, 'color': AppColors.systemIndigo},
-    {'title': 'Farmacia y Bioquímica', 'icon': CupertinoIcons.lab_flask_solid, 'color': AppColors.systemGreen},
+    {'title': 'Medicine', 'icon': CupertinoIcons.heart_fill, 'color': AppColors.systemRed},
+    {'title': 'Nursing', 'icon': CupertinoIcons.bandage_fill, 'color': AppColors.systemTeal},
+    {'title': 'Dentistry', 'icon': CupertinoIcons.sparkles, 'color': AppColors.systemIndigo},
+    {'title': 'Pharmacy and Biochemistry', 'icon': CupertinoIcons.lab_flask_solid, 'color': AppColors.systemGreen},
     {'title': 'Obstetricia', 'icon': CupertinoIcons.person_crop_circle_badge_checkmark, 'color': AppColors.systemPink},
-    {'title': 'Nutrición', 'icon': CupertinoIcons.leaf_arrow_circlepath, 'color': AppColors.systemOrange},
+    {'title': 'Nutrition', 'icon': CupertinoIcons.leaf_arrow_circlepath, 'color': AppColors.systemOrange},
   ];
 
   static void show({
@@ -32,7 +32,7 @@ class ProfileCareerSheet {
       pageBuilder: (context, animation, secondaryAnimation) {
         return OpaqueActionSheet(
           title: const Text(
-            'Especialidad o Carrera',
+            'Specialty or Degree',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: '.SF Pro Text',
@@ -43,7 +43,7 @@ class ProfileCareerSheet {
             ),
           ),
           message: const Text(
-            'Selecciona tu área de formación en salud:',
+            'Select your healthcare field of study:',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: '.SF Pro Text',
@@ -158,7 +158,7 @@ class ProfileCareerSheet {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'Escribe tu carrera médica o especialidad:',
+                      'Enter your medical degree or specialty:',
                       style: TextStyle(fontSize: 13, color: AppColors.textMuted),
                     ),
                     const SizedBox(height: 12),
@@ -166,7 +166,7 @@ class ProfileCareerSheet {
                       controller: controller,
                       autofocus: false,
                       textCapitalization: TextCapitalization.words,
-                      placeholder: 'Ej: Cardiología, Pediatría...',
+                      placeholder: 'e.g., Cardiology, Pediatrics...',
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF2F2F7),
@@ -182,7 +182,7 @@ class ProfileCareerSheet {
                 CupertinoDialogAction(
                   isDefaultAction: true,
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancelar', style: TextStyle(fontSize: 16)),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 16)),
                 ),
                 CupertinoDialogAction(
                   onPressed: () {
@@ -191,7 +191,7 @@ class ProfileCareerSheet {
                     Navigator.pop(context);
                     onSelectCareer(text);
                   },
-                  child: const Text('Guardar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.accent)),
+                  child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.accent)),
                 ),
               ],
             ),

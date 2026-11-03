@@ -1,12 +1,12 @@
 // ============================================================================
-// Archivo: profile_edit_name_dialog.dart
-// Propósito: Componente de interfaz modular [profile_edit_name_dialog] para la visualizacion de datos de usuario y ajustes.
+// File: profile_edit_name_dialog.dart
+// Purpose: Modular interface component [profile_edit_name_dialog] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [ProfileEditNameDialog]
+// Modular visual component [ProfileEditNameDialog]
 class ProfileEditNameDialog {
   static Future<void> show({
     required BuildContext context,
@@ -30,7 +30,7 @@ class ProfileEditNameDialog {
             opacity: 0.90,
             child: CupertinoAlertDialog(
               title: const Text(
-                'Editar Nombre',
+                'Edit Name',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.4),
               ),
               content: Padding(
@@ -39,7 +39,7 @@ class ProfileEditNameDialog {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'Ingresa tu nombre y apellidos para tu credencial médica:',
+                      'Enter your first and last name for your medical ID:',
                       style: TextStyle(fontSize: 13, color: AppColors.textMuted),
                     ),
                     const SizedBox(height: 12),
@@ -47,7 +47,7 @@ class ProfileEditNameDialog {
                       controller: controller,
                       autofocus: false,
                       textCapitalization: TextCapitalization.words,
-                      placeholder: 'Nombre y Apellidos',
+                      placeholder: 'First and Last Name',
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF2F2F7),
@@ -63,7 +63,7 @@ class ProfileEditNameDialog {
                 CupertinoDialogAction(
                   isDefaultAction: true,
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancelar', style: TextStyle(fontSize: 16)),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 16)),
                 ),
                 CupertinoDialogAction(
                   onPressed: () async {
@@ -72,7 +72,7 @@ class ProfileEditNameDialog {
                     Navigator.pop(context);
                     await onSave(newName);
                   },
-                  child: const Text('Guardar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.accent)),
+                  child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.accent)),
                 ),
               ],
             ),

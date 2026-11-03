@@ -1,19 +1,19 @@
 // ============================================================================
-// Archivo: profile_sign_out_button.dart
-// Propósito: Componente de interfaz modular [profile_sign_out_button] para la visualizacion de datos de usuario y ajustes.
+// File: profile_sign_out_button.dart
+// Purpose: Modular interface component [profile_sign_out_button] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [ProfileSignOutButton]
+// Main definition of class [ProfileSignOutButton]
 class ProfileSignOutButton extends StatelessWidget {
   final VoidCallback onSignOut;
 
   const ProfileSignOutButton({super.key, required this.onSignOut});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -29,7 +29,7 @@ class ProfileSignOutButton extends StatelessWidget {
           ),
           child: const Center(
             child: Text(
-              'Cerrar Sesión',
+              'Sign Out',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

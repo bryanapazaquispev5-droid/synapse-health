@@ -1,21 +1,22 @@
 // ============================================================================
-// Archivo: profile_info_section.dart
-// Propósito: Componente de interfaz modular [profile_info_section] para la visualizacion de datos de usuario y ajustes.
+// File: profile_info_section.dart
+// Purpose: Modular interface component [profile_info_section] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [ProfileInfoSection]
+// Main definition of class [ProfileInfoSection]
 class ProfileInfoSection extends StatelessWidget {
   final String career;
   final String gender;
   final String uid;
   final bool isEmailVerified;
+  final bool isVerificationPending;
   final bool isAnonymous;
-  final bool isGoogle;
   final VoidCallback onEditCareer;
   final VoidCallback onEditGender;
   final VoidCallback onResendEmail;
@@ -28,8 +29,8 @@ class ProfileInfoSection extends StatelessWidget {
     required this.gender,
     required this.uid,
     required this.isEmailVerified,
+    this.isVerificationPending = false,
     required this.isAnonymous,
-    required this.isGoogle,
     required this.onEditCareer,
     required this.onEditGender,
     required this.onResendEmail,
@@ -100,7 +101,11 @@ class ProfileInfoSection extends StatelessWidget {
               trailing,
             ] else if (onTap != null) ...[
               const SizedBox(width: 8),
-              const Icon(CupertinoIcons.chevron_forward, size: 14, color: Color(0xFFC7C7CC)),
+              const Icon(
+                CupertinoIcons.chevron_forward,
+                size: 14,
+                color: Color(0xFFC7C7CC),
+              ),
             ],
           ],
         ),
@@ -108,13 +113,13 @@ class ProfileInfoSection extends StatelessWidget {
     );
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Reactive widget tree rendering
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildSectionHeader('INFORMACIÓN MÉDICA'),
+        _buildSectionHeader('MEDICAL INFORMATION'),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Container(
@@ -136,7 +141,7 @@ class ProfileInfoSection extends StatelessWidget {
                 _buildAppleListTile(
                   icon: CupertinoIcons.person_2_fill,
                   iconBgColor: AppColors.systemPink,
-                  title: 'Género',
+                  title: 'Gender',
                   value: gender,
                   onTap: onEditGender,
                 ),
@@ -157,43 +162,78 @@ class ProfileInfoSection extends StatelessWidget {
               children: [
                 _buildAppleListTile(
                   icon: CupertinoIcons.checkmark_seal_fill,
-                  iconBgColor: isEmailVerified ? AppColors.systemGreen : AppColors.systemOrange,
-                  title: 'Estado Médico',
-                  value: isEmailVerified ? 'Verificado' : 'Pendiente',
+                  iconBgColor: isEmailVerified
+                      ? AppColors.systemGreen
+                      : AppColors.textMuted,
+                  title: 'Medical Status',
+                  value: isEmailVerified ? 'Verified' : '',
                   trailing: isEmailVerified
-                      ? const Icon(CupertinoIcons.checkmark_circle_fill, size: 18, color: AppColors.systemGreen)
+                      ? const Icon(
+                          CupertinoIcons.checkmark_circle_fill,
+                          size: 18,
+                          color: AppColors.systemGreen,
+                        )
                       : (!isAnonymous
-                          ? CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: onResendEmail,
-                              child: const Text('Reenviar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.systemOrange)),
-                            )
-                          : null),
+                            ? CupertinoButton(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                onPressed: isVerificationPending
+                                    ? null
+                                    : onResendEmail,
+                                child: isVerificationPending
+                                    ? const CupertinoActivityIndicator()
+                                    : Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text(
+                                            'Not verified',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textMuted,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            CupertinoIcons.chevron_forward,
+                                            size: 12,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ],
+                                      ),
+                              )
+                            : null),
                 ),
                 const Divider(height: 0.5, indent: 54, color: AppColors.border),
                 _buildAppleListTile(
                   icon: CupertinoIcons.person_badge_plus_fill,
                   iconBgColor: AppColors.systemIndigo,
-                  title: 'ID de Estudiante',
+                  title: 'Student ID',
                   value: uid.length >= 8 ? '${uid.substring(0, 8)}...' : uid,
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: uid));
                     onShowFeedback('ID copiado al portapapeles');
                   },
-                  trailing: const Icon(CupertinoIcons.doc_on_doc, size: 16, color: AppColors.textMuted),
+                  trailing: const Icon(
+                    CupertinoIcons.doc_on_doc,
+                    size: 16,
+                    color: AppColors.textMuted,
+                  ),
                 ),
                 const Divider(height: 0.5, indent: 54, color: AppColors.border),
                 _buildAppleListTile(
                   icon: CupertinoIcons.lock_shield_fill,
                   iconBgColor: const Color(0xFF636366),
                   title: 'Proveedor',
-                  value: isGoogle ? 'Google' : isAnonymous ? 'Invitado' : 'Correo',
+                  value: isAnonymous ? 'Guest' : 'Email',
                 ),
                 const Divider(height: 0.5, indent: 54, color: AppColors.border),
                 _buildAppleListTile(
                   icon: CupertinoIcons.gear_alt_fill,
                   iconBgColor: const Color(0xFF8E8E93),
-                  title: 'Ajustes',
+                  title: 'Settings',
                   value: 'Personalizar',
                   onTap: onOpenSettings,
                 ),

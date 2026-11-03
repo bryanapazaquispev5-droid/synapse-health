@@ -1,11 +1,11 @@
-// Bloque: Componente modal de ajustes con estilo translúcido de acción
+// Section: Settings modal with a translucent action sheet design
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Bloque: Presentador estático de la hoja modal de ajustes
+// Section: Static presenter for the settings modal sheet
 class ProfileSettingsSheet {
   static void show({required BuildContext context}) {
     showGeneralDialog<void>(
@@ -25,7 +25,7 @@ class ProfileSettingsSheet {
   }
 }
 
-// Bloque: Contenido interno del modal translúcido de ajustes
+// Section: Inner content of the translucent settings modal
 class _SettingsSheetContent extends StatelessWidget {
   const _SettingsSheetContent();
 
@@ -41,7 +41,7 @@ class _SettingsSheetContent extends StatelessWidget {
     ),
   );
 
-  // Bloque: Construcción del árbol de widgets con diseño idéntico a OpaqueActionSheet
+  // Section: Build the widget tree with a design matching OpaqueActionSheet
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -70,17 +70,17 @@ class _SettingsSheetContent extends StatelessWidget {
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           child: Column(mainAxisSize: MainAxisSize.min, children: [
-                            Text('Ajustes del Sistema', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+                            Text('System Settings', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
                             SizedBox(height: 4),
-                            Text('Personaliza animaciones y comportamiento del sistema', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, color: AppColors.textMuted)),
+                            Text('Customize animations and system behavior', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, color: AppColors.textMuted)),
                           ]),
                         ),
                         divider,
                         _buildRow(
                           icon: CupertinoIcons.waveform_path,
                           iconColor: AppColors.accent,
-                          title: 'Transición tipo Ola',
-                          subtitle: 'Efecto líquido entre menús',
+                          title: 'Wave Transition',
+                          subtitle: 'Liquid effect between menus',
                           trailing: _buildWaveSwitch(),
                         ),
                       ],
@@ -100,7 +100,7 @@ class _SettingsSheetContent extends StatelessWidget {
                         width: double.infinity,
                         height: 54,
                         child: Center(
-                          child: Text('Listo', style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.accent)),
+                          child: Text('Done', style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.accent)),
                         ),
                       ),
                     ),
@@ -114,7 +114,7 @@ class _SettingsSheetContent extends StatelessWidget {
     );
   }
 
-  // Bloque: Constructor de fila de acción modular
+  // Section: Modular action row builder
   Widget _buildRow({
     required IconData icon,
     required Color iconColor,

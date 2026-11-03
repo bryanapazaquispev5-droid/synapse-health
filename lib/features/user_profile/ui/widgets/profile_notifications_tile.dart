@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: profile_notifications_tile.dart
-// Propósito: Componente de interfaz modular [profile_notifications_tile] para la visualizacion de datos de usuario y ajustes.
+// File: profile_notifications_tile.dart
+// Purpose: Modular interface component [profile_notifications_tile] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -12,7 +12,7 @@ import '../../../../core/notifications/services/local_notification_service.dart'
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/ios_top_banner.dart';
 
-/// Sección atómica para gestión y prueba de notificaciones Push (FCM) y locales.
+/// Profile section for testing on-device local notifications.
 class ProfileNotificationsTile extends StatefulWidget {
   const ProfileNotificationsTile({super.key});
 
@@ -20,7 +20,7 @@ class ProfileNotificationsTile extends StatefulWidget {
   State<ProfileNotificationsTile> createState() => _ProfileNotificationsTileState();
 }
 
-// Estado reactivo y control de ciclo de vida para [ProfileNotificationsTile]
+// Reactive state and lifecycle management for [ProfileNotificationsTile]
 class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
   bool _isTestingNotification = false;
 
@@ -33,8 +33,8 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
       final now = DateTime.now();
       final payload = PushNotificationPayload(
         id: 'test_alert_${now.millisecondsSinceEpoch}',
-        title: '🚨 Alerta Médica de Prueba',
-        body: 'Protocolo de código azul activo. Sonido y vibración verificados.',
+        title: '🚨 Test Medical Alert',
+        body: 'Blue code protocol active. Sound and vibration verified.',
         type: NotificationType.medicalAlert,
         channelId: NotificationChannels.medicalAlertsId,
         receivedAt: now,
@@ -46,14 +46,14 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
       if (mounted) {
         IosTopBanner.info(
           context,
-          'Alerta médica emitida con sonido y vibración.',
+          'Medical alert sent with sound and vibration.',
         );
       }
     } catch (_) {
       if (mounted) {
         IosTopBanner.error(
           context,
-          'No se pudo emitir la alerta médica local.',
+          'Could not send the local medical alert.',
         );
       }
     } finally {
@@ -61,14 +61,14 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
     }
   }
 
-  // Renderizado reactivo del arbol de widgets
+  // Reactive widget tree rendering
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'NOTIFICACIONES LOCALES',
+          'LOCAL NOTIFICATIONS',
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted, letterSpacing: 0.4),
         ),
         const SizedBox(height: 8),
@@ -82,8 +82,8 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
             icon: CupertinoIcons.bell_fill,
             iconColor: AppColors.systemOrange,
             iconBgColor: AppColors.systemOrange.withValues(alpha: 0.12),
-            title: 'Probar Notificación Local',
-            subtitle: 'Emitir alerta médica con sonido y vibración',
+            title: 'Test Local Notification',
+            subtitle: 'Send a medical alert with sound and vibration',
             trailing: _isTestingNotification
                 ? const CupertinoActivityIndicator(radius: 8)
                 : const Icon(CupertinoIcons.play_arrow_solid, size: 16, color: AppColors.accent),
@@ -95,7 +95,7 @@ class _ProfileNotificationsTileState extends State<ProfileNotificationsTile> {
   }
 }
 
-// Componente visual modular [_NotificationItemTile]
+// Modular visual component [_NotificationItemTile]
 class _NotificationItemTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -115,7 +115,7 @@ class _NotificationItemTile extends StatelessWidget {
     required this.onTap,
   });
 
-  // Renderizado reactivo del arbol de widgets
+  // Reactive widget tree rendering
   @override
   Widget build(BuildContext context) {
     return Material(

@@ -1,12 +1,12 @@
 // ============================================================================
-// Archivo: opaque_action_sheet.dart
-// Propósito: Componente de interfaz modular [opaque_action_sheet] para la visualizacion de datos de usuario y ajustes.
+// File: opaque_action_sheet.dart
+// Purpose: Modular interface component [opaque_action_sheet] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [OpaqueActionSheetActionItem]
+// Modular visual component [OpaqueActionSheetActionItem]
 class OpaqueActionSheetActionItem {
   final Widget child;
   final VoidCallback onPressed;
@@ -17,7 +17,7 @@ class OpaqueActionSheetActionItem {
   });
 }
 
-// Componente visual modular [OpaqueActionSheet]
+// Modular visual component [OpaqueActionSheet]
 class OpaqueActionSheet extends StatelessWidget {
   final Widget? title;
   final Widget? message;
@@ -30,8 +30,8 @@ class OpaqueActionSheet extends StatelessWidget {
     required this.actions,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -116,7 +116,7 @@ class OpaqueActionSheet extends StatelessWidget {
                         height: 54,
                         alignment: Alignment.center,
                         child: const Text(
-                          'Cancelar',
+                          'Cancel',
                           style: TextStyle(
                             fontFamily: '.SF Pro Text',
                             fontSize: 16,

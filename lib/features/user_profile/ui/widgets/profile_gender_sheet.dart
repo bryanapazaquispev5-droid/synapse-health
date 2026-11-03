@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: profile_gender_sheet.dart
-// Propósito: Componente de interfaz modular [profile_gender_sheet] para la visualizacion de datos de usuario y ajustes.
+// File: profile_gender_sheet.dart
+// Purpose: Modular interface component [profile_gender_sheet] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'opaque_action_sheet.dart';
 
-// Componente visual modular [ProfileGenderSheet]
+// Modular visual component [ProfileGenderSheet]
 class ProfileGenderSheet {
   static void show({
     required BuildContext context,
@@ -23,7 +23,7 @@ class ProfileGenderSheet {
       pageBuilder: (context, animation, secondaryAnimation) {
         return OpaqueActionSheet(
           title: const Text(
-            'Seleccionar Género',
+            'Select Gender',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: '.SF Pro Text',
@@ -34,7 +34,7 @@ class ProfileGenderSheet {
             ),
           ),
           message: const Text(
-            'Elige tu avatar de estudiante de salud:',
+            'Choose your healthcare student avatar:',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: '.SF Pro Text',

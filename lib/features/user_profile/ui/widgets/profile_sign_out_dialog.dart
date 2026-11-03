@@ -1,11 +1,11 @@
 // ============================================================================
-// Archivo: profile_sign_out_dialog.dart
-// Propósito: Componente de interfaz modular [profile_sign_out_dialog] para la gestión y presentación de opciones de perfil.
+// File: profile_sign_out_dialog.dart
+// Purpose: Modular interface component [profile_sign_out_dialog] for managing and presenting profile options.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 
-/// Componente modal interactivo [ProfileSignOutDialog] presentado como hoja o diálogo.
+/// Interactive modal component [ProfileSignOutDialog] presented as a sheet or dialog.
 class ProfileSignOutDialog {
   static Future<bool?> show(BuildContext context) {
     return showGeneralDialog<bool>(
@@ -18,13 +18,13 @@ class ProfileSignOutDialog {
         opacity: 0.90,
         child: CupertinoAlertDialog(
           title: const Text(
-            'Cerrar Sesión',
+            'Sign Out',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           content: const Padding(
             padding: EdgeInsets.only(top: 4.0),
             child: Text(
-              '¿Estás seguro de que deseas salir de tu cuenta médica?',
+              'Are you sure you want to sign out of your medical account?',
               style: TextStyle(fontSize: 13),
             ),
           ),
@@ -32,13 +32,13 @@ class ProfileSignOutDialog {
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar', style: TextStyle(fontSize: 15)),
+              child: const Text('Cancel', style: TextStyle(fontSize: 15)),
             ),
             CupertinoDialogAction(
               isDestructiveAction: true,
               onPressed: () => Navigator.pop(context, true),
               child: const Text(
-                'Cerrar Sesión',
+                'Sign Out',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
             ),
