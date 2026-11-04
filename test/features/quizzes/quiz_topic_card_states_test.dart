@@ -14,8 +14,8 @@ Widget card({bool ready = true, bool loading = false}) => MaterialApp(
   theme: AppTheme.lightTheme,
   home: Scaffold(
     body: QuizTopicCard(
-      area: MedicalAreaModel(id: 'a', name: 'Área', code: 'A', order: 1),
-      topic: const TopicModel(id: 't', areaId: 'a', title: 'Tema', order: 1),
+      area: MedicalAreaModel(id: 'a', name: 'Area', code: 'A', order: 1),
+      topic: const TopicModel(id: 't', areaId: 'a', title: 'Topic', order: 1),
       number: 1,
       progressIsAvailable: ready,
       isLoadingProgress: loading,
@@ -28,7 +28,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(card());
-    expect(find.text('Ver quizzes'), findsOneWidget);
+    expect(find.text('View quizzes'), findsOneWidget);
     expect(find.byType(QuizTopicProgressBadge), findsNothing);
     expect(find.textContaining('20'), findsNothing);
   });
@@ -36,7 +36,7 @@ void main() {
     'loading progress keeps title visible without a zero-statistic badge',
     (tester) async {
       await tester.pumpWidget(card(ready: false, loading: true));
-      expect(find.text('Tema'), findsOneWidget);
+      expect(find.text('Topic'), findsOneWidget);
       expect(find.byType(AppLoadingState), findsOneWidget);
       expect(find.byType(QuizTopicProgressBadge), findsNothing);
     },
@@ -45,7 +45,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(card(ready: false));
-    expect(find.text('Progreso no disponible'), findsOneWidget);
+    expect(find.text('Progress unavailable'), findsOneWidget);
     expect(find.byType(AppLoadingState), findsNothing);
     expect(find.byType(QuizTopicProgressBadge), findsNothing);
   });
@@ -78,7 +78,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('1 estrella'), findsOneWidget);
+      expect(find.text('1 star'), findsOneWidget);
       expect(find.text('1/20'), findsNothing);
     },
   );

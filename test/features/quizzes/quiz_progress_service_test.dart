@@ -1,4 +1,4 @@
-// Bloque: Pruebas Unitarias de Modelos de Progreso de Quizzes y Límite FIFO
+// Section: Unit tests for quiz progress models and the FIFO limit
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/features/quizzes/model/quiz_attempt_model.dart';
 import 'package:synapse_health/features/quizzes/model/quiz_question_progress_model.dart';
@@ -6,7 +6,7 @@ import 'package:synapse_health/features/quizzes/model/quiz_topic_progress_model.
 
 void main() {
   group('QuizQuestionProgressModel Tests', () {
-    test('Serialización y deserialización correcta toMap / fromMap', () {
+    test('Correct toMap / fromMap serialization and deserialization', () {
       final now = DateTime.now();
       final model = QuizQuestionProgressModel(
         quizId: 'q_cardio_01',
@@ -32,7 +32,7 @@ void main() {
   });
 
   group('QuizAttemptModel Tests', () {
-    test('isQuizLocked y answeredCount reportan estados precisos', () {
+    test('isQuizLocked and answeredCount report accurate states', () {
       final q1 = QuizQuestionProgressModel(
         quizId: 'q1',
         isAnswered: true,
@@ -58,7 +58,7 @@ void main() {
   });
 
   group('QuizTopicProgressModel & FIFO History Tests', () {
-    test('empty factory inicializa con valores por defecto', () {
+    test('empty factory initializes with default values', () {
       final topicProgress = QuizTopicProgressModel.empty(
         topicId: 'topic_insuficiencia',
         areaId: 'area_cardiologia',
@@ -73,7 +73,7 @@ void main() {
       expect(topicProgress.starsPercentage, 0.0);
     });
 
-    test('Límite estricto FIFO de 3 intentos históricos al reintentar', () {
+    test('Strict FIFO limit of 3 historical attempts when retrying', () {
       var progress = QuizTopicProgressModel.empty(
         topicId: 'topic_arritmias',
         areaId: 'area_cardiologia',
@@ -93,39 +93,39 @@ void main() {
         );
       }
 
-      // Intento 1 -> Reintento 1 -> Historial: [1]
+      // Attempt 1 -> Retry 1 -> History: [1]
       progress = withStars(progress, 3).archiveCurrentAttemptAndReset(totalMaxStars: 9);
       expect(progress.currentAttemptNumber, 2);
       expect(progress.history.length, 1);
       expect(progress.history.first.attemptNumber, 1);
       expect(progress.history.first.totalEarnedStars, 3);
 
-      // Intento 2 -> Reintento 2 -> Historial: [1, 2]
+      // Attempt 2 -> Retry 2 -> History: [1, 2]
       progress = withStars(progress, 6).archiveCurrentAttemptAndReset(totalMaxStars: 9);
       expect(progress.currentAttemptNumber, 3);
       expect(progress.history.length, 2);
       expect(progress.history.map((e) => e.attemptNumber).toList(), [1, 2]);
 
-      // Intento 3 -> Reintento 3 -> Historial: [1, 2, 3]
+      // Attempt 3 -> Retry 3 -> History: [1, 2, 3]
       progress = withStars(progress, 9).archiveCurrentAttemptAndReset(totalMaxStars: 9);
       expect(progress.currentAttemptNumber, 4);
       expect(progress.history.length, 3);
       expect(progress.history.map((e) => e.attemptNumber).toList(), [1, 2, 3]);
 
-      // Intento 4 -> Reintento 4 -> FIFO descarta 1: [2, 3, 4]
+      // Attempt 4 -> Retry 4 -> FIFO evicts 1: [2, 3, 4]
       progress = withStars(progress, 7).archiveCurrentAttemptAndReset(totalMaxStars: 9);
       expect(progress.currentAttemptNumber, 5);
       expect(progress.history.length, 3);
       expect(progress.history.map((e) => e.attemptNumber).toList(), [2, 3, 4]);
 
-      // Intento 5 -> Reintento 5 -> FIFO descarta 2: [3, 4, 5]
+      // Attempt 5 -> Retry 5 -> FIFO evicts 2: [3, 4, 5]
       progress = withStars(progress, 8).archiveCurrentAttemptAndReset(totalMaxStars: 9);
       expect(progress.currentAttemptNumber, 6);
       expect(progress.history.length, 3);
       expect(progress.history.map((e) => e.attemptNumber).toList(), [3, 4, 5]);
     });
 
-    test('fromMap trunca a máximo 3 entradas si el payload de Firestore trae más', () {
+    test('fromMap truncates to 3 entries when the Firestore payload contains more', () {
       final rawMap = {
         'topicId': 't1',
         'areaId': 'a1',
@@ -151,7 +151,7 @@ void main() {
       expect(parsed.history.map((e) => e.attemptNumber).toList(), [3, 4, 5]);
     });
 
-    test('Cálculo de totalMax prioriza topicTotalMaxStars explícito', () {
+    test('totalMax calculation prioritizes explicit topicTotalMaxStars', () {
       final updatedAnswers = {
         'q1': const QuizQuestionProgressModel(
           quizId: 'q1',
@@ -172,7 +172,7 @@ void main() {
       expect(computeTotalMax(null), 3);
     });
 
-    test('Cálculo de estrellas por área acumula solo temas de dicha área', () {
+    test('Area star calculation only accumulates topics in that area', () {
       final topics = {
         't1': QuizTopicProgressModel.empty(topicId: 't1', areaId: 'cardio')
             .copyWith(activeAttempt: QuizAttemptModel.empty().copyWith(totalEarnedStars: 5)),

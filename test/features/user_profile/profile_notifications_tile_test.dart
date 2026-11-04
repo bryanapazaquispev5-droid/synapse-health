@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: profile_notifications_tile_test.dart
-// Propósito: Componente de interfaz modular [profile_notifications_tile_test] para la visualizacion de datos de usuario y ajustes.
+// File: profile_notifications_tile_test.dart
+// Purpose: Modular UI component [profile_notifications_tile_test] for displaying user data and settings.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -22,8 +22,8 @@ void main() {
       ),
     );
 
-    expect(find.text('NOTIFICACIONES LOCALES'), findsOneWidget);
-    expect(find.text('Ver Token FCM del Dispositivo'), findsNothing);
-    expect(find.text('Probar Notificación Local'), findsOneWidget);
+    expect(find.text('LOCAL NOTIFICATIONS'), findsOneWidget);
+    expect(find.text('View Device FCM Token'), findsNothing);
+    expect(find.text('Test Local Notification'), findsOneWidget);
   });
 }

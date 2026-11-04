@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_scoring_test.dart
-// Propósito: Pruebas unitarias para el sistema de estrellas y tiempo en quizzes.
+// File: quiz_scoring_test.dart
+// Purpose: Unit tests for the quiz star and timing system.
 // ============================================================================
 
 import 'package:flutter_test/flutter_test.dart';
@@ -8,15 +8,15 @@ import 'package:synapse_health/features/quizzes/model/quiz_model.dart';
 import 'package:synapse_health/features/quizzes/utils/quiz_scoring_helper.dart';
 
 void main() {
-  group('Sistema de Estrellas y Tiempo de Quizzes', () {
-    test('Calcula max stars correctamente para diferentes tipos de preguntas', () {
+  group('Quiz Star and Timing System', () {
+    test('Calculates max stars correctly for different question types', () {
       final quizzes = [
         const QuizModel(
           id: 'q1',
           areaId: 'area1',
           topicId: 'topic1',
           type: 'single_choice',
-          question: 'Pregunta 1',
+          question: 'Question 1',
           options: ['A', 'B', 'C'],
           correctIndex: 0,
           rationale: 'R1',
@@ -27,7 +27,7 @@ void main() {
           areaId: 'area1',
           topicId: 'topic1',
           type: 'ordering',
-          question: 'Ordena la secuencia',
+          question: 'Order the sequence',
           options: [],
           correctIndex: 0,
           rationale: 'R2',
@@ -57,18 +57,18 @@ void main() {
       expect(totalStars, equals(8));
     });
 
-    test('Formateo de duraciones en segundos y minutos', () {
+    test('Formats durations in seconds and minutes', () {
       expect(QuizScoringHelper.formatDuration(0), equals('0s'));
       expect(QuizScoringHelper.formatDuration(45), equals('45s'));
       expect(QuizScoringHelper.formatDuration(60), equals('1m 0s'));
       expect(QuizScoringHelper.formatDuration(125), equals('2m 5s'));
     });
 
-    test('Puntuación parcial de ordenamiento (1 estrella por posición correcta)', () {
+    test('Partial ordering score (1 star per correct position)', () {
       const sequence = ['A', 'B', 'C', 'D'];
-      final userOrder1 = ['A', 'C', 'B', 'D']; // A y D correctos -> 2 aciertos
-      final userOrder2 = ['A', 'B', 'C', 'D']; // Todos correctos -> 4 aciertos
-      final userOrder3 = ['D', 'C', 'B', 'A']; // Ninguno correcto -> 0 aciertos
+      final userOrder1 = ['A', 'C', 'B', 'D']; // A and D are correct -> 2 correct answers
+      final userOrder2 = ['A', 'B', 'C', 'D']; // All answers correct -> 4 correct answers
+      final userOrder3 = ['D', 'C', 'B', 'A']; // No answers correct -> 0 correct answers
 
       int countCorrect(List<String> user) {
         int correct = 0;

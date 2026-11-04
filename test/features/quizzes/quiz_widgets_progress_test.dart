@@ -1,4 +1,4 @@
-// Bloque: Pruebas de widgets de progreso, insignias y tarjetas de reintento de quiz
+// Section: Widget tests for quiz progress, badges, and retry cards
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
@@ -13,7 +13,7 @@ import 'package:synapse_health/features/quizzes/ui/widgets/quiz_topic_retry_card
 
 void main() {
   group('QuizTopicProgressBadge Tests', () {
-    testWidgets('Muestra fallback cuando no hay progreso activo', (tester) async {
+    testWidgets('Shows the fallback when there is no active progress', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
@@ -30,7 +30,7 @@ void main() {
       expect(find.text('⭐'), findsNothing);
     });
 
-    testWidgets('Muestra estrellas cuando hay preguntas respondidas en el intento activo', (tester) async {
+    testWidgets('Shows stars for questions answered in the active attempt', (tester) async {
       final model = QuizTopicProgressModel(
         topicId: 'topic_1',
         areaId: 'area_1',
@@ -71,7 +71,7 @@ void main() {
   });
 
   group('QuizTopicRetryCard Tests', () {
-    testWidgets('Renderiza información de intento, estrellas y botón de reintento', (tester) async {
+    testWidgets('Renders attempt details, stars, and the retry button', (tester) async {
       final model = QuizTopicProgressModel(
         topicId: 'topic_1',
         areaId: 'area_1',
@@ -109,27 +109,27 @@ void main() {
         ),
       );
 
-      expect(find.text('Intento #2'), findsOneWidget);
-      expect(find.text('5 / 15 estrellas'), findsOneWidget);
-      expect(find.text('1 / 15 completadas'), findsOneWidget);
-      expect(find.text('Reintentar tema'), findsOneWidget);
+      expect(find.text('Attempt #2'), findsOneWidget);
+      expect(find.text('5 / 15 stars'), findsOneWidget);
+      expect(find.text('1 / 15 completed'), findsOneWidget);
+      expect(find.text('Retry topic'), findsOneWidget);
     });
   });
 
   group('QuizListTile Tests', () {
     final sampleQuiz = QuizModel(
       id: 'quiz_1',
-      question: '¿Cuál es la arteria principal del brazo?',
-      options: ['Arteria braquial', 'Arteria radial', 'Arteria femoral'],
+      question: 'What is the main artery of the arm?',
+      options: ['Brachial artery', 'Radial artery', 'Femoral artery'],
       correctIndex: 0,
-      rationale: 'La arteria braquial irriga el brazo.',
-      sourceBook: 'Latarjet Anatomía',
+      rationale: 'The brachial artery supplies the arm.',
+      sourceBook: 'Latarjet Anatomy',
       areaId: 'area_1',
       topicId: 'topic_1',
       type: 'multiple_choice',
     );
 
-    testWidgets('Renderiza pregunta desbloqueada por defecto', (tester) async {
+    testWidgets('Renders an unlocked question by default', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
@@ -138,19 +138,19 @@ void main() {
               quiz: sampleQuiz,
               index: 1,
               allQuizzes: [sampleQuiz],
-              areaTitle: 'Anatomía',
+              areaTitle: 'Anatomy',
               questionProgress: null,
             ),
           ),
         ),
       );
 
-      expect(find.text('Pregunta #1'), findsOneWidget);
-      expect(find.text('¿Cuál es la arteria principal del brazo?'), findsOneWidget);
+      expect(find.text('Question #1'), findsOneWidget);
+      expect(find.text('What is the main artery of the arm?'), findsOneWidget);
       expect(find.text('⭐'), findsNothing);
     });
 
-    testWidgets('Renderiza estado bloqueado con estrellas cuando la pregunta fue respondida', (tester) async {
+    testWidgets('Renders the locked state with stars after the question is answered', (tester) async {
       final qProgress = QuizQuestionProgressModel(
         quizId: 'quiz_1',
         isAnswered: true,
@@ -167,7 +167,7 @@ void main() {
               quiz: sampleQuiz,
               index: 1,
               allQuizzes: [sampleQuiz],
-              areaTitle: 'Anatomía',
+              areaTitle: 'Anatomy',
               questionProgress: qProgress,
             ),
           ),
@@ -178,7 +178,7 @@ void main() {
       expect(find.text('1/1'), findsOneWidget);
     });
 
-    testWidgets('Muestra snackbar al tocar cuando el intento no ha comenzado', (tester) async {
+    testWidgets('Shows a snackbar when tapped before the attempt has started', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
@@ -187,7 +187,7 @@ void main() {
               quiz: sampleQuiz,
               index: 1,
               allQuizzes: [sampleQuiz],
-              areaTitle: 'Anatomía',
+              areaTitle: 'Anatomy',
               questionProgress: null,
               isAttemptStarted: false,
             ),
@@ -198,7 +198,7 @@ void main() {
       await tester.tap(find.byType(QuizListTile));
       await tester.pump();
 
-      expect(find.text("Pulsa 'Comenzar Examen de Práctica' para iniciar el quiz del tema."), findsOneWidget);
+      expect(find.text("Tap 'Start Practice Exam' to begin this topic quiz."), findsOneWidget);
       IosTopBanner.dismiss();
       await tester.pump();
     });
