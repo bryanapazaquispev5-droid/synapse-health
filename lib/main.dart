@@ -1,80 +1,64 @@
 // ============================================================================
-// Archivo: main.dart
-// Propósito: Punto de entrada principal de la aplicacion Synapse Health, inicializacion de Firebase, servicios de monitoreo y arranque de la interfaz.
+// File: main.dart
+// Purpose: Synapse Health entry point with AWS authentication and data services.
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'core/auth/app_auth.dart';
 
-import 'firebase_options.dart';
-import 'core/notifications/services/push_notification_service.dart';
+import 'core/notifications/handlers/notification_router.dart';
+import 'core/notifications/services/local_notification_service.dart';
 import 'core/services/app_settings_service.dart';
-import 'core/services/crashlytics_service.dart';
-import 'core/services/performance_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth_login/ui/auth_screen.dart';
-import 'features/auth_login/auth_provider_gate.dart';
-import 'features/navigation/ui/main_navigation_wrapper.dart';
+import 'features/auth_login/auth_session_gate.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Inicializar Observabilidad y Monitoreo en Tiempo Real
-  await CrashlyticsService.initialize();
-  await PerformanceService.initialize();
+  await AppAuth.instance.initialize();
   await AppSettingsService().init();
 
-  // Inicializar Orquestador de Notificaciones Push y Canales FCM
-  await PushNotificationService().initialize(navigatorKey: appNavigatorKey);
+  NotificationRouter.setNavigatorKey(appNavigatorKey);
+  await LocalNotificationService().initialize();
 
-  // DESACTIVAR PERSISTENCIA EN DISCO (Seguridad y protección contra ingeniería inversa)
-  // Todo el contenido médico y fichas residen únicamente en memoria volátil (RAM)
-  // y requieren conexión activa a internet para ser consultados.
-  FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: false,
-  );
+  // Medical catalogs are served from AWS; this process keeps only transient UI data.
   runApp(const SynapseHealthApp());
 }
 
-// Definicion principal de la clase [SynapseHealthApp]
+// Main definition of [SynapseHealthApp].
 class SynapseHealthApp extends StatelessWidget {
   const SynapseHealthApp({super.key});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: appNavigatorKey,
       title: 'Synapse Health',
+      locale: const Locale('en'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: AuthProviderGate(
-        firebaseChild: StreamBuilder<User?>(
-          stream: FirebaseAuth.instance.authStateChanges(),
-          builder: (context, authSnapshot) {
-            if (authSnapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                backgroundColor: AppColors.background,
-                body: Center(
-                  child: CircularProgressIndicator(color: AppColors.accent),
-                ),
-              );
-            }
-            final user = authSnapshot.data;
-            if (user == null) {
-              return const AuthScreen();
-            }
+      home: StreamBuilder<AppUser?>(
+        stream: AppAuth.instance.authStateChanges(),
+        builder: (context, authSnapshot) {
+          if (authSnapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              backgroundColor: AppColors.background,
+              body: Center(
+                child: CircularProgressIndicator(color: AppColors.accent),
+              ),
+            );
+          }
+          final user = authSnapshot.data;
+          if (user == null) {
+            return const AuthScreen();
+          }
 
-            // Usuario autenticado (con persistencia de sesión segura en Firebase Auth)
-            return MainNavigationWrapper(user: user);
-          },
-        ),
+          // Cognito session identity is verified independently by the AWS API.
+          return AuthSessionGate(key: ValueKey(user.uid), user: user);
+        },
       ),
     );
   }
