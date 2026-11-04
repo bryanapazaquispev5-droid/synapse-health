@@ -144,14 +144,3 @@ OAuth scopes include openid/email/profile/aws.cognito.signin.user.admin for onli
 Use PKCE and state validation. Cognito subjects are not implicitly linked to identities from another provider by email.
 
 Local notification display and interaction are handled on-device. The AWS API has no device-token endpoint or notification sender. A previously deployed `user-devices` table is retained and no longer accessed; this change does not delete its existing items.
-
-## Local control center
-
-Run `npm run admin` from `backend/` after authenticating the AWS CLI. Open `http://127.0.0.1:4178`.
-The read-only Node server binds only to loopback, uses the AWS SDK credential chain on the PC, and never
-returns AWS credentials to the browser. It lists DynamoDB tables in `us-east-2`, reads the selected table
-sequentially in 25-item pages with a 500 ms pause, and shows cumulative read capacity. Selecting a table
-reads all its items, so large tables can take time and consume read capacity. Cognito users refresh every
-30 seconds. It creates no AWS resources.
-Close the terminal running the server to stop it. Required read permissions are DynamoDB ListTables/Scan
-and Cognito ListUsers for the configured user pool.

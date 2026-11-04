@@ -8,7 +8,6 @@
   },
   "scripts": {
     "start": "node src/aws/local-server.mjs",
-    "admin": "node admin/server.mjs",
     "package:aws": "powershell -NoProfile -File scripts/package-aws.ps1",
     "test:aws": "npm run build && node --test test/aws-*.test.mjs test/cognito-*.test.mjs",
     "build": "node scripts/check.mjs && node infra/build-template.mjs",

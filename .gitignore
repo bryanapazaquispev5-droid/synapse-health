@@ -65,3 +65,6 @@ backend/samconfig.toml
 backend/coverage/
 backend/dist/
 !backend/.env.example
+
+backend/admin/
+backend/test/admin-center.test.mjs

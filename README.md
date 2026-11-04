@@ -31,7 +31,7 @@ Flutter app
                     └── CloudWatch: logs operativos
 ```
 
-El código móvil se organiza bajo `lib/core/` y `lib/features/`. El backend AWS está en `backend/src/aws/`; la infraestructura como código y los recursos se definen en `backend/infra/`. El centro de control de solo lectura se sirve localmente desde `backend/admin/` y usa la sesión AWS CLI del equipo.
+El código móvil se organiza bajo `lib/core/` y `lib/features/`. El backend AWS que consume la app está en `backend/src/aws/`; la infraestructura como código se define en `backend/infra/`
 
 ## API disponible
 
@@ -68,13 +68,13 @@ Los métodos, validaciones y formatos de las respuestas están documentados en [
 | `leaderboard` | Resultado de ranking calculado por el backend |
 | `rate-limits` | Contadores temporales de solicitudes |
 
-Las relaciones y claves se detallan en `backend/AWS.md` y en el diagrama de la vista `/database` del centro de control. La tabla heredada `AppTable` se conserva; no se usa como tabla activa de la API.
+Las relaciones y claves se detallan en `backend/AWS.md`. La tabla heredada `AppTable` se conserva; no se usa como tabla activa de la API.
 
 ## Requisitos
 
 - Flutter y Dart compatibles con `pubspec.yaml`.
 - Node.js 22 o posterior para el backend.
-- AWS CLI configurado con una sesión autorizada para ejecutar el backend AWS o abrir el centro de control.
+- AWS CLI configurado con una sesión autorizada para ejecutar el backend AWS.
 - Android Studio/Xcode y SDK de plataforma para compilar en un dispositivo o emulador.
 
 ## Configuración y ejecución local
@@ -95,7 +95,7 @@ Para compilar un APK debug:
 flutter build apk --debug --dart-define-from-file=.env
 ```
 
-### Backend y centro de control
+### Backend AWS
 
 ```powershell
 cd backend
@@ -109,14 +109,6 @@ Para ejecutar la API local con credenciales AWS de la cadena estándar de AWS CL
 ```powershell
 npm start
 ```
-
-Para abrir el centro de control de solo lectura:
-
-```powershell
-npm run admin
-```
-
-Luego visita `http://127.0.0.1:4178`. Consultar tablas grandes puede consumir capacidad de lectura de DynamoDB. El panel no crea ni borra recursos.
 
 ## Pruebas
 
@@ -135,4 +127,4 @@ La app no contiene claves de acceso AWS. Lambda obtiene permisos mediante su rol
 ## Documentación
 
 - [`backend/AWS.md`](backend/AWS.md): arquitectura AWS, endpoints, esquema DynamoDB, permisos, costes y despliegue.
-- [`docs/Synapse_Health_Project_Documentation.docx`](docs/Synapse_Health_Project_Documentation.docx): documentación del proyecto y diagrama de base de datos.
+- [`docs/Synapse_Health_Project_Documentation.docx`](docs/Synapse_Health_Project_Documentation.docx): documentación de la aplicación y su arquitectura.
