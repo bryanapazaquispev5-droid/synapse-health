@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synapse_health/core/api/aws_api_client.dart';
 import 'package:synapse_health/core/widgets/states/app_async_content.dart';
 
 import 'fixtures/async_content_fixture.dart';
@@ -27,7 +27,7 @@ void main() {
     source.add([]);
     await tester.pump();
     await tester.pump();
-    expect(find.text('Sin fichas'), findsOneWidget);
+    expect(find.text('No notes'), findsOneWidget);
     expect(find.byType(AppLoadingState), findsNothing);
   });
 
@@ -39,22 +39,18 @@ void main() {
     await tester.pump();
     await tester.pump();
     source.addError(
-      FirebaseException(
-        plugin: 'cloud_firestore',
-        code: 'permission-denied',
-        message: 'private internal detail',
-      ),
+      const AwsApiException(ApiFailure.forbidden),
     );
     await tester.pump();
     await tester.pump();
     expect(find.byType(AppErrorState), findsOneWidget);
     expect(find.byType(AppOfflineState), findsNothing);
     expect(
-      find.text('No tienes permiso para ver este contenido.'),
+      find.text('You do not have permission to view this content.'),
       findsOneWidget,
     );
     expect(find.textContaining('private internal'), findsNothing);
-    expect(find.text('Reintentar'), findsNothing);
+    expect(find.text('Retry'), findsNothing);
   });
 
   for (final online in [true, false]) {
@@ -66,7 +62,7 @@ void main() {
       await tester.pump();
       await tester.pump();
       source.addError(
-        FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+        const AwsApiException(ApiFailure.unavailable),
       );
       await tester.pump();
       await tester.pump();
@@ -75,7 +71,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(AppEmptyState), findsNothing);
-      expect(find.text('Reintentar'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
     });
   }
 
@@ -91,15 +87,15 @@ void main() {
     await tester.pumpWidget(content(tracked.stream, connection));
     await tester.pump();
     await tester.pump();
-    tracked.add(['Anatomía']);
+    tracked.add(['Anatomy']);
     await tester.pump();
     await tester.pump();
     connection.setOnline(false);
     await tester.pump();
     await tester.pump();
-    expect(find.text('Anatomía'), findsOneWidget);
+    expect(find.text('Anatomy'), findsOneWidget);
     expect(
-      find.text('Sin conexión. Mostrando datos ya cargados.'),
+      find.text('Offline. Showing previously loaded data.'),
       findsOneWidget,
     );
     expect(subscriptions, 1);
@@ -125,24 +121,24 @@ void main() {
     );
     await tester.pump();
     await tester.pump();
-    source.add(['Primero']);
+    source.add(['First']);
     await tester.pump();
     await tester.pump();
-    await tester.tap(find.text('Actualizar'));
+    await tester.tap(find.text('Refresh'));
     await tester.pump();
     await tester.pump();
     expect(retries, 1);
-    expect(find.text('Primero'), findsOneWidget);
+    expect(find.text('First'), findsOneWidget);
     expect(find.byType(AppLoadingState), findsOneWidget);
     source.add(['Obsoleto']);
     await tester.pump();
     await tester.pump();
     expect(find.text('Obsoleto'), findsNothing);
-    replacement.add(['Actualizado']);
+    replacement.add(['Updated']);
     await tester.pump();
     await tester.pump();
-    expect(find.text('Actualizado'), findsOneWidget);
-    expect(find.text('Primero'), findsNothing);
+    expect(find.text('Updated'), findsOneWidget);
+    expect(find.text('First'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     addTearDown(replacement.close);
   });
@@ -153,15 +149,15 @@ void main() {
     await tester.pumpWidget(content(source.stream, connection));
     await tester.pump();
     await tester.pump();
-    source.add(['Contenido privado']);
+    source.add(['Private content']);
     await tester.pump();
     await tester.pump();
     source.addError(
-      FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
+      const AwsApiException(ApiFailure.forbidden),
     );
     await tester.pump();
     await tester.pump();
-    expect(find.text('Contenido privado'), findsNothing);
+    expect(find.text('Private content'), findsNothing);
     expect(find.byType(AppErrorState), findsOneWidget);
   });
 
@@ -196,7 +192,7 @@ void main() {
             stream: progress.stream,
             connectivity: connection,
             builder: (context, snapshot, retry) => Text(
-              snapshot.hasData ? 'Recibido: ${snapshot.data}' : 'Esperando',
+              snapshot.hasData ? 'Received: ${snapshot.data}' : 'Waiting',
             ),
           ),
         ),
@@ -204,12 +200,12 @@ void main() {
     );
     await tester.pump();
     await tester.pump();
-    expect(find.text('Esperando'), findsOneWidget);
+    expect(find.text('Waiting'), findsOneWidget);
     progress.add(null);
     await tester.pump();
     await tester.pump();
-    expect(find.text('Recibido: null'), findsOneWidget);
-    expect(find.text('Esperando'), findsNothing);
+    expect(find.text('Received: null'), findsOneWidget);
+    expect(find.text('Waiting'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     addTearDown(progress.close);
   });

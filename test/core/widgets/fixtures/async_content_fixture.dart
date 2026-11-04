@@ -42,15 +42,15 @@ Widget content(
               snapshot: snapshot,
               isEmpty: snapshot.data?.isEmpty ?? true,
               onRetry: retry,
-              emptyTitle: 'Sin fichas',
-              emptyMessage: 'No hay fichas disponibles.',
+              emptyTitle: 'No notes',
+              emptyMessage: 'No notes are available.',
             );
           }
           return Column(
             children: [
               AppAsyncNotice(snapshot: snapshot, onRetry: retry),
               Text(snapshot.data!.join(',')),
-              TextButton(onPressed: retry, child: const Text('Actualizar')),
+              TextButton(onPressed: retry, child: const Text('Refresh')),
             ],
           );
         },

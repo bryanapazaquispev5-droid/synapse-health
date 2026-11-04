@@ -15,11 +15,11 @@ void main() {
     (tester) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(
-        app(const AppLoadingState(message: 'Cargando fichas')),
+        app(const AppLoadingState(message: 'Loading notes')),
       );
       expect(find.byType(CupertinoActivityIndicator), findsOneWidget);
-      expect(find.text('Cargando fichas'), findsOneWidget);
-      expect(find.bySemanticsLabel('Cargando fichas'), findsOneWidget);
+      expect(find.text('Loading notes'), findsOneWidget);
+      expect(find.bySemanticsLabel('Loading notes'), findsOneWidget);
       semantics.dispose();
     },
   );
@@ -38,7 +38,7 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       expect(find.byType(CupertinoActivityIndicator), findsOneWidget);
-      expect(find.text('Cargando…'), findsNothing);
+      expect(find.text('Loading…'), findsNothing);
     },
   );
 
@@ -47,16 +47,16 @@ void main() {
     await tester.pumpWidget(
       app(
         AppEmptyState(
-          title: 'Sin resultados',
-          message: 'Prueba con otro término.',
-          actionLabel: 'Limpiar búsqueda',
+          title: 'No results',
+          message: 'Try another term.',
+          actionLabel: 'Clear search',
           onAction: () => cleared++,
         ),
       ),
     );
-    expect(find.text('Sin resultados'), findsOneWidget);
-    expect(find.text('Prueba con otro término.'), findsOneWidget);
-    await tester.tap(find.text('Limpiar búsqueda'));
+    expect(find.text('No results'), findsOneWidget);
+    expect(find.text('Try another term.'), findsOneWidget);
+    await tester.tap(find.text('Clear search'));
     expect(cleared, 1);
   });
 
@@ -70,7 +70,7 @@ void main() {
             offline
                 ? AppOfflineState(onRetry: () => retries++)
                 : AppErrorState(
-                    message: 'No se pudieron cargar las fichas.',
+                    message: 'Could not load the notes.',
                     onRetry: () => retries++,
                   ),
           ),
@@ -78,12 +78,12 @@ void main() {
         expect(
           find.text(
             offline
-                ? 'Sin conexión a Internet'
-                : 'No se pudo cargar el contenido',
+                ? 'No internet connection'
+                : 'Could not load the content',
           ),
           findsOneWidget,
         );
-        await tester.tap(find.text('Reintentar'));
+        await tester.tap(find.text('Retry'));
         expect(retries, 1);
       },
     );
@@ -95,11 +95,11 @@ void main() {
     await tester.pumpWidget(
       app(
         const AppErrorState(
-          message: 'No tienes permiso para ver este contenido.',
+          message: 'You do not have permission to view this content.',
         ),
       ),
     );
-    expect(find.text('Reintentar'), findsNothing);
+    expect(find.text('Retry'), findsNothing);
   });
 
   testWidgets(
@@ -119,7 +119,7 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       expect(find.byType(SingleChildScrollView), findsOneWidget);
-      await tester.ensureVisible(find.text('Reintentar'));
+      await tester.ensureVisible(find.text('Retry'));
       expect(tester.takeException(), isNull);
     },
   );
@@ -129,8 +129,8 @@ void main() {
       for (final state in [
         const AppLoadingState(),
         const AppEmptyState(
-          title: 'Sin fichas',
-          message: 'Todavía no hay fichas.',
+          title: 'No notes',
+          message: 'There are no notes yet.',
         ),
         AppErrorState(onRetry: () {}),
         AppOfflineState(onRetry: () {}),
@@ -139,7 +139,7 @@ void main() {
           app(
             CustomScrollView(
               slivers: [
-                const SliverToBoxAdapter(child: Text('Fichas')),
+                const SliverToBoxAdapter(child: Text('Notes')),
                 SliverFillRemaining(hasScrollBody: false, child: state),
               ],
             ),

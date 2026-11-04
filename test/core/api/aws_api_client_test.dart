@@ -40,7 +40,7 @@ void main() {
     });
   }
 
-  test('uses own profile route and Firebase bearer token', () async {
+  test('uses own profile route and authenticated bearer token', () async {
     final api = client((uri, headers, method, body) async {
       expect(uri.toString(), 'https://api.example.test/stage/v1/me/profile');
       expect(headers['Authorization'], 'Bearer test-token');

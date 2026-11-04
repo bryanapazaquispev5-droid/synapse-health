@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: widget_test.dart
-// Propósito: Suite de pruebas unitarias y de widgets para validar el funcionamiento correcto de [widget_test].
+// File: widget_test.dart
+// Purpose: Unit and widget test suite for validating [widget_test].
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
 
 void main() {
-  testWidgets('Carga de Tema y Estilos de Synapse Health', (WidgetTester tester) async {
+  testWidgets('Load Synapse Health Theme and Styles', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.lightTheme,
