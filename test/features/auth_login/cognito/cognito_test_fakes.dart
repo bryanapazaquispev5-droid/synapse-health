@@ -53,6 +53,7 @@ Map<String, dynamic> tokens({
   String sub = 'student',
   String? issuer,
   String? client,
+  bool emailVerified = false,
 }) {
   final expiry =
       now.add(Duration(seconds: expired ? -60 : 3600)).millisecondsSinceEpoch ~/
@@ -69,6 +70,7 @@ Map<String, dynamic> tokens({
       'token_use': 'id',
       'aud': client ?? config.clientId,
       'email': 'local@example.test',
+      'email_verified': emailVerified,
       'name': 'Local test',
     }),
     'RefreshToken': refresh,

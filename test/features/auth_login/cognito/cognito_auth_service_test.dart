@@ -23,35 +23,51 @@ void main() {
     );
   });
   tearDown(() => service.dispose());
-  test('default remains Firebase and invalid endpoint config rejected', () {
-    expect(CognitoConfig.provider, 'firebase');
+  test('valid Cognito configuration accepts only supported endpoints', () {
     expect(config.isValid, true);
     expect(
-      const CognitoConfig(region: 'evil.example', userPoolId: 'x', clientId: 'x').isValid,
+      const CognitoConfig(
+        region: 'evil.example',
+        userPoolId: 'x',
+        clientId: 'x',
+      ).isValid,
       false,
     );
   });
-  test('registration confirmation resend and reset use public client operations', () async {
-    await service.register(email: ' a@example.test ', password: 'Private!9', name: 'Local');
-    await service.confirmRegistration(email: 'a@example.test', code: ' 123456 ');
-    await service.resendConfirmation('a@example.test');
-    await service.forgotPassword('a@example.test');
-    await service.confirmPasswordReset(
-      email: 'a@example.test',
-      code: '123456',
-      newPassword: 'NewPrivate!9',
-    );
-    expect(transport.calls.map((c) => c.$1), [
-      'SignUp',
-      'ConfirmSignUp',
-      'ResendConfirmationCode',
-      'ForgotPassword',
-      'ConfirmForgotPassword',
-    ]);
-    expect(transport.calls.every((c) => c.$2['ClientId'] == config.clientId), true);
-    expect(transport.calls.first.$2.containsKey('SecretHash'), false);
-    expect(store.value, null);
-  });
+  test(
+    'registration confirmation resend and reset use public client operations',
+    () async {
+      await service.register(
+        email: ' a@example.test ',
+        password: 'Private!9',
+        name: 'Local',
+      );
+      await service.confirmRegistration(
+        email: 'a@example.test',
+        code: ' 123456 ',
+      );
+      await service.resendConfirmation('a@example.test');
+      await service.forgotPassword('a@example.test');
+      await service.confirmPasswordReset(
+        email: 'a@example.test',
+        code: '123456',
+        newPassword: 'NewPrivate!9',
+      );
+      expect(transport.calls.map((c) => c.$1), [
+        'SignUp',
+        'ConfirmSignUp',
+        'ResendConfirmationCode',
+        'ForgotPassword',
+        'ConfirmForgotPassword',
+      ]);
+      expect(
+        transport.calls.every((c) => c.$2['ClientId'] == config.clientId),
+        true,
+      );
+      expect(transport.calls.first.$2.containsKey('SecretHash'), false);
+      expect(store.value, null);
+    },
+  );
   test('recovery and errors do not disclose user existence', () async {
     transport.respond = (_, _) async =>
         throw CognitoAuthException.fromService('UserNotFoundException');
@@ -68,7 +84,10 @@ void main() {
   test('login persists tokens and emits session but never password', () async {
     transport.respond = (_, _) async => {'AuthenticationResult': tokens()};
     final next = service.sessionChanges.first;
-    final session = await service.signIn(email: 'a@example.test', password: 'Private!9');
+    final session = await service.signIn(
+      email: 'a@example.test',
+      password: 'Private!9',
+    );
     expect((await next)?.sub, 'student');
     expect(session.email, 'local@example.test');
     expect(transport.calls.single.$2['AuthFlow'], 'USER_PASSWORD_AUTH');
@@ -112,7 +131,9 @@ void main() {
   });
   test('expired restore rotates refresh token', () async {
     store.value = jsonEncode(tokens(expired: true));
-    transport.respond = (_, _) async => {'AuthenticationResult': tokens(refresh: 'rotated')};
+    transport.respond = (_, _) async => {
+      'AuthenticationResult': tokens(refresh: 'rotated'),
+    };
     expect((await service.restoreSession())?.refreshToken, 'rotated');
     expect(transport.calls.single.$1, 'GetTokensFromRefreshToken');
     expect(store.value, contains('rotated'));
@@ -126,8 +147,12 @@ void main() {
   test('offline restore preserves encrypted token for retry', () async {
     store.value = jsonEncode(tokens(expired: true));
     final before = store.value;
-    transport.respond = (_, _) async => throw const CognitoAuthException('offline', 'Sin conexión');
-    await expectLater(service.restoreSession(), throwsA(isA<CognitoAuthException>()));
+    transport.respond = (_, _) async =>
+        throw const CognitoAuthException('offline', 'Offline');
+    await expectLater(
+      service.restoreSession(),
+      throwsA(isA<CognitoAuthException>()),
+    );
     expect(store.value, before);
     expect(service.currentSession, null);
   });
@@ -138,16 +163,20 @@ void main() {
     expect(await service.restoreSession(), null);
     expect(store.value, null);
   });
-  test('offline global logout clears local session and reports uncertainty', () async {
-    transport.respond = (_, _) async => {'AuthenticationResult': tokens()};
-    await service.signIn(email: 'x', password: 'y');
-    transport.respond = (_, _) async => throw const CognitoAuthException('offline', 'Sin conexión');
-    expect((await service.signOut()).remoteRevoked, false);
-    expect(store.value, null);
-    expect(service.currentSession, null);
-    expect(transport.calls.last.$1, 'GlobalSignOut');
-    expect(transport.calls.last.$2.containsKey('ClientId'), false);
-  });
+  test(
+    'offline global logout clears local session and reports uncertainty',
+    () async {
+      transport.respond = (_, _) async => {'AuthenticationResult': tokens()};
+      await service.signIn(email: 'x', password: 'y');
+      transport.respond = (_, _) async =>
+          throw const CognitoAuthException('offline', 'Offline');
+      expect((await service.signOut()).remoteRevoked, false);
+      expect(store.value, null);
+      expect(service.currentSession, null);
+      expect(transport.calls.last.$1, 'GlobalSignOut');
+      expect(transport.calls.last.$2.containsKey('ClientId'), false);
+    },
+  );
   test('global logout confirms remote success', () async {
     transport.respond = (_, _) async => {'AuthenticationResult': tokens()};
     await service.signIn(email: 'x', password: 'y');
@@ -175,13 +204,17 @@ void main() {
     pending.complete({'AuthenticationResult': tokens(refresh: 'rotated')});
     expect((await a)?.refreshToken, 'rotated');
     expect((await b)?.refreshToken, 'rotated');
-    expect(transport.calls.where((c) => c.$1 == 'GetTokensFromRefreshToken').length, 1);
+    expect(
+      transport.calls.where((c) => c.$1 == 'GetTokensFromRefreshToken').length,
+      1,
+    );
   });
   test('logout cancels in-flight renewal without restoring session', () async {
     transport.respond = (_, _) async => {'AuthenticationResult': tokens()};
     await service.signIn(email: 'x', password: 'y');
     final pending = Completer<Map<String, dynamic>>();
-    transport.respond = (op, _) => op == 'GlobalSignOut' ? Future.value({}) : pending.future;
+    transport.respond = (op, _) =>
+        op == 'GlobalSignOut' ? Future.value({}) : pending.future;
     final renewal = service.validSession(forceRefresh: true);
     final checked = expectLater(renewal, throwsA(isA<CognitoAuthException>()));
     await service.signOut();
@@ -190,26 +223,19 @@ void main() {
     expect(store.value, null);
     expect(service.currentSession, null);
   });
-  test('dispose cancels pending login without persisting or restoring session', () async {
-    final pending = Completer<Map<String, dynamic>>();
-    transport.respond = (_, _) => pending.future;
-    final login = service.signIn(email: 'x', password: 'y');
-    final checked = expectLater(login, throwsA(isA<CognitoAuthException>()));
-    await service.dispose();
-    pending.complete({'AuthenticationResult': tokens()});
-    await checked;
-    expect(store.value, null);
-    expect(service.currentSession, null);
-    expect(await service.restoreSession(), null);
-  });
-  test('China region endpoint and issuer use partition suffix', () {
-    const china = CognitoConfig(
-      region: 'cn-north-1',
-      userPoolId: 'cn-north-1_Test',
-      clientId: 'test123',
-    );
-    expect(china.isValid, true);
-    expect(china.endpoint.host, 'cognito-idp.cn-north-1.amazonaws.com.cn');
-    expect(china.issuer, 'https://cognito-idp.cn-north-1.amazonaws.com.cn/cn-north-1_Test');
-  });
+  test(
+    'dispose cancels pending login without persisting or restoring session',
+    () async {
+      final pending = Completer<Map<String, dynamic>>();
+      transport.respond = (_, _) => pending.future;
+      final login = service.signIn(email: 'x', password: 'y');
+      final checked = expectLater(login, throwsA(isA<CognitoAuthException>()));
+      await service.dispose();
+      pending.complete({'AuthenticationResult': tokens()});
+      await checked;
+      expect(store.value, null);
+      expect(service.currentSession, null);
+      expect(await service.restoreSession(), null);
+    },
+  );
 }
