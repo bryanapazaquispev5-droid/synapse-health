@@ -283,3 +283,327 @@ test("UNIT-BE-25 | ordering validation case 25", () => {
   );
 });
 
+// PRUEBAS MASIVAS — BE (25)
+
+
+// Prueba masiva 1: Cada opción correcta se prueba con su posición en la lista. Las cuatro
+// respuestas deben ser correctas y recibir una estrella.
+test("MASS-BE-26 | choice boundary case 01", () => {
+  for (let index = 0; index < options.length; index++) {
+    const result = single(
+      { correctIndex: index },
+      { selectedOptionText: options[index] },
+    );
+    assert.equal(result.isCorrect, true, `correctIndex=${index}`);
+    assert.equal(result.earnedStars, 1, `correctIndex=${index}`);
+  }
+});
+
+
+// Prueba masiva 2: Se elige cada opción incorrecta de la pregunta. El backend debe reconocer
+// que la respuesta existe, pero dar cero estrellas.
+test("MASS-BE-27 | choice boundary case 02", () => {
+  for (const selectedOptionText of ["B", "C", "D"]) {
+    const result = single({ correctIndex: 0 }, { selectedOptionText });
+    assert.equal(result.isCorrect, false, selectedOptionText);
+    assert.equal(result.earnedStars, 0, selectedOptionText);
+  }
+});
+
+
+// Prueba masiva 3: El índice de opción usa decimales como 1.5. El backend debe responder HTTP
+// 400 y no redondear el valor.
+test("MASS-BE-28 | choice boundary case 03", () => {
+  for (const selectedOptionIndex of [0.1, 1.5, 2.99]) {
+    expectApiError(
+      () => single({}, { selectedOptionText: "A", selectedOptionIndex }),
+      400,
+      "invalid_request",
+    );
+  }
+});
+
+
+// Prueba masiva 4: El índice llega como verdadero, falso o null, en vez de un número entero. El
+// backend debe rechazar cada caso con HTTP 400.
+test("MASS-BE-29 | choice boundary case 04", () => {
+  for (const selectedOptionIndex of [true, false, null]) {
+    expectApiError(
+      () => single({}, { selectedOptionText: "A", selectedOptionIndex }),
+      400,
+      "invalid_request",
+    );
+  }
+});
+
+
+// Prueba masiva 5: La pregunta tiene 100 opciones y se elige la última usando el índice 99. Ese
+// límite debe aceptarse y calificarse bien.
+test("MASS-BE-30 | choice boundary case 05", () => {
+  const largeOptions = Array.from({ length: 100 }, (_, index) => `option-${index}`);
+  const result = score(
+    { type: "single_choice", options: largeOptions, correctIndex: 99 },
+    { selectedOptionText: "option-99", selectedOptionIndex: 99 },
+  );
+  assert.equal(result.isCorrect, true);
+  assert.equal(result.selectedOptionIndex, 99);
+});
+
+
+// Prueba masiva 6: El catálogo tiene 101 opciones, una más del máximo permitido. El backend
+// debe rechazarlo con HTTP 400.
+test("MASS-BE-31 | choice boundary case 06", () => {
+  expectApiError(
+    () =>
+      single({ options: Array.from({ length: 101 }, (_, index) => `option-${index}`) }),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 7: El catálogo apunta a un índice después de la última opción. El backend debe
+// responder HTTP 503 porque los datos de la pregunta no coinciden.
+test("MASS-BE-32 | choice boundary case 07", () => {
+  expectApiError(
+    () => single({ correctIndex: options.length }),
+    503,
+    "invalid_catalog",
+  );
+});
+
+
+// Prueba masiva 8: La opción elegida cambia A por a. Como el texto no coincide exactamente con
+// las opciones, el backend debe responder HTTP 400.
+test("MASS-BE-33 | choice boundary case 08", () => {
+  expectApiError(() => single({}, { selectedOptionText: "a" }), 400, "invalid_request");
+});
+
+
+// Prueba masiva 9: Las opciones llegan como texto "A,B,C" y no como lista. El backend debe
+// responder HTTP 400 porque el formato es incorrecto.
+test("MASS-BE-34 | choice boundary case 09", () => {
+  expectApiError(() => single({ options: "A,B,C" }), 400, "invalid_request");
+});
+
+
+// Prueba masiva 10: Una opción del catálogo está vacía. El backend debe rechazar la pregunta
+// con HTTP 400 en vez de intentar calificarla.
+test("MASS-BE-35 | choice boundary case 10", () => {
+  expectApiError(() => single({ options: ["A", "", "C"] }), 400, "invalid_request");
+});
+
+
+// Prueba masiva 11: Las dos parejas correctas llegan en orden distinto. El orden no cambia sus
+// relaciones, así que deben contarse ambas estrellas.
+test("MASS-BE-36 | matching boundary case 11", () => {
+  const result = score(
+    { type: "matching", matchingPairs },
+    { pairs: [matchingPairs[1], matchingPairs[0]] },
+  );
+  assert.equal(result.isCorrect, true);
+  assert.equal(result.earnedStars, 2);
+});
+
+
+// Prueba masiva 12: Dos respuestas usan el mismo elemento derecho y dejan otro sin pareja. El
+// backend debe rechazar la solicitud con HTTP 400.
+test("MASS-BE-37 | matching boundary case 12", () => {
+  expectApiError(
+    () =>
+      score(
+        { type: "matching", matchingPairs },
+        {
+          pairs: [
+            { left: "Heart", right: "Pumps blood" },
+            { left: "Lung", right: "Pumps blood" },
+          ],
+        },
+      ),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 13: Una pareja usa el número 1 donde debería ir texto. El backend debe
+// responder HTTP 400 porque los nombres deben ser texto.
+test("MASS-BE-38 | matching boundary case 13", () => {
+  expectApiError(
+    () =>
+      score(
+        { type: "matching", matchingPairs },
+        {
+          pairs: [
+            { left: 1, right: "Pumps blood" },
+            { left: "Lung", right: "Exchanges gases" },
+          ],
+        },
+      ),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 14: Una pareja contiene el campo adicional index. El backend solo admite los
+// datos de cada pareja y debe rechazar el extra con HTTP 400.
+test("MASS-BE-39 | matching boundary case 14", () => {
+  expectApiError(
+    () =>
+      score(
+        { type: "matching", matchingPairs },
+        {
+          pairs: [{ left: "Heart", right: "Pumps blood", index: 0 }, matchingPairs[1]],
+        },
+      ),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 15: Las parejas llegan en una frase en vez de una lista. El backend debe
+// responder HTTP 400 por el formato incorrecto.
+test("MASS-BE-40 | matching boundary case 15", () => {
+  expectApiError(
+    () => score({ type: "matching", matchingPairs }, { pairs: "Heart=Pumps blood" }),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 16: La respuesta contiene 101 parejas, más del límite permitido. El backend
+// debe rechazarla con HTTP 400.
+test("MASS-BE-41 | matching boundary case 16", () => {
+  const pairs = Array.from({ length: 101 }, (_, index) => ({
+    left: `L${index}`,
+    right: `R${index}`,
+  }));
+  expectApiError(
+    () => score({ type: "matching", matchingPairs }, { pairs }),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 17: El orden propuesto incluye el paso C, que no está en la pregunta. El
+// backend debe rechazarlo con HTTP 400.
+test("MASS-BE-42 | ordering boundary case 17", () => {
+  expectApiError(
+    () =>
+      score(
+        { type: "ordering", orderingItems: ["A", "B"] },
+        { items: ["A", "B", "C"] },
+      ),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 18: La respuesta omite uno de los pasos que sí pide la pregunta. El backend
+// debe rechazarla con HTTP 400 por incompleta.
+test("MASS-BE-43 | ordering boundary case 18", () => {
+  expectApiError(
+    () =>
+      score(
+        { type: "ordering", orderingItems: ["A", "B", "C"] },
+        { items: ["A", "B"] },
+      ),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 19: Los pasos llegan como texto separado por comas, no como lista. El backend
+// debe responder HTTP 400 por formato incorrecto.
+test("MASS-BE-44 | ordering boundary case 19", () => {
+  expectApiError(
+    () => score({ type: "ordering", orderingItems: ["A", "B"] }, { items: "A,B" }),
+    400,
+    "invalid_request",
+  );
+});
+
+
+// Prueba masiva 20: De cuatro pasos, dos quedan en su posición correcta. El backend debe dar
+// dos estrellas de cuatro y marcar el resultado como incompleto.
+test("MASS-BE-45 | ordering boundary case 20", () => {
+  const result = score(
+    { type: "ordering", orderingItems: ["A", "B", "C", "D"] },
+    { items: ["A", "C", "B", "D"] },
+  );
+  assert.equal(result.earnedStars, 2);
+  assert.equal(result.maxStars, 4);
+  assert.equal(result.isCorrect, false);
+});
+
+
+// Prueba masiva 21: Se ordenan correctamente 100 pasos, el máximo permitido. El backend debe
+// aceptar la respuesta y contar 100 estrellas.
+test("MASS-BE-46 | ordering boundary case 21", () => {
+  const items = Array.from({ length: 100 }, (_, index) => `step-${index}`);
+  const result = score({ type: "ordering", orderingItems: items }, { items });
+  assert.equal(result.earnedStars, 100);
+  assert.equal(result.isCorrect, true);
+});
+
+
+// Prueba masiva 22: El catálogo contiene 101 pasos, por encima del límite. El backend debe
+// responder HTTP 503 porque la pregunta está mal configurada.
+test("MASS-BE-47 | ordering boundary case 22", () => {
+  const orderingItems = Array.from({ length: 101 }, (_, index) => `step-${index}`);
+  expectApiError(
+    () => score({ type: "ordering", orderingItems }, { items: orderingItems }),
+    503,
+    "invalid_catalog",
+  );
+});
+
+
+// Prueba masiva 23: La pregunta para relacionar no tiene parejas. El backend debe responder
+// HTTP 503 porque no puede calcular un máximo válido.
+test("MASS-BE-48 | ordering boundary case 23", () => {
+  expectApiError(
+    () => score({ type: "matching", matchingPairs: [] }, { pairs: [] }),
+    503,
+    "invalid_catalog",
+  );
+});
+
+
+// Prueba masiva 24: El máximo de parejas falta, está vacío o supera 100. En los tres casos el
+// backend debe marcar el catálogo como inválido con HTTP 503.
+test("MASS-BE-49 | ordering boundary case 24", () => {
+  for (const matchingPairs of [
+    undefined,
+    [],
+    Array.from({ length: 101 }, (_, i) => ({ left: `L${i}`, right: `R${i}` })),
+  ]) {
+    expectApiError(
+      () => maxStars({ type: "matching", matchingPairs }),
+      503,
+      "invalid_catalog",
+    );
+  }
+});
+
+
+// Prueba masiva 25: El orden incluye un paso vacío o un número. El backend exige nombres de
+// pasos como texto no vacío y debe responder HTTP 400.
+test("MASS-BE-50 | ordering boundary case 25", () => {
+  for (const items of [
+    ["A", ""],
+    ["A", 2],
+  ]) {
+    expectApiError(
+      () => score({ type: "ordering", orderingItems: ["A", "B"] }, { items }),
+      400,
+      "invalid_request",
+    );
+  }
+});
