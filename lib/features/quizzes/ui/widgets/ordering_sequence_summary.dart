@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: ordering_sequence_summary.dart
-// Propósito: Componente interactivo [ordering_sequence_summary] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: ordering_sequence_summary.dart
+// Purpose: Interactive component [ordering_sequence_summary] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [OrderingSequenceSummary]
+// Main definition of the class [OrderingSequenceSummary]
 class OrderingSequenceSummary extends StatelessWidget {
   final List<String> correctSequence;
   final List<String> currentItems;
@@ -26,8 +26,8 @@ class OrderingSequenceSummary extends StatelessWidget {
     return true;
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final bool isAllCorrect = _areListsEqual(currentItems, correctSequence);
@@ -51,7 +51,7 @@ class OrderingSequenceSummary extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                isAllCorrect ? '¡Secuencia Exacta!' : 'Secuencia Anatómica Canónica',
+                isAllCorrect ? 'Exact Sequence!' : 'Canonical Anatomical Sequence',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,

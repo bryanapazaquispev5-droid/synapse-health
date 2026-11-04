@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_general_exam_card.dart
-// Propósito: Componente interactivo [quiz_general_exam_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: quiz_general_exam_card.dart
+// Purpose: Interactive component [quiz_general_exam_card] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,14 +9,14 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../cheatsheets/model/medical_area_model.dart';
 import '../area_quizzes_screen.dart';
 
-// Componente visual modular [QuizGeneralExamCard]
+// Modular visual component [QuizGeneralExamCard]
 class QuizGeneralExamCard extends StatelessWidget {
   final MedicalAreaModel area;
 
   const QuizGeneralExamCard({super.key, required this.area});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -54,7 +54,7 @@ class QuizGeneralExamCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Banco General de Quizzes',
+                  'General Quiz Bank',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -64,7 +64,7 @@ class QuizGeneralExamCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Todas las preguntas acumuladas de ${area.name}',
+                  'All accumulated questions for ${area.name}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textMuted,
@@ -79,7 +79,7 @@ class QuizGeneralExamCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             minimumSize: const Size(60, 32),
             onPressed: () {
-              // Bloque: Navegación y transición fluida hacia la siguiente pantalla
+              // Block: Navigate smoothly to the next screen
               Navigator.push(
                 context,
                 AppPageRoute(

@@ -28,7 +28,7 @@ class TopicQuizzesAppBar extends StatelessWidget {
                   ),
                   SizedBox(width: 2),
                   Text(
-                    'Temas',
+                    'Topics',
                     style: TextStyle(
                       fontSize: 17,
                       color: AppColors.accent,

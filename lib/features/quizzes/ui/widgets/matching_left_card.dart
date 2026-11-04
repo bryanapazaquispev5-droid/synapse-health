@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: matching_left_card.dart
-// Propósito: Componente interactivo [matching_left_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: matching_left_card.dart
+// Purpose: Interactive component [matching_left_card] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [MatchingLeftCard]
+// Modular visual component [MatchingLeftCard]
 class MatchingLeftCard extends StatelessWidget {
   final int index;
   final String text;
@@ -32,8 +32,8 @@ class MatchingLeftCard extends StatelessWidget {
     required this.onTap,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     Color bg = AppColors.surface;
@@ -132,7 +132,7 @@ class MatchingLeftCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
-                        'Toca pareja',
+                        'Tap a pair',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,

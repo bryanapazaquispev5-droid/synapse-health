@@ -1,9 +1,10 @@
 // ============================================================================
-// Archivo: quiz_question_body.dart
-// Propósito: Componente ensamblador para el cuerpo de la pregunta interactiva (opciones, matching, ordering y rationale).
+// File: quiz_question_body.dart
+// Purpose: Assembly component for the interactive question body (options, matching, ordering, and rationale).
 // ============================================================================
 
 import 'package:flutter/material.dart';
+
 import '../../model/quiz_model.dart';
 import 'interactive_matching_widget.dart';
 import 'interactive_ordering_widget.dart';
@@ -11,9 +12,10 @@ import 'quiz_option_card.dart';
 import 'quiz_prompt_card.dart';
 import 'quiz_rationale_card.dart';
 
-// Componente visual modular [QuizQuestionBody]
+// Modular visual component [QuizQuestionBody]
 class QuizQuestionBody extends StatelessWidget {
   final QuizModel quiz;
+  final ValueChanged<Map<String, dynamic>>? onAnswer;
   final int currentIndex;
   final bool isAnswered;
   final int? selectedOptionIndex;
@@ -23,12 +25,15 @@ class QuizQuestionBody extends StatelessWidget {
   final int currentMaxStars;
   final int currentQuestionSeconds;
   final ValueChanged<int> onOptionSelected;
-  final void Function(bool isCorrect, int earnedStars, int maxStars) onMatchingCompleted;
-  final void Function(bool isCorrect, int earnedStars, int maxStars) onOrderingCompleted;
+  final void Function(bool isCorrect, int earnedStars, int maxStars)
+  onMatchingCompleted;
+  final void Function(bool isCorrect, int earnedStars, int maxStars)
+  onOrderingCompleted;
 
   const QuizQuestionBody({
     super.key,
     required this.quiz,
+    this.onAnswer,
     required this.currentIndex,
     required this.isAnswered,
     required this.selectedOptionIndex,
@@ -42,8 +47,8 @@ class QuizQuestionBody extends StatelessWidget {
     required this.onOrderingCompleted,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -57,6 +62,7 @@ class QuizQuestionBody extends StatelessWidget {
             key: ValueKey('${quiz.id}_$currentIndex'),
             quiz: quiz,
             isAnswered: isAnswered,
+            onAnswer: onAnswer,
             onCompleted: onMatchingCompleted,
           ),
         ] else if (quiz.type == 'ordering') ...[
@@ -64,6 +70,7 @@ class QuizQuestionBody extends StatelessWidget {
             key: ValueKey('${quiz.id}_$currentIndex'),
             quiz: quiz,
             isAnswered: isAnswered,
+            onAnswer: onAnswer,
             onCompleted: onOrderingCompleted,
           ),
         ] else ...[

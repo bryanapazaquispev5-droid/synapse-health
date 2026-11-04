@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_list_screen.dart
-// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [quiz_list_screen].
+// File: quiz_list_screen.dart
+// Purpose: Screen for selecting and listing clinical quizzes [quiz_list_screen].
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -11,7 +11,7 @@ import '../api/quiz_service.dart';
 import '../model/quiz_model.dart';
 import 'widgets/quiz_list_tile.dart';
 
-// Pantalla de interfaz de usuario [QuizListScreen]
+// User interface screen [QuizListScreen]
 class QuizListScreen extends StatefulWidget {
   const QuizListScreen({super.key});
 
@@ -19,7 +19,7 @@ class QuizListScreen extends StatefulWidget {
   State<QuizListScreen> createState() => _QuizListScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [QuizListScreen]
+// Reactive state and lifecycle management for [QuizListScreen]
 class _QuizListScreenState extends State<QuizListScreen>
     with AutomaticKeepAliveClientMixin {
   final QuizService _quizService = QuizService();
@@ -28,16 +28,16 @@ class _QuizListScreenState extends State<QuizListScreen>
   @override
   bool get wantKeepAlive => true;
 
-  // Inicializacion de dependencias y estado local del componente
-  // Bloque: Inicialización de controladores, listeners y estado local
+  // Initialize the component dependencies and local state
+  // Block: Initialize controllers, listeners, and local state
   @override
   void initState() {
     super.initState();
     _quizzesStream = _quizService.getQuizzesByAreaStream('anatomia');
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -78,7 +78,7 @@ class _QuizListScreenState extends State<QuizListScreen>
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Evaluaciones rápidas con 3 alternativas y retroalimentación médica inmediata.',
+                          'Quick assessments with three options and immediate medical feedback.',
                           style: TextStyle(
                             fontSize: 14,
                             color: AppColors.textMuted,
@@ -105,8 +105,8 @@ class _QuizListScreenState extends State<QuizListScreen>
                       snapshot: snapshot,
                       isEmpty: quizzes.isEmpty,
                       onRetry: retry,
-                      emptyTitle: 'No hay quizzes disponibles',
-                      emptyMessage: 'Los quizzes de esta área aparecerán aquí.',
+                      emptyTitle: 'No quizzes available',
+                      emptyMessage: 'Quizzes for this area will appear here.',
                     ),
                   )
                 else
@@ -119,7 +119,7 @@ class _QuizListScreenState extends State<QuizListScreen>
                           quiz: quiz,
                           index: index + 1,
                           allQuizzes: quizzes,
-                          areaTitle: 'Anatomía Humana',
+                          areaTitle: 'Human Anatomy',
                         );
                       }, childCount: quizzes.length),
                     ),

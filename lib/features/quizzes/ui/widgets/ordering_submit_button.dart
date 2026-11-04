@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: ordering_submit_button.dart
-// Propósito: Botón de acción para comprobar la secuencia ordenada en quizzes de ordenamiento.
+// File: ordering_submit_button.dart
+// Purpose: Action button for checking the ordered sequence in ordering quizzes.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definición principal de la clase [OrderingSubmitButton]
+// Main definition of the class [OrderingSubmitButton]
 class OrderingSubmitButton extends StatelessWidget {
   final VoidCallback onCheckOrder;
 
@@ -16,8 +16,8 @@ class OrderingSubmitButton extends StatelessWidget {
     required this.onCheckOrder,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -39,7 +39,7 @@ class OrderingSubmitButton extends StatelessWidget {
               ),
               SizedBox(width: 8),
               Text(
-                'Comprobar Secuencia',
+                'Check Sequence',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,

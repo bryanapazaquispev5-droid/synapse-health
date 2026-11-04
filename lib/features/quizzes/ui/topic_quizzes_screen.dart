@@ -1,4 +1,4 @@
-// Bloque: Pantalla de selección y listado de cuestionarios clínicos con progreso y reintentos
+// Block: Screen for selecting and listing clinical quizzes, progress, and retries
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +16,7 @@ import 'widgets/quiz_topic_action_card.dart';
 import 'widgets/quiz_topic_retry_card.dart';
 import 'widgets/topic_quizzes_header.dart';
 
-// Bloque: Pantalla principal [TopicQuizzesScreen]
+// Block: Main screen [TopicQuizzesScreen]
 class TopicQuizzesScreen extends StatefulWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -136,9 +136,9 @@ class _TopicQuizzesScreenState extends State<TopicQuizzesScreen> {
                           snapshot: snapshot,
                           isEmpty: quizzes.isEmpty,
                           onRetry: retry,
-                          emptyTitle: 'No hay quizzes en este tema',
+                          emptyTitle: 'No quizzes in this topic',
                           emptyMessage:
-                              'Los quizzes disponibles aparecerán aquí.',
+                              'Available quizzes will appear here.',
                           emptyIcon: CupertinoIcons.question_circle,
                         ),
                       )
@@ -149,8 +149,8 @@ class _TopicQuizzesScreenState extends State<TopicQuizzesScreen> {
                           snapshot: progressSnap,
                           isEmpty: false,
                           onRetry: retryProgress,
-                          emptyTitle: 'Progreso no disponible',
-                          emptyMessage: 'No pudimos cargar tu progreso.',
+                          emptyTitle: 'Progress unavailable',
+                          emptyMessage: 'We could not load your progress.',
                         ),
                       )
                     else

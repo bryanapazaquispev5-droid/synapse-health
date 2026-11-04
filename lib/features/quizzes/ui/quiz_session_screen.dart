@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ios_top_banner.dart';
-import '../api/quiz_progress_service.dart';
+import '../api/quiz_session_persistence.dart';
 import '../model/quiz_model.dart';
 import '../utils/quiz_scoring_helper.dart';
 import 'widgets/quiz_question_body.dart';
@@ -13,7 +13,7 @@ import 'widgets/quiz_result_view.dart';
 import 'widgets/quiz_session_bottom_bar.dart';
 import 'widgets/quiz_session_header.dart';
 
-// Bloque: Pantalla principal [QuizSessionScreen]
+// Block: Main screen [QuizSessionScreen]
 class QuizSessionScreen extends StatefulWidget {
   final List<QuizModel> quizzes;
   final String areaTitle;
@@ -22,7 +22,7 @@ class QuizSessionScreen extends StatefulWidget {
   const QuizSessionScreen({
     super.key,
     required this.quizzes,
-    this.areaTitle = 'Anatomía Humana',
+    this.areaTitle = 'Human Anatomy',
     this.initialIndex = 0,
   });
 
@@ -31,6 +31,7 @@ class QuizSessionScreen extends StatefulWidget {
 }
 
 class _QuizSessionScreenState extends State<QuizSessionScreen> {
+  final _persistence = QuizSessionPersistence();
   late List<QuizModel> _sessionQuizzes;
   late int _currentIndex, _totalMaxStars;
   int? _selectedOptionIndex;
@@ -69,8 +70,9 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     super.dispose();
   }
 
-  // Bloque: Helper común para reiniciar campos de la pregunta activa
+  // Block: Shared helper for resetting the active question fields
   void _resetQuestionFields() {
+    _persistence.answer = null;
     _selectedOptionIndex = null;
     _isMatchingCorrect = null;
     _isOrderingCorrect = null;
@@ -81,7 +83,6 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     _questionStartTime = DateTime.now();
   }
 
-  // Bloque: Registro en segundo plano del progreso en Firestore
   void _recordProgress({
     required bool isCorrect,
     required int earnedStars,
@@ -89,20 +90,18 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     int? selectedOptionIndex,
   }) {
     final quiz = _sessionQuizzes[_currentIndex];
-    QuizProgressService()
-        .recordQuestionAnswer(
-          areaId: quiz.areaId,
-          topicId: quiz.topicId,
-          quizId: quiz.id,
+    _persistence
+        .record(
+          quiz,
           isCorrect: isCorrect,
           earnedStars: earnedStars,
           maxStars: maxStars,
+          totalMaxStars: _totalMaxStars,
           selectedOptionIndex: selectedOptionIndex,
-          topicTotalMaxStars: _totalMaxStars,
         )
         .catchError((Object error) {
           if (mounted) {
-            IosTopBanner.error(context, 'No se pudo guardar tu respuesta. Verifica tu conexión e inténtalo de nuevo.');
+            IosTopBanner.error(context, 'Could not save your answer. Check your connection and try again.');
           }
         });
   }
@@ -110,6 +109,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   void _handleOptionSelected(int index) {
     if (_isAnswered) return;
     final currentQuiz = _sessionQuizzes[_currentIndex];
+    _persistence.answer = {'selectedOptionText': currentQuiz.options[index], 'selectedOptionIndex': index};
     final bool isCorrect = index == currentQuiz.correctIndex;
     final int spent = DateTime.now().difference(_questionStartTime).inSeconds;
 
@@ -191,7 +191,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: CupertinoNavigationBar(middle: Text(widget.areaTitle)),
-        body: const Center(child: Text('No hay preguntas disponibles en este momento.')),
+        body: const Center(child: Text('No questions are available right now.')),
       );
     }
 
@@ -227,6 +227,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                 currentIndex: _currentIndex,
                 isAnswered: _isAnswered,
                 selectedOptionIndex: _selectedOptionIndex,
+                onAnswer: (answer) => _persistence.answer = answer,
                 isMatchingCorrect: _isMatchingCorrect,
                 isOrderingCorrect: _isOrderingCorrect,
                 currentEarnedStars: _currentEarnedStars,

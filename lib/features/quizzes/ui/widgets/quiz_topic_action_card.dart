@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_topic_action_card.dart
-// Propósito: Componente interactivo [quiz_topic_action_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: quiz_topic_action_card.dart
+// Purpose: Interactive component [quiz_topic_action_card] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +9,7 @@ import '../../../cheatsheets/model/medical_area_model.dart';
 import '../../model/quiz_model.dart';
 import '../quiz_session_screen.dart';
 
-// Componente visual modular [QuizTopicActionCard]
+// Modular visual component [QuizTopicActionCard]
 class QuizTopicActionCard extends StatelessWidget {
   final List<QuizModel> quizzes;
   final MedicalAreaModel area;
@@ -20,8 +20,8 @@ class QuizTopicActionCard extends StatelessWidget {
     required this.area,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -62,7 +62,7 @@ class QuizTopicActionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Iniciar Quiz del Tema',
+                      'Start Topic Quiz',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -71,7 +71,7 @@ class QuizTopicActionCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${quizzes.length} preguntas clínicas de alto rendimiento',
+                      '${quizzes.length} high-yield clinical questions',
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textMuted,
@@ -90,7 +90,7 @@ class QuizTopicActionCard extends StatelessWidget {
               color: AppColors.accent,
               borderRadius: BorderRadius.circular(12),
               onPressed: () {
-                // Bloque: Navegación y transición fluida hacia la siguiente pantalla
+                // Block: Navigate smoothly to the next screen
                 Navigator.push(
                   context,
                   AppPageRoute(
@@ -103,7 +103,7 @@ class QuizTopicActionCard extends StatelessWidget {
                 );
               },
               child: const Text(
-                'Comenzar Examen de Práctica',
+                'Start Practice Exam',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,

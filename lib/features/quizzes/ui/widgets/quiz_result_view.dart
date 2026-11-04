@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_result_view.dart
-// Propósito: Componente interactivo [quiz_result_view] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: quiz_result_view.dart
+// Purpose: Interactive component [quiz_result_view] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../utils/quiz_scoring_helper.dart';
 
-// Pantalla de interfaz de usuario [QuizResultView]
+// User interface screen [QuizResultView]
 class QuizResultView extends StatelessWidget {
   final int score;
   final int totalQuestions;
@@ -31,8 +31,8 @@ class QuizResultView extends StatelessWidget {
     required this.onExit,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final double percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
@@ -65,7 +65,7 @@ class QuizResultView extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  hasPassed ? '¡Excelente Desempeño!' : 'Buen Intento de Repaso',
+                  hasPassed ? 'Excellent Performance!' : 'Good Review Attempt',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -75,7 +75,7 @@ class QuizResultView extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Sesión de Quizzes completada para $areaTitle',
+                  'Quiz session completed for $areaTitle',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 14,
@@ -83,7 +83,7 @@ class QuizResultView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Bloque: Tarjeta de resultados detallada con estrellas y tiempos
+                // Block: Detailed results card with stars and times
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                   decoration: BoxDecoration(
@@ -119,7 +119,7 @@ class QuizResultView extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Estrellas obtenidas ($score de $totalQuestions preguntas acertadas)',
+                        'Stars earned ($score of $totalQuestions questions answered correctly)',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 13,
@@ -152,7 +152,7 @@ class QuizResultView extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 const Text(
-                                  'Tiempo total',
+                                  'Total time',
                                   style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                                 ),
                               ],
@@ -179,7 +179,7 @@ class QuizResultView extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 const Text(
-                                  'Precisión',
+                                  'Accuracy',
                                   style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                                 ),
                               ],
@@ -198,7 +198,7 @@ class QuizResultView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     onPressed: onRestart,
                     child: const Text(
-                      'Repetir Quiz',
+                      'Retake Quiz',
                       style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                     ),
                   ),
@@ -212,7 +212,7 @@ class QuizResultView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     onPressed: onExit,
                     child: const Text(
-                      'Volver al Menú Principal',
+                      'Back to Main Menu',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,

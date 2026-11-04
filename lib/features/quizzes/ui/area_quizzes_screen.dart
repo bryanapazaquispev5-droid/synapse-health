@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: area_quizzes_screen.dart
-// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [area_quizzes_screen].
+// File: area_quizzes_screen.dart
+// Purpose: Screen for selecting and listing clinical quizzes [area_quizzes_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -13,7 +13,7 @@ import '../api/quiz_service.dart';
 import '../model/quiz_model.dart';
 import 'widgets/quiz_list_tile.dart';
 
-// Pantalla de interfaz de usuario [AreaQuizzesScreen]
+// User interface screen [AreaQuizzesScreen]
 class AreaQuizzesScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -23,21 +23,21 @@ class AreaQuizzesScreen extends StatefulWidget {
   State<AreaQuizzesScreen> createState() => _AreaQuizzesScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [AreaQuizzesScreen]
+// Reactive state and lifecycle management for [AreaQuizzesScreen]
 class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
   final QuizService _quizService = QuizService();
   late final Stream<List<QuizModel>> _quizzesStream;
 
-  // Inicializacion de dependencias y estado local del componente
-  // Bloque: Inicialización de controladores, listeners y estado local
+  // Initialize the component dependencies and local state
+  // Block: Initialize controllers, listeners, and local state
   @override
   void initState() {
     super.initState();
     _quizzesStream = _quizService.getQuizzesByAreaStream(widget.area.id);
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,8 +129,8 @@ class _AreaQuizzesScreenState extends State<AreaQuizzesScreen> {
                       snapshot: snapshot,
                       isEmpty: quizzes.isEmpty,
                       onRetry: retry,
-                      emptyTitle: 'No hay quizzes en esta especialidad',
-                      emptyMessage: 'Los quizzes disponibles aparecerán aquí.',
+                      emptyTitle: 'No quizzes in this specialty',
+                      emptyMessage: 'Available quizzes will appear here.',
                       emptyIcon: CupertinoIcons.question_circle,
                     );
                   }

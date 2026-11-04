@@ -1,62 +1,36 @@
-// ============================================================================
-// Archivo: quiz_service.dart
-// Propósito: Servicio para la recuperacion de reactivos y guardado de calificaciones de cuestionarios en Firestore.
-// ============================================================================
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../core/api/aws_data_source.dart';
 import '../model/quiz_model.dart';
 
-// Servicio para la gestion de operaciones de [QuizService]
 class QuizService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  QuizService({AwsDataSource? source})
+    : source = source ?? AwsDataSource.instance;
+  final AwsDataSource source;
 
-  /// Obtiene en tiempo real los quizzes asociados a un área médica específica
-  Stream<List<QuizModel>> getQuizzesByAreaStream(String areaId) {
-    return _firestore
-        .collection(AppConstants.firestoreMedicalAreas)
-        .doc(areaId)
-        .collection(AppConstants.firestoreQuizzes)
-        .snapshots()
-        .map((snapshot) {
-      final quizzes = snapshot.docs
-          .map((doc) => QuizModel.fromMap(doc.data(), doc.id))
-          .toList();
-
-      quizzes.sort((a, b) => a.order.compareTo(b.order));
-      return quizzes;
-    });
+  List<QuizModel> _parse(Map<String, dynamic> data) {
+    final quizzes = AwsDataSource.items(data)
+        .map((item) => QuizModel.fromMap(item, item['id'] as String))
+        .toList();
+    quizzes.sort((a, b) => a.order.compareTo(b.order));
+    return quizzes;
   }
 
-  /// Obtiene en tiempo real los quizzes asociados a un tema específico
-  Stream<List<QuizModel>> getQuizzesByTopicStream(String areaId, String topicId) {
-    return _firestore
-        .collection(AppConstants.firestoreMedicalAreas)
-        .doc(areaId)
-        .collection(AppConstants.firestoreTopics)
-        .doc(topicId)
-        .collection(AppConstants.firestoreQuizzes)
-        .snapshots()
-        .asyncMap((topicSnapshot) async {
-      if (topicSnapshot.docs.isNotEmpty) {
-        final quizzes = topicSnapshot.docs
-            .map((doc) => QuizModel.fromMap(doc.data(), doc.id))
-            .toList();
-        quizzes.sort((a, b) => a.order.compareTo(b.order));
-        return quizzes;
-      }
-      final areaSnapshot = await _firestore
-          .collection(AppConstants.firestoreMedicalAreas)
-          .doc(areaId)
-          .collection(AppConstants.firestoreQuizzes)
-          .where('topicId', isEqualTo: topicId)
-          .get();
+  Stream<List<QuizModel>> getQuizzesByAreaStream(String areaId) =>
+      source.watch('api/v1/areas/$areaId/quizzes').map(_parse);
 
-      final quizzes = areaSnapshot.docs
-          .map((doc) => QuizModel.fromMap(doc.data(), doc.id))
-          .toList();
-      quizzes.sort((a, b) => a.order.compareTo(b.order));
-      return quizzes;
-    });
-  }
+  Stream<List<QuizModel>> getQuizzesByTopicStream(
+    String areaId,
+    String topicId,
+  ) => source.watch('api/v1/areas/$areaId/topics/$topicId/quizzes').asyncMap((
+    data,
+  ) async {
+    final quizzes = _parse(data);
+    if (quizzes.isNotEmpty) return quizzes;
+    return _parse(
+      await source.api.requestData(
+        'GET',
+        'api/v1/areas/$areaId/quizzes',
+        query: {'topicId': topicId},
+      ),
+    );
+  });
 }

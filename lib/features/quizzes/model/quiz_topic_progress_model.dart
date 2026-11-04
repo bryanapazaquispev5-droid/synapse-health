@@ -1,12 +1,11 @@
-// Bloque: Modelo de Progreso de Tema de Quiz y Sistema de Intentos
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Block: Quiz topic progress and attempt system model
 import 'quiz_attempt_model.dart';
 
 class QuizTopicProgressModel {
-  // Bloque: Constante de límite estricto FIFO para el historial de intentos
+  // Block: Strict FIFO limit for attempt history
   static const int maxHistoryEntries = 3;
 
-  // Bloque: Atributos del progreso por tema
+  // Block: Topic progress fields
   final String topicId;
   final String areaId;
   final int currentAttemptNumber;
@@ -14,7 +13,7 @@ class QuizTopicProgressModel {
   final List<QuizAttemptModel> history;
   final DateTime? updatedAt;
 
-  // Bloque: Constructor principal constante
+  // Block: Main const constructor
   const QuizTopicProgressModel({
     required this.topicId,
     required this.areaId,
@@ -24,7 +23,7 @@ class QuizTopicProgressModel {
     this.updatedAt,
   });
 
-  // Bloque: Helpers de consulta y presentación
+  // Block: Query and presentation helpers
   bool isQuestionLocked(String quizId) {
     return activeAttempt.isQuizLocked(quizId);
   }
@@ -35,11 +34,13 @@ class QuizTopicProgressModel {
 
   double get starsPercentage {
     if (activeAttempt.totalMaxStars <= 0) return 0.0;
-    return (activeAttempt.totalEarnedStars / activeAttempt.totalMaxStars)
-        .clamp(0.0, 1.0);
+    return (activeAttempt.totalEarnedStars / activeAttempt.totalMaxStars).clamp(
+      0.0,
+      1.0,
+    );
   }
 
-  // Bloque: Constructor de progreso inicial vacío
+  // Block: Empty initial progress constructor
   factory QuizTopicProgressModel.empty({
     required String topicId,
     required String areaId,
@@ -58,7 +59,7 @@ class QuizTopicProgressModel {
     );
   }
 
-  // Bloque: Deserializador seguro tolerante a Firestore y JSON
+  // Block: Safe deserializer that accepts API and JSON values
   factory QuizTopicProgressModel.fromMap(
     Map<String, dynamic> map, {
     String? topicId,
@@ -66,7 +67,6 @@ class QuizTopicProgressModel {
   }) {
     DateTime? parseDate(dynamic val) {
       if (val == null) return null;
-      if (val is Timestamp) return val.toDate();
       if (val is DateTime) return val;
       if (val is String) return DateTime.tryParse(val);
       return null;
@@ -79,8 +79,7 @@ class QuizTopicProgressModel {
       return fallback;
     }
 
-    final String resolvedTopicId =
-        map['topicId']?.toString() ?? topicId ?? '';
+    final String resolvedTopicId = map['topicId']?.toString() ?? topicId ?? '';
     final String resolvedAreaId = map['areaId']?.toString() ?? areaId ?? '';
     final int attemptNum = parseInt(map['currentAttemptNumber'], 1);
 
@@ -102,11 +101,11 @@ class QuizTopicProgressModel {
       }
     }
 
-    // Bloque: Asegurar estricto límite FIFO de historial a un máximo de 3 entradas
+    // Block: Enforce a strict FIFO history limit of three entries
     final List<QuizAttemptModel> trimmedHistory =
         parsedHistory.length > maxHistoryEntries
-            ? parsedHistory.sublist(parsedHistory.length - maxHistoryEntries)
-            : parsedHistory;
+        ? parsedHistory.sublist(parsedHistory.length - maxHistoryEntries)
+        : parsedHistory;
 
     return QuizTopicProgressModel(
       topicId: resolvedTopicId,
@@ -118,7 +117,7 @@ class QuizTopicProgressModel {
     );
   }
 
-  // Bloque: Serializador a Map compatible con Firestore
+  // Block: Map serializer compatible with the API payload
   Map<String, dynamic> toMap() {
     return {
       'topicId': topicId,
@@ -130,7 +129,7 @@ class QuizTopicProgressModel {
     };
   }
 
-  // Bloque: Método para reintentar el tema archivando el intento actual con FIFO estricto
+  // Block: Retry the topic by archiving the current attempt with strict FIFO ordering
   QuizTopicProgressModel archiveCurrentAttemptAndReset({
     required int totalMaxStars,
   }) {
@@ -160,7 +159,7 @@ class QuizTopicProgressModel {
     );
   }
 
-  // Bloque: Clonación inmutable con copyWith
+  // Block: Immutable cloning with copyWith
   QuizTopicProgressModel copyWith({
     String? topicId,
     String? areaId,

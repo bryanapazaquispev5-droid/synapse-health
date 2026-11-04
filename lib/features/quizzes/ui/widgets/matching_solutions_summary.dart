@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: matching_solutions_summary.dart
-// Propósito: Componente interactivo [matching_solutions_summary] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: matching_solutions_summary.dart
+// Purpose: Interactive component [matching_solutions_summary] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/matching_pair_model.dart';
 
-// Definicion principal de la clase [MatchingSolutionsSummary]
+// Main definition of the class [MatchingSolutionsSummary]
 class MatchingSolutionsSummary extends StatelessWidget {
   final List<String> leftItems;
   final List<String> rightItems;
@@ -31,8 +31,8 @@ class MatchingSolutionsSummary extends StatelessWidget {
     return pair.right;
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -50,7 +50,7 @@ class MatchingSolutionsSummary extends StatelessWidget {
               Icon(CupertinoIcons.checkmark_shield_fill, size: 16, color: AppColors.accent),
               SizedBox(width: 6),
               Text(
-                'Relaciones Correctas del Rouvière',
+                'Correct Matches from Rouvière',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,

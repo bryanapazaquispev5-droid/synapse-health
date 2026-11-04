@@ -1,8 +1,7 @@
-// Bloque: Modelo de Progreso Individual por Pregunta de Quiz
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Block: Per-question quiz progress model
 
 class QuizQuestionProgressModel {
-  // Bloque: Atributos inmutables de la respuesta del estudiante
+  // Block: Immutable student answer fields
   final String quizId;
   final bool isAnswered;
   final bool isCorrect;
@@ -11,7 +10,7 @@ class QuizQuestionProgressModel {
   final int? selectedOptionIndex;
   final DateTime? answeredAt;
 
-  // Bloque: Constructor principal constante
+  // Block: Main const constructor
   const QuizQuestionProgressModel({
     required this.quizId,
     required this.isAnswered,
@@ -22,11 +21,10 @@ class QuizQuestionProgressModel {
     this.answeredAt,
   });
 
-  // Bloque: Deserializador seguro tolerante a tipos Firestore y JSON
+  // Block: Safe deserializer for API and JSON values
   factory QuizQuestionProgressModel.fromMap(Map<String, dynamic> map) {
     DateTime? parseDate(dynamic val) {
       if (val == null) return null;
-      if (val is Timestamp) return val.toDate();
       if (val is DateTime) return val;
       if (val is String) return DateTime.tryParse(val);
       return null;
@@ -52,7 +50,7 @@ class QuizQuestionProgressModel {
     );
   }
 
-  // Bloque: Serializador a Map compatible con Firestore
+  // Block: Map serializer compatible with the API payload
   Map<String, dynamic> toMap() {
     return {
       'quizId': quizId,
@@ -65,7 +63,7 @@ class QuizQuestionProgressModel {
     };
   }
 
-  // Bloque: Clonación inmutable con copyWith
+  // Block: Immutable cloning with copyWith
   QuizQuestionProgressModel copyWith({
     String? quizId,
     bool? isAnswered,

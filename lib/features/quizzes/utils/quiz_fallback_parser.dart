@@ -1,18 +1,18 @@
 // ============================================================================
-// Archivo: quiz_fallback_parser.dart
-// Propósito: Componente interactivo [quiz_fallback_parser] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: quiz_fallback_parser.dart
+// Purpose: Interactive component [quiz_fallback_parser] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import '../model/matching_pair_model.dart';
 
-// Definicion principal de la clase [QuizFallbackParser]
+// Main definition of the class [QuizFallbackParser]
 class QuizFallbackParser {
   static List<MatchingPair> extractFallbackPairs({
     required String question,
     required List<String> options,
     required int correctIndex,
   }) {
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Block: Safely execute an asynchronous operation
     try {
       if (options.isEmpty || correctIndex < 0 || correctIndex >= options.length) {
         return const [];
@@ -57,7 +57,7 @@ class QuizFallbackParser {
     required List<String> options,
     required int correctIndex,
   }) {
-    // Bloque: Ejecución protegida de operación asíncrona
+    // Block: Safely execute an asynchronous operation
     try {
       if (options.isNotEmpty && correctIndex >= 0 && correctIndex < options.length) {
         final opt = options[correctIndex];

@@ -1,4 +1,4 @@
-// Bloque: Tarjeta de resumen de intento, progreso y acción de reintento de tema
+// Block: Summary card for the attempt, progress, and topic retry action
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +7,7 @@ import '../../../../core/widgets/ios_top_banner.dart';
 import '../../api/quiz_progress_service.dart';
 import '../../model/quiz_topic_progress_model.dart';
 
-// Bloque: Componente interactivo [QuizTopicRetryCard]
+// Block: Interactive component [QuizTopicRetryCard]
 class QuizTopicRetryCard extends StatefulWidget {
   final QuizTopicProgressModel progress;
   final int totalQuizzes;
@@ -31,7 +31,7 @@ class QuizTopicRetryCard extends StatefulWidget {
 class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
   bool _isRetrying = false;
 
-  // Bloque: Diálogo de confirmación para reintentar el tema
+  // Block: Confirmation dialog for retrying the topic
   void _confirmRetry() {
     HapticFeedback.lightImpact();
     showGeneralDialog<void>(
@@ -44,13 +44,13 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
         opacity: 0.90,
         child: CupertinoAlertDialog(
           title: const Text(
-            '¿Reintentar tema?',
+            'Retry topic?',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           content: Padding(
             padding: const EdgeInsets.only(top: 4.0),
             child: Text(
-              'Tu progreso actual de ${widget.progress.activeAttempt.totalEarnedStars} estrellas se guardará en tu historial (hasta 3 reintentos guardados en BD). Todas las preguntas se desbloquearán para volver a responderlas.',
+              'Your current progress of ${widget.progress.activeAttempt.totalEarnedStars} stars will be saved to your history (up to 3 attempts are kept in the database). All questions will be unlocked so you can answer them again.',
               style: const TextStyle(fontSize: 13),
             ),
           ),
@@ -58,7 +58,7 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Cancelar', style: TextStyle(fontSize: 15)),
+              child: const Text('Cancel', style: TextStyle(fontSize: 15)),
             ),
             CupertinoDialogAction(
               isDestructiveAction: true,
@@ -67,7 +67,7 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
                 _executeRetry();
               },
               child: const Text(
-                'Reintentar',
+                'Retry',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
             ),
@@ -88,7 +88,7 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
     );
   }
 
-  // Bloque: Ejecución asíncrona del reintento con servicio
+  // Block: Run the retry operation asynchronously through the service
   Future<void> _executeRetry() async {
     if (_isRetrying) return;
     setState(() => _isRetrying = true);
@@ -104,14 +104,14 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
       if (mounted) {
         IosTopBanner.success(
           context,
-          'Tema reiniciado. Todas las preguntas están desbloqueadas.',
+          'Topic reset. All questions are unlocked.',
         );
       }
     } catch (_) {
       if (mounted) {
         IosTopBanner.error(
           context,
-          'No se pudo reiniciar el tema. Intenta nuevamente.',
+          'Could not reset the topic. Please try again.',
         );
       }
     } finally {
@@ -153,14 +153,14 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
                   color: AppColors.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text('Intento #${widget.progress.currentAttemptNumber}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent)),
+                child: Text('Attempt #${widget.progress.currentAttemptNumber}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent)),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text('⭐', style: TextStyle(fontSize: 13)),
                   const SizedBox(width: 4),
-                  Text('$earned / $maxStars estrellas', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFFD97706))),
+                  Text('$earned / $maxStars stars', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFFD97706))),
                 ],
               ),
             ],
@@ -169,7 +169,7 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('$answered / ${widget.totalQuizzes} completadas', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+              Text('$answered / ${widget.totalQuizzes} completed', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
               Text('${(ratio * 100).toInt()}%', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary)),
             ],
           ),
@@ -199,7 +199,7 @@ class _QuizTopicRetryCardState extends State<QuizTopicRetryCard> {
                       children: const [
                         Icon(CupertinoIcons.arrow_clockwise, size: 14, color: AppColors.accent),
                         SizedBox(width: 6),
-                        Text('Reintentar tema', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accent)),
+                        Text('Retry topic', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accent)),
                       ],
                     ),
             ),

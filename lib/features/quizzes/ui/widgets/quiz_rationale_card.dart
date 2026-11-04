@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_rationale_card.dart
-// Propósito: Componente interactivo [quiz_rationale_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: quiz_rationale_card.dart
+// Purpose: Interactive component [quiz_rationale_card] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_model.dart';
 
-// Componente visual modular [QuizRationaleCard]
+// Modular visual component [QuizRationaleCard]
 class QuizRationaleCard extends StatelessWidget {
   final QuizModel quiz;
   final bool? isMatchingCorrect;
@@ -29,8 +29,8 @@ class QuizRationaleCard extends StatelessWidget {
     this.elapsedSeconds = 0,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final bool isCorrect = quiz.type == 'matching'
@@ -61,7 +61,7 @@ class QuizRationaleCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                isCorrect ? '¡Respuesta Correcta!' : 'Explicación Anatómica',
+                isCorrect ? 'Correct Answer!' : 'Anatomical Explanation',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -81,7 +81,7 @@ class QuizRationaleCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // Bloque: Métricas de estrellas ganadas y tiempo empleado en la pregunta
+          // Block: Stars earned and time spent on the question
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -104,8 +104,8 @@ class QuizRationaleCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       earnedStars > 0
-                          ? '+$earnedStars / $maxStars ${maxStars == 1 ? "estrella" : "estrellas"}'
-                          : '0 / $maxStars estrellas',
+                          ? '+$earnedStars / $maxStars ${maxStars == 1 ? "star" : "stars"}'
+                          : '0 / $maxStars stars',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

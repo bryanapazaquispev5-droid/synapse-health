@@ -1,10 +1,12 @@
 // ============================================================================
-// Archivo: interactive_matching_widget.dart
-// Propósito: Componente interactivo [interactive_matching_widget] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: interactive_matching_widget.dart
+// Purpose: Interactive component [interactive_matching_widget] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'dart:math';
+
 import 'package:flutter/material.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_model.dart';
 import '../../utils/matching_state_helper.dart';
@@ -13,16 +15,18 @@ import 'matching_row_item.dart';
 import 'matching_solutions_summary.dart';
 import 'matching_submit_button.dart';
 
-/// Widget interactivo de dos columnas para Quizzes anatómicos de tipo "Para Relacionar"
+/// Two-column interactive widget for anatomy matching quizzes
 class InteractiveMatchingWidget extends StatefulWidget {
   final QuizModel quiz;
   final bool isAnswered;
+  final ValueChanged<Map<String, dynamic>>? onAnswer;
   final void Function(bool isCorrect, int earnedStars, int maxStars) onCompleted;
 
   const InteractiveMatchingWidget({
     super.key,
     required this.quiz,
     required this.isAnswered,
+    this.onAnswer,
     required this.onCompleted,
   });
 
@@ -30,7 +34,7 @@ class InteractiveMatchingWidget extends StatefulWidget {
   State<InteractiveMatchingWidget> createState() => _InteractiveMatchingWidgetState();
 }
 
-// Estado reactivo y control de ciclo de vida para [InteractiveMatchingWidget]
+// Reactive state and lifecycle management for [InteractiveMatchingWidget]
 class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
   late List<MatchingPair> _originalPairs;
   late List<String> _leftItems;
@@ -144,6 +148,9 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
       _selectedLeftIndex = null;
     });
 
+    widget.onAnswer?.call({
+      'pairs': _userPairings.entries.map((e) => {'left': _leftItems[e.key], 'right': _rightItems[e.value]}).toList(),
+    });
     widget.onCompleted(isAllCorrect, correctCount, _originalPairs.length);
   }
 
@@ -166,9 +173,13 @@ class _InteractiveMatchingWidgetState extends State<InteractiveMatchingWidget> {
 
     final rightIndex = index < _rightItems.length ? index : null;
     final rightText = rightIndex != null ? _rightItems[rightIndex] : null;
-    final rightLeftIndex = rightIndex != null ? MatchingStateHelper.getLeftIndexForRight(_userPairings, rightIndex) : null;
+    final rightLeftIndex = rightIndex != null
+        ? MatchingStateHelper.getLeftIndexForRight(_userPairings, rightIndex)
+        : null;
     final isRightPaired = rightLeftIndex != null;
-    final rightPairNum = rightIndex != null ? MatchingStateHelper.getPairNumberForRight(_userPairings, rightIndex) : null;
+    final rightPairNum = rightIndex != null
+        ? MatchingStateHelper.getPairNumberForRight(_userPairings, rightIndex)
+        : null;
     final rightPairColor = rightPairNum != null ? MatchingStateHelper.getPairColor(rightPairNum - 1) : AppColors.accent;
 
     final isSubmitted = _isSubmitted;

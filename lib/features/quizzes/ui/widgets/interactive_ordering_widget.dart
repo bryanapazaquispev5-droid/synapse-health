@@ -1,27 +1,31 @@
 // ============================================================================
-// Archivo: interactive_ordering_widget.dart
-// Propósito: Componente interactivo [interactive_ordering_widget] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: interactive_ordering_widget.dart
+// Purpose: Interactive component [interactive_ordering_widget] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_model.dart';
 import 'ordering_reorderable_card.dart';
 import 'ordering_sequence_summary.dart';
 import 'ordering_submit_button.dart';
 
-/// Widget táctil de reordenamiento para preguntas de tipo "Para Ordenar"
+/// Touch-enabled reordering widget for ordering questions
 class InteractiveOrderingWidget extends StatefulWidget {
   final QuizModel quiz;
   final bool isAnswered;
+  final ValueChanged<Map<String, dynamic>>? onAnswer;
   final void Function(bool isCorrect, int earnedStars, int maxStars) onCompleted;
 
   const InteractiveOrderingWidget({
     super.key,
     required this.quiz,
     required this.isAnswered,
+    this.onAnswer,
     required this.onCompleted,
   });
 
@@ -112,6 +116,7 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
       _isSubmitted = true;
     });
 
+    widget.onAnswer?.call({'items': List<String>.from(_currentItems)});
     widget.onCompleted(isCorrect, correctCount, _correctSequence.length);
   }
 
@@ -140,12 +145,8 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
                   Icon(CupertinoIcons.arrow_up_arrow_down, size: 13, color: AppColors.accent),
                   SizedBox(width: 5),
                   Text(
-                    'Arrastra arriba o abajo para ordenar',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.accent,
-                    ),
+                    'Drag up or down to reorder',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accent),
                   ),
                 ],
               ),
@@ -161,12 +162,8 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
                     Icon(CupertinoIcons.arrow_counterclockwise, size: 12, color: AppColors.textMuted),
                     SizedBox(width: 4),
                     Text(
-                      'Desordenar',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textMuted,
-                      ),
+                      'Shuffle',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textMuted),
                     ),
                   ],
                 ),
@@ -221,14 +218,9 @@ class _InteractiveOrderingWidgetState extends State<InteractiveOrderingWidget> {
         ),
         if (_isSubmitted) ...[
           const SizedBox(height: 12),
-          OrderingSequenceSummary(
-            correctSequence: _correctSequence,
-            currentItems: _currentItems,
-          ),
+          OrderingSequenceSummary(correctSequence: _correctSequence, currentItems: _currentItems),
         ],
-        if (!_isSubmitted) ...[
-          OrderingSubmitButton(onCheckOrder: _checkOrder),
-        ],
+        if (!_isSubmitted) ...[OrderingSubmitButton(onCheckOrder: _checkOrder)],
       ],
     );
   }

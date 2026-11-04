@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: quiz_scoring_helper.dart
-// Propósito: Utilidades para el cálculo de estrellas y formateo de tiempos en quizzes.
+// File: quiz_scoring_helper.dart
+// Purpose: Utilities for calculating stars and formatting quiz times.
 // ============================================================================
 
 import '../model/quiz_model.dart';
 
-// Definición principal de la clase [QuizScoringHelper]
+// Main definition of the class [QuizScoringHelper]
 class QuizScoringHelper {
-  // Calcula el total máximo de estrellas acumulables para una lista de quizzes
+  // Calculates the maximum number of stars available across a list of quizzes
   static int calculateTotalMaxStars(List<QuizModel> quizzes) {
     int total = 0;
     for (final q in quizzes) {
@@ -22,7 +22,7 @@ class QuizScoringHelper {
     return total > 0 ? total : quizzes.length;
   }
 
-  // Formatea una cantidad de segundos a formato legible para la interfaz
+  // Formats a duration in seconds for display in the interface
   static String formatDuration(int totalSeconds) {
     if (totalSeconds < 60) return '${totalSeconds}s';
     final m = totalSeconds ~/ 60;

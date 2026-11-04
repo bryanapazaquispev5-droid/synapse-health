@@ -1,12 +1,12 @@
 // ============================================================================
-// Archivo: matching_state_helper.dart
-// Propósito: Componente interactivo [matching_state_helper] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: matching_state_helper.dart
+// Purpose: Interactive component [matching_state_helper] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../model/quiz_model.dart';
 
-// Definicion principal de la clase [MatchingStateHelper]
+// Main definition of the class [MatchingStateHelper]
 class MatchingStateHelper {
   static const List<Color> pairColors = [
     Color(0xFF007AFF), // iOS Blue

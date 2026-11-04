@@ -1,4 +1,4 @@
-// Bloque: Componente interactivo para mostrar cada pregunta de quiz en la lista del tema
+// Block: Interactive component for showing each quiz question in a topic list
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -7,7 +7,7 @@ import '../../model/quiz_model.dart';
 import '../../model/quiz_question_progress_model.dart';
 import '../quiz_session_screen.dart';
 
-// Bloque: Componente visual modular [QuizListTile]
+// Block: Modular visual component [QuizListTile]
 class QuizListTile extends StatelessWidget {
   final QuizModel quiz;
   final int index;
@@ -28,7 +28,7 @@ class QuizListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Bloque: Verificación de estado de respuesta y bloqueo
+    // Block: Check answer status and lock state
     final bool isLocked = questionProgress?.isAnswered == true;
 
     return Container(
@@ -38,20 +38,20 @@ class QuizListTile extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            // Bloque: Validación si el intento de práctica no ha comenzado
+            // Block: Validate whether the practice attempt has started
             if (!isAttemptStarted) {
               IosTopBanner.info(
                 context,
-                "Pulsa 'Comenzar Examen de Práctica' para iniciar el quiz del tema.",
+                "Tap 'Start Practice Exam' to begin this topic quiz.",
               );
               return;
             }
 
-            // Bloque: Acción al pulsar pregunta bloqueada o completada
+            // Block: Handle taps on locked or completed questions
             if (isLocked) {
               IosTopBanner.warning(
                 context,
-                "Pregunta completada en este intento. Pulsa 'Reintentar tema' para responderla nuevamente.",
+                "This question is complete for this attempt. Tap 'Retry Topic' to answer it again.",
               );
               return;
             }
@@ -83,7 +83,7 @@ class QuizListTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Bloque: Fila superior con tipo de quiz, estado de bloqueo y estrellas
+                // Block: Top row with quiz type, lock status, and stars
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -142,7 +142,7 @@ class QuizListTile extends StatelessWidget {
                           const SizedBox(width: 4),
                         ],
                         Text(
-                          'Pregunta #$index',
+                          'Question #$index',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -155,7 +155,7 @@ class QuizListTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // Bloque: Enunciado de la pregunta
+                // Block: Question prompt
                 Text(
                   quiz.cleanQuestionPrompt,
                   style: TextStyle(
@@ -168,7 +168,7 @@ class QuizListTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
 
-                // Bloque: Referencia bibliográfica si existe
+                // Block: Bibliographic reference, if available
                 if (quiz.sourceBook.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(

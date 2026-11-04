@@ -1,93 +1,67 @@
-// Bloque: Servicio de Gestión de Progreso, Estrellas y Reintentos de Quizzes
-import 'dart:developer' as developer;
+import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
-import '../../../core/constants/app_constants.dart';
-import '../model/quiz_question_progress_model.dart';
+import '../../../core/auth/app_auth.dart';
+import '../../../core/api/aws_data_source.dart';
 import '../model/quiz_topic_progress_model.dart';
 
+/// Scoring, ownership, idempotency and attempt rotation are enforced by the API.
 class QuizProgressService {
-  // Bloque: Instancia singleton y dependencias inyectables
-  static final QuizProgressService _instance = QuizProgressService._internal();
-  factory QuizProgressService({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  }) {
-    if (firestore != null || auth != null) {
-      return QuizProgressService._internal(firestore: firestore, auth: auth);
-    }
-    return _instance;
+  QuizProgressService({AwsDataSource? source, AppAuth? auth})
+    : source = source ?? AwsDataSource.instance,
+      auth = auth ?? AppAuth.instance;
+  final AwsDataSource source;
+  final AppAuth auth;
+  final _attempts = <String, int>{};
+  String? _attemptOwner;
+  void _bindOwner() {
+    final uid = auth.currentUser?.uid;
+    if (_attemptOwner != uid) { _attempts.clear(); _attemptOwner = uid; }
   }
 
-  QuizProgressService._internal({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _auth = auth ?? FirebaseAuth.instance;
-
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
-
-  static const String _collectionPath = 'quiz_topics_progress';
-
-  // Bloque: Helper para obtener la referencia de la subcolección del usuario
-  CollectionReference<Map<String, dynamic>>? _getUserProgressCollection() {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) return null;
-    return _firestore
-        .collection(AppConstants.FIRESTORE_USERS)
-        .doc(uid)
-        .collection(_collectionPath);
-  }
-
-  // Bloque: Stream del progreso de un tema específico
-  Stream<QuizTopicProgressModel?> getTopicProgressStream(String topicId) {
-    final collection = _getUserProgressCollection();
-    if (collection == null) {
-      return Stream.value(null);
-    }
-
-    return collection.doc(topicId).snapshots().map((snapshot) {
-      if (!snapshot.exists || snapshot.data() == null) {
-        return null;
-      }
-      return QuizTopicProgressModel.fromMap(snapshot.data()!, topicId: topicId);
-    });
-  }
-
-  // Bloque: Stream de todos los progresos de temas del usuario
   Stream<Map<String, QuizTopicProgressModel>> getAllTopicsProgressStream() {
-    final collection = _getUserProgressCollection();
-    if (collection == null) {
-      return Stream.value(const {});
+    _bindOwner();
+    if (auth.currentUser == null) return Stream.value(const {});
+    return source.watch('api/v1/progress/me').map((data) {
+      final progress = <String, QuizTopicProgressModel>{};
+      for (final item in AwsDataSource.items(data)) {
+        final model = QuizTopicProgressModel.fromMap(
+          item,
+          topicId: item['id'] as String?,
+        );
+        progress[model.topicId] = model;
+        _attempts[model.topicId] = model.currentAttemptNumber;
+      }
+      return progress;
+    });
+  }
+
+  Stream<QuizTopicProgressModel?> getTopicProgressStream(String topicId) =>
+      getAllTopicsProgressStream().map((items) => items[topicId]);
+
+  Stream<int> getAreaTotalStarsStream(String areaId) =>
+      getAllTopicsProgressStream().map(
+        (items) => items.values
+            .where((item) => areaId.isEmpty || item.areaId == areaId)
+            .fold(
+              0,
+              (total, item) => total + item.activeAttempt.totalEarnedStars,
+            ),
+      );
+
+  Future<int> _attempt(String topicId) async {
+    _bindOwner();
+    if (auth.currentUser == null) {
+      throw const AppAuthException('unauthenticated', 'Sign in.');
     }
-
-    return collection.snapshots().map((snapshot) {
-      final Map<String, QuizTopicProgressModel> map = {};
-      for (final doc in snapshot.docs) {
-        final data = doc.data();
-        map[doc.id] = QuizTopicProgressModel.fromMap(data, topicId: doc.id);
-      }
-      return map;
-    });
+    if (_attempts.containsKey(topicId)) return _attempts[topicId]!;
+    final data = await source.api.requestData('GET', 'api/v1/progress/me');
+    for (final item in AwsDataSource.items(data)) {
+      _attempts[item['topicId'] as String? ?? item['id'] as String] =
+          item['currentAttemptNumber'] as int? ?? 1;
+    }
+    return _attempts[topicId] ?? 1;
   }
 
-  // Bloque: Stream del total de estrellas acumuladas para un área específica
-  Stream<int> getAreaTotalStarsStream(String areaId) {
-    return getAllTopicsProgressStream().map((topicsMap) {
-      int total = 0;
-      for (final progress in topicsMap.values) {
-        if (progress.areaId == areaId || areaId.isEmpty) {
-          total += progress.activeAttempt.totalEarnedStars;
-        }
-      }
-      return total;
-    });
-  }
-
-  // Bloque: Registrar respuesta de una pregunta individual y actualizar estrellas
   Future<void> recordQuestionAnswer({
     required String areaId,
     required String topicId,
@@ -97,145 +71,39 @@ class QuizProgressService {
     required int maxStars,
     int? selectedOptionIndex,
     int? topicTotalMaxStars,
+    Map<String, dynamic>? answer,
   }) async {
-    try {
-      final collection = _getUserProgressCollection();
-      if (collection == null) {
-        throw FirebaseAuthException(code: 'unauthenticated');
-      }
-
-      final docRef = collection.doc(topicId);
-      await _firestore.runTransaction<void>((transaction) async {
-        final snapshot = await transaction.get(docRef);
-
-        QuizTopicProgressModel model;
-        if (snapshot.exists && snapshot.data() != null) {
-          model = QuizTopicProgressModel.fromMap(
-            snapshot.data()!,
-            topicId: topicId,
-            areaId: areaId,
-          );
-        } else {
-          model = QuizTopicProgressModel.empty(
-            topicId: topicId,
-            areaId: areaId,
-          );
-        }
-
-        // Bloque: Crear entrada de respuesta para la pregunta actual
-        final questionProgress = QuizQuestionProgressModel(
-          quizId: quizId,
-          isAnswered: true,
-          isCorrect: isCorrect,
-          earnedStars: earnedStars,
-          maxStars: maxStars,
-          selectedOptionIndex: selectedOptionIndex,
-          answeredAt: DateTime.now(),
-        );
-
-        final updatedAnswers = Map<String, QuizQuestionProgressModel>.from(
-          model.activeAttempt.questionAnswers,
-        );
-        updatedAnswers[quizId] = questionProgress;
-
-        // Bloque: Recalcular estrellas acumuladas del intento activo
-        final int totalEarned = updatedAnswers.values.fold(
-          0,
-          (acc, q) => acc + q.earnedStars,
-        );
-
-        final int totalMax =
-            (topicTotalMaxStars != null && topicTotalMaxStars > 0)
-            ? topicTotalMaxStars
-            : (model.activeAttempt.totalMaxStars > updatedAnswers.length
-                  ? model.activeAttempt.totalMaxStars
-                  : updatedAnswers.values.fold(
-                      0,
-                      (acc, q) => acc + q.maxStars,
-                    ));
-
-        final updatedAttempt = model.activeAttempt.copyWith(
-          questionAnswers: updatedAnswers,
-          totalEarnedStars: totalEarned,
-          totalMaxStars: totalMax,
-        );
-
-        final updatedModel = model.copyWith(
-          activeAttempt: updatedAttempt,
-          updatedAt: DateTime.now(),
-        );
-
-        transaction.set(docRef, updatedModel.toMap(), SetOptions(merge: true));
-      });
-    } catch (e, stackTrace) {
-      developer.log(
-        'Error registrando respuesta de quiz: $e',
-        name: 'QuizProgressService',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      rethrow;
+    if (answer == null) {
+      throw ArgumentError('A raw answer is required for server scoring.');
     }
+    await source.mutate('POST', 'api/v1/progress/$topicId/answer', {
+      'areaId': areaId,
+      'quizId': quizId,
+      'answer': answer,
+      'expectedAttemptNumber': await _attempt(topicId),
+      'topicTotalMaxStars': ?topicTotalMaxStars,
+    });
   }
 
-  // Bloque: Reintentar tema archivando intento actual con regla estricta FIFO de 3
   Future<void> retryTopic({
     required String areaId,
     required String topicId,
     required int totalMaxStars,
   }) async {
-    try {
-      final collection = _getUserProgressCollection();
-      if (collection == null) {
-        throw FirebaseAuthException(code: 'unauthenticated');
-      }
-
-      final docRef = collection.doc(topicId);
-      await _firestore.runTransaction<void>((transaction) async {
-        final snapshot = await transaction.get(docRef);
-
-        if (!snapshot.exists || snapshot.data() == null) {
-          final initialModel = QuizTopicProgressModel.empty(
-            topicId: topicId,
-            areaId: areaId,
-            totalMaxStars: totalMaxStars,
-          );
-          transaction.set(docRef, initialModel.toMap());
-          return;
-        }
-
-        final model = QuizTopicProgressModel.fromMap(
-          snapshot.data()!,
-          topicId: topicId,
-          areaId: areaId,
-        );
-
-        // Bloque: Si el intento actual contiene respuestas, archivarlo con FIFO estricto
-        if (model.activeAttempt.questionAnswers.isNotEmpty) {
-          final resetModel = model.archiveCurrentAttemptAndReset(
-            totalMaxStars: totalMaxStars,
-          );
-          transaction.set(docRef, resetModel.toMap());
-        } else {
-          // Bloque: Si estaba vacío, solo actualizar configuración de estrellas
-          final updatedAttempt = model.activeAttempt.copyWith(
-            totalMaxStars: totalMaxStars,
-          );
-          transaction.set(
-            docRef,
-            model.copyWith(activeAttempt: updatedAttempt).toMap(),
-            SetOptions(merge: true),
-          );
-        }
-      });
-    } catch (e, stackTrace) {
-      developer.log(
-        'Error reintentando tema de quiz: $e',
-        name: 'QuizProgressService',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      rethrow;
+    final random = Random.secure();
+    final key = List.generate(
+      32,
+      (_) => random.nextInt(16).toRadixString(16),
+    ).join();
+    final data = await source.mutate('POST', 'api/v1/progress/$topicId/retry', {
+      'areaId': areaId,
+      'totalMaxStars': totalMaxStars,
+      'expectedAttemptNumber': await _attempt(topicId),
+      'idempotencyKey': key,
+    });
+    final progress = data['progress'];
+    if (progress is Map<String, dynamic>) {
+      _attempts[topicId] = progress['currentAttemptNumber'] as int;
     }
   }
 }

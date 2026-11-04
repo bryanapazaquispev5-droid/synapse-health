@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_course_card.dart
-// Propósito: Componente interactivo [quiz_course_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: quiz_course_card.dart
+// Purpose: Interactive component [quiz_course_card] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -10,14 +10,14 @@ import '../../../cheatsheets/model/medical_area_model.dart';
 import '../../api/quiz_progress_service.dart';
 import '../quiz_topics_screen.dart';
 
-// Componente visual modular [QuizCourseCard]
+// Modular visual component [QuizCourseCard]
 class QuizCourseCard extends StatelessWidget {
   final MedicalAreaModel area;
 
   const QuizCourseCard({super.key, required this.area});
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -27,7 +27,7 @@ class QuizCourseCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: () {
-            // Bloque: Navegación y transición fluida hacia la siguiente pantalla
+            // Block: Navigate smoothly to the next screen
             Navigator.push(
               context,
               AppPageRoute(
@@ -117,7 +117,7 @@ class QuizCourseCard extends StatelessWidget {
                                       const Text('⭐', style: TextStyle(fontSize: 10)),
                                       const SizedBox(width: 3),
                                       Text(
-                                        '$areaStars estrellas',
+                                        '$areaStars stars',
                                         style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
@@ -130,7 +130,7 @@ class QuizCourseCard extends StatelessWidget {
                               ],
                               const SizedBox(width: 8),
                               Text(
-                                '${area.topicsCount} Temas',
+                                '${area.topicsCount} Topics',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textMuted,

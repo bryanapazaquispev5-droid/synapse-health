@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_areas_screen.dart
-// Propósito: Pantalla de seleccion y listado de cuestionarios clinicos [quiz_areas_screen].
+// File: quiz_areas_screen.dart
+// Purpose: Screen for selecting and listing clinical quizzes [quiz_areas_screen].
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -12,7 +12,7 @@ import '../../cheatsheets/api/medical_areas_service.dart';
 import '../../cheatsheets/model/medical_area_model.dart';
 import 'widgets/quiz_course_card.dart';
 
-// Pantalla de interfaz de usuario [QuizAreasScreen]
+// User interface screen [QuizAreasScreen]
 class QuizAreasScreen extends StatefulWidget {
   const QuizAreasScreen({super.key});
 
@@ -20,7 +20,7 @@ class QuizAreasScreen extends StatefulWidget {
   State<QuizAreasScreen> createState() => _QuizAreasScreenState();
 }
 
-// Estado reactivo y control de ciclo de vida para [QuizAreasScreen]
+// Reactive state and lifecycle management for [QuizAreasScreen]
 class _QuizAreasScreenState extends State<QuizAreasScreen>
     with AutomaticKeepAliveClientMixin {
   final MedicalAreasService _medicalAreasService = MedicalAreasService();
@@ -31,24 +31,24 @@ class _QuizAreasScreenState extends State<QuizAreasScreen>
   @override
   bool get wantKeepAlive => true;
 
-  // Inicializacion de dependencias y estado local del componente
-  // Bloque: Inicialización de controladores, listeners y estado local
+  // Initialize the component dependencies and local state
+  // Block: Initialize controllers, listeners, and local state
   @override
   void initState() {
     super.initState();
     _areasStream = _medicalAreasService.getAreasStream();
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
-  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
+  // Release controllers and resources to prevent memory leaks
+  // Block: Release resources and controllers to prevent memory leaks
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -95,7 +95,7 @@ class _QuizAreasScreenState extends State<QuizAreasScreen>
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'Selecciona un curso o materia para poner a prueba tus conocimientos médicos.',
+                          'Select a course or subject to test your medical knowledge.',
                           style: TextStyle(
                             fontSize: 14,
                             color: AppColors.textMuted,
@@ -105,7 +105,7 @@ class _QuizAreasScreenState extends State<QuizAreasScreen>
                         const SizedBox(height: 16),
                         CupertinoSearchTextField(
                           controller: _searchController,
-                          placeholder: 'Buscar curso o especialidad...',
+                          placeholder: 'Search courses or specialties...',
                           onChanged: (val) =>
                               setState(() => _searchQuery = val.trim()),
                         ),
@@ -129,18 +129,18 @@ class _QuizAreasScreenState extends State<QuizAreasScreen>
                       snapshot: snapshot,
                       isEmpty: allAreas.isEmpty,
                       onRetry: retry,
-                      emptyTitle: 'No hay cursos de quizzes disponibles',
-                      emptyMessage: 'Los cursos disponibles aparecerán aquí.',
+                      emptyTitle: 'No quiz courses available',
+                      emptyMessage: 'Available courses will appear here.',
                     ),
                   )
                 else if (filteredAreas.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: AppEmptyState(
-                      title: 'No se encontraron cursos',
-                      message: 'Prueba con otro término o limpia la búsqueda.',
+                      title: 'No courses found',
+                      message: 'Try another term or clear your search.',
                       icon: CupertinoIcons.search,
-                      actionLabel: 'Limpiar búsqueda',
+                      actionLabel: 'Clear search',
                       onAction: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');

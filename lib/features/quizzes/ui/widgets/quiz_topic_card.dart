@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_topic_card.dart
-// Propósito: Componente interactivo [quiz_topic_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: quiz_topic_card.dart
+// Purpose: Interactive component [quiz_topic_card] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
@@ -13,7 +13,7 @@ import '../../model/quiz_topic_progress_model.dart';
 import '../topic_quizzes_screen.dart';
 import 'quiz_topic_progress_badge.dart';
 
-// Bloque: Componente visual modular [QuizTopicCard]
+// Block: Modular visual component [QuizTopicCard]
 class QuizTopicCard extends StatelessWidget {
   final MedicalAreaModel area;
   final TopicModel topic;
@@ -32,15 +32,15 @@ class QuizTopicCard extends StatelessWidget {
     this.isLoadingProgress = false,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final int quizzesCount = topic.quizzesCount;
 
     return GestureDetector(
       onTap: () {
-        // Bloque: Navegación y transición fluida hacia la siguiente pantalla
+        // Block: Navigate smoothly to the next screen
         Navigator.push(
           context,
           AppPageRoute(
@@ -104,12 +104,12 @@ class QuizTopicCard extends StatelessWidget {
                       if (!progressIsAvailable)
                         if (isLoadingProgress)
                           const AppLoadingState(
-                            message: 'Cargando progreso',
+                            message: 'Loading progress',
                             compact: true,
                           )
                         else
                           const Text(
-                            'Progreso no disponible',
+                            'Progress unavailable',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppColors.textMuted,
@@ -122,7 +122,7 @@ class QuizTopicCard extends StatelessWidget {
                         )
                       else
                         const Text(
-                          'Ver quizzes',
+                          'View quizzes',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textMuted,

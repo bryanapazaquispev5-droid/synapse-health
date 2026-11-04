@@ -1,10 +1,10 @@
-// Bloque: Componente modular para mostrar la insignia de progreso y estrellas del tema
+// Block: Component for displaying topic progress and star badges
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../model/quiz_topic_progress_model.dart';
 
-// Bloque: Widget visual [QuizTopicProgressBadge]
+// Block: Visual widget [QuizTopicProgressBadge]
 class QuizTopicProgressBadge extends StatelessWidget {
   final QuizTopicProgressModel? progress;
   final int fallbackCount;
@@ -17,7 +17,7 @@ class QuizTopicProgressBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Bloque: Evaluación de progreso activo en el intento actual
+    // Block: Evaluate progress in the current attempt
     final bool hasActiveProgress =
         progress != null && progress!.activeAttempt.answeredCount > 0;
 
@@ -42,7 +42,7 @@ class QuizTopicProgressBadge extends StatelessWidget {
             Text(
               max > 0
                   ? '$earned/$max'
-                  : '$earned ${earned == 1 ? 'estrella' : 'estrellas'}',
+                  : '$earned ${earned == 1 ? 'star' : 'stars'}',
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -55,7 +55,7 @@ class QuizTopicProgressBadge extends StatelessWidget {
       );
     }
 
-    // Bloque: Insignia por defecto con la cantidad de quizzes
+    // Block: Default badge showing the quiz count
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(

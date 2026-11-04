@@ -1,9 +1,8 @@
-// Bloque: Modelo de Intento de Quiz (QuizAttemptModel)
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Block: Quiz attempt model (QuizAttemptModel)
 import 'quiz_question_progress_model.dart';
 
 class QuizAttemptModel {
-  // Bloque: Atributos del intento del tema
+  // Block: Topic attempt fields
   final int attemptNumber;
   final DateTime startedAt;
   final DateTime? completedAt;
@@ -11,7 +10,7 @@ class QuizAttemptModel {
   final int totalMaxStars;
   final Map<String, QuizQuestionProgressModel> questionAnswers;
 
-  // Bloque: Constructor principal constante
+  // Block: Main const constructor
   const QuizAttemptModel({
     required this.attemptNumber,
     required this.startedAt,
@@ -21,7 +20,7 @@ class QuizAttemptModel {
     required this.questionAnswers,
   });
 
-  // Bloque: Métodos de consulta de estado y bloqueo
+  // Block: State and lock status query methods
   bool isQuizLocked(String quizId) {
     return questionAnswers[quizId]?.isAnswered ?? false;
   }
@@ -36,11 +35,10 @@ class QuizAttemptModel {
 
   bool get isCompleted => completedAt != null;
 
-  // Bloque: Deserializador seguro desde Map
+  // Block: Safe deserializer from a Map
   factory QuizAttemptModel.fromMap(Map<String, dynamic> map) {
     DateTime? parseDate(dynamic val) {
       if (val == null) return null;
-      if (val is Timestamp) return val.toDate();
       if (val is DateTime) return val;
       if (val is String) return DateTime.tryParse(val);
       return null;
@@ -59,8 +57,9 @@ class QuizAttemptModel {
     if (rawAnswers is Map) {
       rawAnswers.forEach((key, val) {
         if (val is Map) {
-          parsedAnswers[key.toString()] =
-              QuizQuestionProgressModel.fromMap(Map<String, dynamic>.from(val));
+          parsedAnswers[key.toString()] = QuizQuestionProgressModel.fromMap(
+            Map<String, dynamic>.from(val),
+          );
         }
       });
     }
@@ -75,7 +74,7 @@ class QuizAttemptModel {
     );
   }
 
-  // Bloque: Serializador a Map compatible con Firestore
+  // Block: Map serializer compatible with the API payload
   Map<String, dynamic> toMap() {
     return {
       'attemptNumber': attemptNumber,
@@ -89,7 +88,7 @@ class QuizAttemptModel {
     };
   }
 
-  // Bloque: Constructor de intento vacío
+  // Block: Empty attempt constructor
   factory QuizAttemptModel.empty({
     int attemptNumber = 1,
     int totalMaxStars = 0,
@@ -104,7 +103,7 @@ class QuizAttemptModel {
     );
   }
 
-  // Bloque: Clonación inmutable con copyWith
+  // Block: Immutable cloning with copyWith
   QuizAttemptModel copyWith({
     int? attemptNumber,
     DateTime? startedAt,

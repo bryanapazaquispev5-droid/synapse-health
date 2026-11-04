@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: quiz_session_header.dart
-// Propósito: Controlador de estado y presentador de la sesion interactiva de evaluacion o examen medico.
+// File: quiz_session_header.dart
+// Purpose: State controller and presenter for the interactive medical quiz session.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [QuizSessionHeader]
+// Main definition of the class [QuizSessionHeader]
 class QuizSessionHeader extends StatelessWidget {
   final int currentIndex;
   final int totalQuestions;
@@ -30,8 +30,8 @@ class QuizSessionHeader extends StatelessWidget {
     return '$m:$s';
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final double progress = totalQuestions > 0 ? (currentIndex + 1) / totalQuestions : 0.0;
@@ -64,7 +64,7 @@ class QuizSessionHeader extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              // Bloque: Chip de estrellas acumuladas
+              // Block: Accumulated stars chip
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -89,7 +89,7 @@ class QuizSessionHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              // Bloque: Chip de tiempo transcurrido
+              // Block: Elapsed time chip
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -114,7 +114,7 @@ class QuizSessionHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              // Bloque: Chip de progreso numérico
+              // Block: Numeric progress chip
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

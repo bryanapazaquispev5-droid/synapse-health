@@ -1,4 +1,4 @@
-// Bloque: Pantalla de selección y listado de temas de quizzes por área médica
+// Block: Screen for selecting and listing quiz topics by medical area
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +11,7 @@ import '../api/quiz_progress_service.dart';
 import '../model/quiz_topic_progress_model.dart';
 import 'widgets/quiz_topic_card.dart';
 
-// Bloque: Pantalla principal [QuizTopicsScreen]
+// Block: Main screen [QuizTopicsScreen]
 class QuizTopicsScreen extends StatefulWidget {
   final MedicalAreaModel area;
 
@@ -54,7 +54,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: CupertinoSearchTextField(
                 controller: _searchController,
-                placeholder: 'Buscar tema anatómico...',
+                placeholder: 'Search anatomy topics...',
                 onChanged: (val) =>
                     setState(() => _searchQuery = val.trim().toLowerCase()),
               ),
@@ -87,10 +87,10 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
                       snapshot: snapshot,
                       isEmpty: topics.isEmpty,
                       onRetry: retry,
-                      emptyTitle: 'No se encontraron temas',
+                      emptyTitle: 'No topics found',
                       emptyMessage: _searchQuery.isEmpty
-                          ? 'No hay temas disponibles en esta área.'
-                          : 'Prueba con otra búsqueda.',
+                          ? 'There are no topics available in this area.'
+                          : 'Try another search.',
                       emptyIcon: CupertinoIcons.layers_alt,
                     );
                   }
@@ -153,7 +153,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
     );
   }
 
-  // Bloque: Barra de navegación superior
+  // Block: Top navigation bar
   Widget _buildAppBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 12, right: 16, top: 10, bottom: 6),
@@ -173,7 +173,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
                 ),
                 SizedBox(width: 2),
                 Text(
-                  'Atrás',
+                  'Back',
                   style: TextStyle(
                     fontSize: 17,
                     color: AppColors.accent,
@@ -200,7 +200,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
     );
   }
 
-  // Bloque: Título y descripción introductoria del área
+  // Block: Area title and introduction
   Widget _buildHeaderTitle() {
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
@@ -218,7 +218,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Elige un tema para evaluar tus conocimientos clínicos o realiza un examen completo.',
+            'Choose a topic to test your clinical knowledge, or take a full exam.',
             style: TextStyle(
               fontSize: 13,
               color: AppColors.textMuted,

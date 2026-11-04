@@ -1,12 +1,12 @@
 // ============================================================================
-// Archivo: matching_header_controls.dart
-// Propósito: Componente interactivo [matching_header_controls] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: matching_header_controls.dart
+// Purpose: Interactive component [matching_header_controls] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Definicion principal de la clase [MatchingHeaderControls]
+// Main definition of the class [MatchingHeaderControls]
 class MatchingHeaderControls extends StatelessWidget {
   final bool isSubmitted;
   final bool hasPairings;
@@ -19,8 +19,8 @@ class MatchingHeaderControls extends StatelessWidget {
     required this.onReset,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -61,7 +61,7 @@ class MatchingHeaderControls extends StatelessWidget {
                     Icon(CupertinoIcons.arrow_counterclockwise, size: 12, color: AppColors.textMuted),
                     SizedBox(width: 4),
                     Text(
-                      'Reiniciar parejas',
+                      'Reset pairs',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,

@@ -1,11 +1,11 @@
 // ============================================================================
-// Archivo: quiz_session_bottom_bar.dart
-// Propósito: Controlador de estado y presentador de la sesion interactiva de evaluacion o examen medico.
+// File: quiz_session_bottom_bar.dart
+// Purpose: State controller and presenter for the interactive medical quiz session.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 
-// Componente visual modular [QuizSessionBottomBar]
+// Modular visual component [QuizSessionBottomBar]
 class QuizSessionBottomBar extends StatelessWidget {
   final bool hasNext;
   final VoidCallback onNext;
@@ -16,8 +16,8 @@ class QuizSessionBottomBar extends StatelessWidget {
     required this.onNext,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,7 +31,7 @@ class QuizSessionBottomBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              hasNext ? 'Siguiente Pregunta' : 'Ver Resultados Finales',
+              hasNext ? 'Next Question' : 'View Final Results',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,

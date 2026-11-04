@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: matching_right_card.dart
-// Propósito: Componente interactivo [matching_right_card] para la resolucion de preguntas de opcion multiple, relacion o secuencia.
+// File: matching_right_card.dart
+// Purpose: Interactive component [matching_right_card] for answering multiple-choice, matching, or sequencing questions.
 // ============================================================================
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Componente visual modular [MatchingRightCard]
+// Modular visual component [MatchingRightCard]
 class MatchingRightCard extends StatelessWidget {
   final int rightIndex;
   final String text;
@@ -34,8 +34,8 @@ class MatchingRightCard extends StatelessWidget {
     required this.onTap,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive rendering of the widget tree
+  // Block: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     Color bg = AppColors.surface;

@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: quiz_model.dart
-// Propósito: Modelo de datos inmutable para preguntas medicas, opciones de respuesta y emparejamientos [quiz_model].
+// File: quiz_model.dart
+// Purpose: Immutable data model for medical questions, answer options, and matching pairs [quiz_model].
 // ============================================================================
 
 import 'dart:math';
@@ -10,8 +10,8 @@ import 'matching_pair_model.dart';
 
 export 'matching_pair_model.dart';
 
-/// Modelo de Dominio para los Quizzes Clínicos de Synapse Health
-/// Soporta preguntas de 3 alternativas con retroalimentación médica inmediata
+/// Domain model for Synapse Health clinical quizzes
+/// Supports three-option questions with immediate medical feedback
 class QuizModel {
   final String id;
   final String areaId;
@@ -143,12 +143,12 @@ class QuizModel {
   String get typeLabel {
     switch (type) {
       case 'matching':
-        return 'Para Relacionar';
+        return 'Matching';
       case 'ordering':
-        return 'Para Ordenar';
+        return 'Ordering';
       case 'single_choice':
       default:
-        return 'Selección Simple';
+        return 'Single Choice';
     }
   }
 
