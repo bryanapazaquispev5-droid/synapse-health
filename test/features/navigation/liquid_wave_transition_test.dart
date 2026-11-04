@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: liquid_wave_transition_test.dart
-// Propósito: Pruebas unitarias para verificar la preservación de estado en LiquidWaveTransition.
+// File: liquid_wave_transition_test.dart
+// Purpose: Unit tests for state preservation in LiquidWaveTransition.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/services/app_settings_service.dart';
 import 'package:synapse_health/features/navigation/ui/widgets/liquid_wave_transition.dart';
 
-// Widget de prueba para rastrear llamadas a initState y dispose
+// Test widget for tracking initState and dispose calls
 class _StatefulCounterTab extends StatefulWidget {
   final String label;
   final VoidCallback onInit;
@@ -59,7 +59,7 @@ void main() {
     AppSettingsService().setLiquidWaveEnabled(true);
   });
 
-  testWidgets('LiquidWaveTransition no destruye ni reinicializa el estado al completar la ola', (tester) async {
+  testWidgets('LiquidWaveTransition does not destroy or reinitialize state when the wave completes', (tester) async {
     int tab0Inits = 0;
     int tab0Disposes = 0;
     int tab1Inits = 0;
@@ -96,28 +96,28 @@ void main() {
       ),
     );
 
-    // Inicialmente Tab 0 se monta y Tab 1 en Offstage se monta una sola vez
+    // Initially, Tab 0 and Tab 1 in Offstage mount only once
     expect(tab0Inits, 1);
     expect(tab1Inits, 1);
     expect(find.text('Tab0'), findsOneWidget);
 
     // Cambiar a Tab 1
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pump(); // Inicia animación
+    await tester.pump(); // Start animation
 
-    // Avanzar a la mitad de la animación (350ms)
+    // Advance halfway through the animation (350 ms)
     await tester.pump(const Duration(milliseconds: 350));
-    // Ni Tab0 ni Tab1 deben haberse destruido
+    // Neither Tab 0 nor Tab 1 should have been disposed
     expect(tab0Disposes, 0);
     expect(tab1Disposes, 0);
 
-    // Completar la animación de la ola (700ms total)
+    // Complete the wave animation (700 ms total)
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
 
-    // CRÍTICO: Al terminar la animación, Tab 1 NO debe haberse destruido ni reiniciado
-    expect(tab1Inits, 1, reason: 'Tab1 no debe llamar initState dos veces al completar la ola');
-    expect(tab1Disposes, 0, reason: 'Tab1 no debe ser disposed al completar la animación');
-    expect(tab0Disposes, 0, reason: 'Tab0 debe mantenerse en memoria en Offstage');
+    // CRITICAL: Tab 1 must not be disposed or reset when the animation completes
+    expect(tab1Inits, 1, reason: 'Tab 1 must not call initState twice when the wave completes');
+    expect(tab1Disposes, 0, reason: 'Tab 1 must not be disposed when the animation completes');
+    expect(tab0Disposes, 0, reason: 'Tab 0 must remain mounted in Offstage');
   });
 }

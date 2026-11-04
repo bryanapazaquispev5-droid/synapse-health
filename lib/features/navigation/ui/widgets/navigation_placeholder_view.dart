@@ -1,12 +1,12 @@
 // ============================================================================
-// Archivo: navigation_placeholder_view.dart
-// Propósito: Controlador de navegacion principal [navigation_placeholder_view] con transiciones fluidas estilo liquid wave.
+// File: navigation_placeholder_view.dart
+// Purpose: Main navigation controller [navigation_placeholder_view] con transiciones fluidas estilo liquid wave.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Pantalla de interfaz de usuario [NavigationPlaceholderView]
+// User interface screen [NavigationPlaceholderView]
 class NavigationPlaceholderView extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -23,8 +23,8 @@ class NavigationPlaceholderView extends StatelessWidget {
     required this.tag,
   });
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -120,7 +120,7 @@ class NavigationPlaceholderView extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      'Próximo Lanzamiento',
+                      'Coming Soon',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,

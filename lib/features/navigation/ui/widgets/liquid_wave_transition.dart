@@ -1,6 +1,6 @@
 // ============================================================================
-// Archivo: liquid_wave_transition.dart
-// Propósito: Controlador de navegacion principal [liquid_wave_transition] con transiciones fluidas estilo liquid wave.
+// File: liquid_wave_transition.dart
+// Purpose: Main navigation controller [liquid_wave_transition] con transiciones fluidas estilo liquid wave.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -8,7 +8,7 @@ import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'liquid_wave_clipper.dart';
 
-// Definicion principal de la clase [LiquidWaveTransition]
+// Main definition of class [LiquidWaveTransition]
 class LiquidWaveTransition extends StatefulWidget {
   final int currentIndex;
   final List<Widget> children;
@@ -25,7 +25,7 @@ class LiquidWaveTransition extends StatefulWidget {
   State<LiquidWaveTransition> createState() => _LiquidWaveTransitionState();
 }
 
-// Estado reactivo y control de ciclo de vida para [LiquidWaveTransition]
+// Reactive state and lifecycle management for [LiquidWaveTransition]
 class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
@@ -34,8 +34,8 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
   bool _isForward = true;
   late List<GlobalKey> _tabKeys;
 
-  // Inicializacion de dependencias y estado local del componente
-  // Bloque: Inicialización de controladores, listeners y estado local
+  // Initialize component dependencies and local state
+  // Section: Initialize controllers, listeners, and local state
   @override
   void initState() {
     super.initState();
@@ -51,7 +51,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
       duration: const Duration(milliseconds: 700),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          // Bloque: Notificación reactiva y redibujado de la interfaz
+          // Section: Reactive notification and UI rebuild
           if (mounted) {
             setState(() {
               _previousIndex = _targetIndex;
@@ -83,16 +83,16 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
     }
   }
 
-  // Liberacion de controladores y recursos para evitar fugas de memoria
-  // Bloque: Liberación de recursos y controladores para evitar fugas de memoria
+  // Release controllers and resources to prevent memory leaks
+  // Section: Release resources and controllers to prevent memory leaks
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     final effectiveWaveColor = widget.waveColor ?? AppColors.accent;
@@ -134,7 +134,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
             return Stack(
               fit: StackFit.expand,
               children: [
-                // CAPA 0: Todos los demás tabs en Offstage para preservar su estado y datos en memoria
+                // LAYER 0: Keep all other tabs Offstage to preserve their state and in-memory data
                 for (int i = 0; i < widget.children.length; i++)
                   if (i != _targetIndex && (i != _previousIndex || !isAnimating))
                     Offstage(
@@ -148,7 +148,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
                       ),
                     ),
 
-                // CAPA 1: Pantalla saliente con parallax sutil (solo visible durante animación)
+                // LAYER 1: Outgoing screen with subtle parallax (visible only during animation)
                 if (isAnimating && _previousIndex != _targetIndex)
                   Transform.translate(
                     offset: Offset(outgoingSlide, 0),
@@ -161,7 +161,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
                     ),
                   ),
 
-                // CAPA 2: Pantalla entrante / activa (permanente en la misma posición de jerarquía)
+                // LAYER 2: Incoming / active screen (kept at the same hierarchy position)
                 ClipPath(
                   clipper: isAnimating
                       ? LiquidWaveClipper(
@@ -182,7 +182,7 @@ class _LiquidWaveTransitionState extends State<LiquidWaveTransition>
                   ),
                 ),
 
-                // CAPA 3: Resplandor LED, sombra de elevación y cresta de ola líquida
+                // LAYER 3: LED glow, elevation shadow, and liquid wave crest
                 if (isAnimating)
                   Positioned.fill(
                     child: IgnorePointer(

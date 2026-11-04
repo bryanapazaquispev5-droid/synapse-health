@@ -1,13 +1,13 @@
 // ============================================================================
-// Archivo: main_navigation_wrapper.dart
-// Propósito: Controlador de navegacion principal [main_navigation_wrapper] con transiciones fluidas estilo liquid wave.
+// File: main_navigation_wrapper.dart
+// Purpose: Main navigation controller [main_navigation_wrapper] con transiciones fluidas estilo liquid wave.
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../core/constants/app_constants.dart';
+import '../../../core/auth/app_auth.dart';
+import '../../../core/api/own_profile_repository.dart';
+
 import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
@@ -17,9 +17,9 @@ import '../../quizzes/ui/quiz_areas_screen.dart';
 import '../../user_profile/ui/profile_screen.dart';
 import 'widgets/liquid_wave_transition.dart';
 
-// Definicion principal de la clase [MainNavigationWrapper]
+// Main definition of class [MainNavigationWrapper]
 class MainNavigationWrapper extends StatefulWidget {
-  final User user;
+  final AppUser user;
   final int initialIndex;
 
   const MainNavigationWrapper({
@@ -32,35 +32,32 @@ class MainNavigationWrapper extends StatefulWidget {
   State<MainNavigationWrapper> createState() => _MainNavigationWrapperState();
 }
 
-// Estado reactivo y control de ciclo de vida para [MainNavigationWrapper]
+// Reactive state and lifecycle management for [MainNavigationWrapper]
 class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   late int _currentIndex;
-  late final Stream<DocumentSnapshot<Map<String, dynamic>>> _userStream;
+  late final Stream<ProfileRecord> _userStream;
   String _cachedGender = 'Hombre';
 
-  // Inicializacion de dependencias y estado local del componente
-  // Bloque: Inicialización de controladores, listeners y estado local
+  // Initialize component dependencies and local state
+  // Section: Initialize controllers, listeners, and local state
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
-    _userStream = FirebaseFirestore.instance
-        .collection(AppConstants.firestoreUsers)
-        .doc(widget.user.uid)
-        .snapshots();
+    _userStream = OwnProfileRepository().watch(widget.user.uid);
     _loadCachedGender();
   }
 
   Future<void> _loadCachedGender() async {
     final p = await UserLocalProfileService().getProfile(uid: widget.user.uid);
     if (mounted) {
-      // Bloque: Notificación reactiva y redibujado de la interfaz
+      // Section: Reactive notification and UI rebuild
       setState(() => _cachedGender = p.gender);
     }
   }
 
-  // Renderizado reactivo del arbol de widgets
-  // Bloque: Renderizado reactivo del árbol de widgets principal
+  // Reactive widget tree rendering
+  // Section: Reactive rendering of the main widget tree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +76,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            child: StreamBuilder<ProfileRecord>(
               stream: _userStream,
               builder: (context, snapshot) {
                 final String gender =
@@ -94,7 +91,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                   items: [
                     const BottomPillItem(
                       assetPath: 'assets/images/book.gif',
-                      label: 'Fichas',
+                      label: 'Study Notes',
                     ),
                     const BottomPillItem(
                       assetPath: 'assets/images/quiz.gif',
@@ -102,9 +99,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                     ),
                     const BottomPillItem(
                       assetPath: 'assets/images/progreso.gif',
-                      label: 'Progreso',
+                      label: 'Progress',
                     ),
-                    BottomPillItem(assetPath: userGif, label: 'Perfil'),
+                    BottomPillItem(assetPath: userGif, label: 'Profile'),
                   ],
                 );
               },
