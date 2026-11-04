@@ -1,6 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synapse_health/core/api/aws_api_client.dart';
 import 'package:synapse_health/core/widgets/states/app_async_content.dart';
 
 import '../../core/widgets/fixtures/async_content_fixture.dart';
@@ -26,9 +26,9 @@ void main() {
     expect(find.byType(AppLoadingState), findsOneWidget);
     repo.sources['alice']!.add({});
     await frames(tester);
-    expect(find.text('Tu progreso empieza aquí'), findsOneWidget);
-    expect(find.text('Ranking global'), findsOneWidget);
-    expect(find.text('Estrellas actuales'), findsNothing);
+    expect(find.text('Your progress starts here'), findsOneWidget);
+    expect(find.text('Global leaderboard'), findsOneWidget);
+    expect(find.text('Current Stars'), findsNothing);
   });
 
   testWidgets('partial practice renders actual metrics and area labels', (
@@ -41,9 +41,9 @@ void main() {
     await frames(tester);
     expect(find.text('7'), findsOneWidget);
     expect(find.text('100.0 %'), findsOneWidget);
-    await tester.ensureVisible(find.text('Área de prueba'));
+    await tester.ensureVisible(find.text('Test Area'));
     await frames(tester);
-    expect(find.text('Área de prueba'), findsOneWidget);
+    expect(find.text('Test Area'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -55,14 +55,14 @@ void main() {
       screen(repo, connection, ranking: (user) => uid = user.uid),
     );
     await frames(tester);
-    await tester.tap(find.text('Ranking global'));
+    await tester.tap(find.text('Global leaderboard'));
     await tester.pumpAndSettle();
-    expect(find.text('Ranking conservado'), findsOneWidget);
+    expect(find.text('Ranking preserved'), findsOneWidget);
     expect(uid, 'alice');
     await tester.pageBack();
     await tester.pump(const Duration(milliseconds: 400));
     await frames(tester);
-    expect(find.text('Progreso personal'), findsOneWidget);
+    expect(find.text('Personal Progress'), findsOneWidget);
   });
 
   for (final online in [true, false]) {
@@ -73,18 +73,14 @@ void main() {
         await tester.pumpWidget(screen(repo, connection));
         await frames(tester);
         repo.sources['alice']!.addError(
-          FirebaseException(
-            plugin: 'cloud_firestore',
-            code: 'unavailable',
-            message: 'internal detail',
-          ),
+          const AwsApiException(ApiFailure.unavailable),
         );
         await frames(tester);
         expect(
           find.byType(online ? AppErrorState : AppOfflineState),
           findsOneWidget,
         );
-        expect(find.text('Tu progreso empieza aquí'), findsNothing);
+        expect(find.text('Your progress starts here'), findsNothing);
         expect(find.textContaining('internal detail'), findsNothing);
       },
     );
@@ -95,11 +91,11 @@ void main() {
     await tester.pumpWidget(screen(repo, connection));
     await frames(tester);
     expect(
-      find.text('Inicia sesión para ver tu progreso personal.'),
+      find.text('Sign in to view your personal progress.'),
       findsOneWidget,
     );
     expect(repo.reads, 0);
-    expect(find.text('Ranking global'), findsNothing);
+    expect(find.text('Global leaderboard'), findsNothing);
   });
 
   testWidgets('changing UID clears the previous student statistics', (
@@ -116,7 +112,7 @@ void main() {
     expect(repo.sources['alice']!.hasListener, isFalse);
     repo.sources['bob']!.add({});
     await frames(tester);
-    expect(find.text('Tu progreso empieza aquí'), findsOneWidget);
+    expect(find.text('Your progress starts here'), findsOneWidget);
   });
 
   testWidgets('offline preserves previously loaded metrics', (tester) async {
@@ -128,7 +124,7 @@ void main() {
     await frames(tester);
     expect(find.text('7'), findsOneWidget);
     expect(
-      find.text('Sin conexión. Mostrando datos ya cargados.'),
+      find.text('Offline. Showing previously loaded data.'),
       findsWidgets,
     );
   });

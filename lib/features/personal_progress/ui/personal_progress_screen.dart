@@ -1,4 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/auth/app_auth.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/services/connectivity_service.dart';
@@ -20,8 +21,8 @@ class PersonalProgressScreen extends StatefulWidget {
   });
   final PersonalProgressRepository? repository;
   final ConnectivityService? connectivity;
-  final Widget Function(User)? rankingBuilder;
-  final Widget Function(User)? historyBuilder;
+  final Widget Function(AppUser)? rankingBuilder;
+  final Widget Function(AppUser)? historyBuilder;
   @override
   State<PersonalProgressScreen> createState() => _PersonalProgressScreenState();
 }
@@ -29,7 +30,7 @@ class PersonalProgressScreen extends StatefulWidget {
 class _PersonalProgressScreenState extends State<PersonalProgressScreen>
     with AutomaticKeepAliveClientMixin {
   late final PersonalProgressRepository _repository;
-  late final Stream<User?> _session;
+  late final Stream<AppUser?> _session;
   @override
   bool get wantKeepAlive => true;
   @override
@@ -45,20 +46,20 @@ class _PersonalProgressScreenState extends State<PersonalProgressScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: StreamBuilder<User?>(
+        child: StreamBuilder<AppUser?>(
           stream: _session,
           initialData: _repository.currentUser,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return const AppErrorState(
                 message:
-                    'No se pudo verificar tu sesión. Vuelve a iniciar sesión.',
+                    'Could not verify your session. Please sign in again.',
               );
             }
             final user = snapshot.data;
             if (user == null) {
               return const AppErrorState(
-                message: 'Inicia sesión para ver tu progreso personal.',
+                message: 'Sign in to view your personal progress.',
               );
             }
             return PersonalProgressBody(

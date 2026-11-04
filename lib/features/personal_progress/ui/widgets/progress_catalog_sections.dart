@@ -47,9 +47,9 @@ class _ProgressCatalogSectionsState extends State<ProgressCatalogSections> {
                 snapshot: snapshot,
                 isEmpty: false,
                 onRetry: retry,
-                emptyTitle: 'Áreas no disponibles',
-                emptyMessage: 'No hay información de áreas.',
-                errorMessage: 'No se pudieron cargar los nombres de las áreas.',
+                emptyTitle: 'Areas unavailable',
+                emptyMessage: 'No area information available.',
+                errorMessage: 'Could not load area names.',
               ),
             );
           }

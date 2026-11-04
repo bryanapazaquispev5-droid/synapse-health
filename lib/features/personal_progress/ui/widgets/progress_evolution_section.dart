@@ -29,20 +29,20 @@ class ProgressEvolutionSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Evolución por tema',
+          'Progress by topic',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
         if (series.isEmpty)
           const AppEmptyState(
-            title: 'Todavía no hay evolución disponible',
-            message: 'Completa respuestas en más de un intento del mismo tema para comparar tus resultados.',
+            title: 'No progress history is available yet',
+            message: 'Answer questions in multiple attempts for the same topic to compare your results.',
           ),
         for (final entry in grouped.entries)
           _AreaEvolution(
             key: ValueKey(entry.key),
             areaId: entry.key,
-            areaName: areaNames[entry.key] ?? 'Área no disponible',
+            areaName: areaNames[entry.key] ?? 'Area unavailable',
             series: entry.value,
             topicsStreamForArea: topicsStreamForArea,
             connectivity: connectivity,
@@ -91,8 +91,8 @@ class _AreaEvolutionState extends State<_AreaEvolution> {
           snapshot: snapshot,
           isEmpty: false,
           onRetry: retry,
-          emptyTitle: 'Temas no disponibles',
-          emptyMessage: 'No hay información de estos temas.',
+          emptyTitle: 'Topics unavailable',
+          emptyMessage: 'No information is available for these topics.',
         );
       }
       final titles = {
@@ -108,7 +108,7 @@ class _AreaEvolutionState extends State<_AreaEvolution> {
               areaName: widget.areaName,
               topicName: titles[series.topicId]?.trim().isNotEmpty == true
                   ? titles[series.topicId]!
-                  : 'Tema no disponible',
+                  : 'Topic unavailable',
             ),
         ],
       );

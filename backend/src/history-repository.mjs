@@ -73,7 +73,7 @@ export function createHistoryRepository(db) {
     if (typeof uid !== 'string' || !uid.length || uid.length > 128 || uid.includes('/')) {
       throw new ApiError(401, 'unauthenticated', 'Authentication is required.');
     }
-    // Nested answers cannot be chronologically paged by Firestore. Read a bounded
+    // Nested answers cannot be chronologically paged by the old document store. Read a bounded
     // owner snapshot, sort globally, and fail explicitly instead of truncating.
     const snapshot = await db.collection('users').doc(uid)
       .collection('quiz_topics_progress').limit(201).get();

@@ -1,4 +1,4 @@
-// Bloque: Tests unitarios y de widgets para Leaderboard UI
+// Section: Unit and widget tests for the leaderboard UI
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/features/leaderboard/model/leaderboard_user_model.dart';
@@ -11,8 +11,8 @@ void main() {
     final mockUsers = [
       const LeaderboardUserModel(
         userId: 'u1',
-        displayName: 'Dra. María Pérez',
-        career: 'Medicina Humana',
+        displayName: 'Dr. Maria Perez',
+        career: 'Human Medicine',
         gender: 'Mujer',
         totalStars: 45,
         totalQuizTimeSeconds: 300,
@@ -23,7 +23,7 @@ void main() {
       const LeaderboardUserModel(
         userId: 'u2',
         displayName: 'Dr. Carlos Vega',
-        career: 'Enfermería',
+        career: 'Nursing',
         gender: 'Hombre',
         totalStars: 40,
         totalQuizTimeSeconds: 360,
@@ -33,8 +33,8 @@ void main() {
       ),
       const LeaderboardUserModel(
         userId: 'u3',
-        displayName: 'Dra. Ana López',
-        career: 'Odontología',
+        displayName: 'Dr. Ana Lopez',
+        career: 'Dentistry',
         gender: 'Mujer',
         totalStars: 35,
         totalQuizTimeSeconds: 420,
@@ -45,7 +45,7 @@ void main() {
       const LeaderboardUserModel(
         userId: 'u4',
         displayName: 'Dr. Roberto Soto',
-        career: 'Nutrición',
+        career: 'Nutrition',
         gender: 'Hombre',
         totalStars: 30,
         totalQuizTimeSeconds: 500,
@@ -55,7 +55,7 @@ void main() {
       ),
     ];
 
-    testWidgets('LeaderboardPodiumWidget renderiza los primeros 3 puestos correctamente', (tester) async {
+    testWidgets('LeaderboardPodiumWidget renders the top 3 places correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -64,9 +64,9 @@ void main() {
         ),
       );
 
-      expect(find.text('Dra. María Pérez'), findsOneWidget);
+      expect(find.text('Dr. Maria Perez'), findsOneWidget);
       expect(find.text('Dr. Carlos Vega'), findsOneWidget);
-      expect(find.text('Dra. Ana López'), findsOneWidget);
+      expect(find.text('Dr. Ana Lopez'), findsOneWidget);
       expect(find.text('45'), findsOneWidget);
       expect(find.text('40'), findsOneWidget);
       expect(find.text('35'), findsOneWidget);
@@ -75,7 +75,7 @@ void main() {
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('LeaderboardUserTile renderiza usuario con rango 4+ y etiqueta Tú', (tester) async {
+    testWidgets('LeaderboardUserTile renders a user with rank 4+ and the You label', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -86,12 +86,12 @@ void main() {
 
       expect(find.text('#4'), findsOneWidget);
       expect(find.text('Dr. Roberto Soto'), findsOneWidget);
-      expect(find.text('Nutrición'), findsOneWidget);
+      expect(find.text('Nutrition'), findsOneWidget);
       expect(find.text('30'), findsOneWidget);
-      expect(find.text('Tú'), findsOneWidget);
+      expect(find.text('You'), findsOneWidget);
     });
 
-    testWidgets('LeaderboardMyRankCard muestra posición y motivación del usuario', (tester) async {
+    testWidgets('LeaderboardMyRankCard displays the user rank and motivation', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -101,9 +101,9 @@ void main() {
       );
 
       expect(find.text('#1'), findsOneWidget);
-      expect(find.text('Tu Posición Global'), findsOneWidget);
-      expect(find.text('¡En el Podio! 🏆'), findsOneWidget);
-      expect(find.text('45 Estrellas'), findsOneWidget);
+      expect(find.text('Your Global Rank'), findsOneWidget);
+      expect(find.text('You are on the podium! 🏆'), findsOneWidget);
+      expect(find.text('45 stars'), findsOneWidget);
     });
   });
 }

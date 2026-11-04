@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/progress_summary.dart';
 
-/// Tarjeta atómica para visualizar la evolución histórica de un tema en quizzes.
+/// Atomic card for displaying a topic's quiz history.
 class TopicEvolutionCard extends StatelessWidget {
   const TopicEvolutionCard({
     super.key,
@@ -51,13 +51,13 @@ class TopicEvolutionCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Semantics(
                   label:
-                      'Intento ${point.attemptNumber}, ${point.accuracy.toStringAsFixed(1)} por ciento de aciertos, ${point.correct} respuestas correctas de ${point.answered}. Última respuesta ${_formatDate(point.lastAnsweredAt)}.',
+                      'Attempt ${point.attemptNumber}, ${point.accuracy.toStringAsFixed(1)} percent accuracy, ${point.correct} correct answers out of ${point.answered}. Last answered ${_formatDate(point.lastAnsweredAt)}.',
                   child: ExcludeSemantics(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Intento ${point.attemptNumber} · ${point.accuracy.toStringAsFixed(1)} %',
+                          'Attempt ${point.attemptNumber} · ${point.accuracy.toStringAsFixed(1)}%',
                         ),
                         const SizedBox(height: 6),
                         LayoutBuilder(
@@ -83,7 +83,7 @@ class TopicEvolutionCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Última respuesta: ${_formatDate(point.lastAnsweredAt)}',
+                          'Last answered: ${_formatDate(point.lastAnsweredAt)}',
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textMuted,

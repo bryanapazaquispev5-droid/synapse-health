@@ -17,7 +17,7 @@ class ProgressAreasSection extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
-        'Por área',
+        'By area',
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       ),
       const SizedBox(height: 12),
@@ -36,28 +36,28 @@ class ProgressAreasSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  areaNames[area.areaId] ?? 'Área no disponible',
+                  areaNames[area.areaId] ?? 'Area unavailable',
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('${area.uniqueQuizzes} quizzes únicos respondidos'),
+                Text('${area.uniqueQuizzes} unique quizzes answered'),
                 const SizedBox(height: 4),
-                Text('${area.currentStars} estrellas actuales'),
+                Text('${area.currentStars} current stars'),
                 const SizedBox(height: 4),
                 Text(
                   area.accuracy == null
-                      ? 'Aciertos actuales: no disponibles'
-                      : 'Aciertos actuales: ${area.accuracy!.toStringAsFixed(1)} %',
+                      ? 'Current correct answers: unavailable'
+                      : 'Current correct answers: ${area.accuracy!.toStringAsFixed(1)}%',
                 ),
               ],
             ),
           ),
         ),
       const Text(
-        'El avance total y el tiempo promedio no están disponibles con estos registros.',
+        'Overall progress and average time are unavailable for these records.',
         style: TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
       ),
     ],

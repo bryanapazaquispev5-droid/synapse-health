@@ -66,10 +66,10 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
                     snapshot: snapshot,
                     isEmpty: summary == null || !summary.hasActivity,
                     onRetry: retry,
-                    emptyTitle: 'Tu progreso empieza aquí',
-                    emptyMessage: 'Responde quizzes para consultar tus resultados de práctica.',
+                    emptyTitle: 'Your progress starts here',
+                    emptyMessage: 'Answer quizzes to review your practice results.',
                     errorMessage:
-                        'No se pudo cargar tu progreso. Inténtalo de nuevo.',
+                        'Could not load your progress. Please try again.',
                   ),
                 )
               else ...[

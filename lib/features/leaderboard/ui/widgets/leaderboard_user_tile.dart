@@ -1,11 +1,11 @@
-// Bloque: Tile de usuario para posiciones 4+ en el Leaderboard
+// User tile for leaderboard positions 4 and above
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/leaderboard_user_model.dart';
 import '../../utils/time_formatter_helper.dart';
 
-// Bloque: Componente de fila individual de usuario en el ranking
+// Individual user row in the leaderboard
 class LeaderboardUserTile extends StatelessWidget {
   final LeaderboardUserModel user;
   final bool isCurrentUser;
@@ -70,7 +70,7 @@ class LeaderboardUserTile extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(8)),
-                        child: const Text('Tú', style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                        child: const Text('You', style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
                       ),
                     ],
                   ],

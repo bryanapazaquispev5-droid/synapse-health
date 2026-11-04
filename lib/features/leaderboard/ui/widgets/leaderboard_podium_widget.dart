@@ -1,11 +1,11 @@
-// Bloque: Podio olímpico para los 3 mejores estudiantes del Leaderboard
+// Olympic podium for the top three leaderboard students
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/leaderboard_user_model.dart';
 import '../../utils/time_formatter_helper.dart';
 
-// Bloque: Componente principal de Podio Olímpico
+// Main Olympic podium component
 class LeaderboardPodiumWidget extends StatelessWidget {
   final List<LeaderboardUserModel> topUsers;
 
@@ -32,7 +32,7 @@ class LeaderboardPodiumWidget extends StatelessWidget {
     );
   }
 
-  // Bloque: Renderizado de columna individual del podio
+  // Renders an individual podium column
   Widget _buildPodiumStep({
     required LeaderboardUserModel? user,
     required int rank,
@@ -76,7 +76,7 @@ class LeaderboardPodiumWidget extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          user?.displayName ?? 'Disponible',
+          user?.displayName ?? 'Student',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -144,7 +144,7 @@ class LeaderboardPodiumWidget extends StatelessWidget {
     );
   }
 
-  // Bloque: Proveedor de imagen para avatar con fallback por género
+  // Avatar image provider with a gender-based fallback
   ImageProvider _avatarProvider(LeaderboardUserModel? user) {
     if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
       return NetworkImage(user.photoUrl!);

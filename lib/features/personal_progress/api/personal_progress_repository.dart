@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/auth/app_auth.dart';
 
 import '../../cheatsheets/api/medical_areas_service.dart';
 import '../../cheatsheets/model/medical_area_model.dart';
@@ -9,26 +9,28 @@ import '../../quizzes/model/quiz_topic_progress_model.dart';
 /// Read-only facade over existing services, bound to the active Auth identity.
 class PersonalProgressRepository {
   PersonalProgressRepository({
-    FirebaseAuth? auth,
+    AppAuth? auth,
     QuizProgressService? progressService,
     MedicalAreasService? catalog,
-  }) : _auth = auth ?? FirebaseAuth.instance,
+  }) : _auth = auth ?? AppAuth.instance,
        _progress = progressService ?? QuizProgressService(),
        _catalog = catalog ?? MedicalAreasService();
 
-  final FirebaseAuth _auth;
+  final AppAuth _auth;
   final QuizProgressService _progress;
   final MedicalAreasService _catalog;
-  User? get currentUser => _auth.currentUser;
-  Stream<User?> get sessionChanges => _auth.authStateChanges();
+  AppUser? get currentUser => _auth.currentUser;
+  Stream<AppUser?> get sessionChanges => _auth.authStateChanges();
 
   Stream<T> _forOwner<T>(String uid, Stream<T> Function() load) {
     if (_auth.currentUser?.uid != uid) {
-      return Stream.error(FirebaseAuthException(code: 'unauthenticated'));
+      return Stream.error(
+        const AppAuthException('unauthenticated', 'Sign in.'),
+      );
     }
     return load().map((data) {
       if (_auth.currentUser?.uid != uid) {
-        throw FirebaseAuthException(code: 'unauthenticated');
+        throw const AppAuthException('unauthenticated', 'Sign in.');
       }
       return data;
     });

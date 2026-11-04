@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synapse_health/core/auth/app_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
@@ -17,15 +17,15 @@ import 'personal_progress_repository_fakes.dart';
 
 class WidgetProgressRepository extends Fake
     implements PersonalProgressRepository {
-  User? user = FakeIdentity('alice');
-  final sessions = StreamController<User?>.broadcast();
+  AppUser? user = FakeIdentity('alice');
+  final sessions = StreamController<AppUser?>.broadcast();
   final sources =
       <String, StreamController<Map<String, QuizTopicProgressModel>>>{};
   int reads = 0;
   @override
-  User? get currentUser => user;
+  AppUser? get currentUser => user;
   @override
-  Stream<User?> get sessionChanges => sessions.stream;
+  Stream<AppUser?> get sessionChanges => sessions.stream;
   @override
   Stream<Map<String, QuizTopicProgressModel>> watchProgress(String uid) {
     reads++;
@@ -34,7 +34,7 @@ class WidgetProgressRepository extends Fake
 
   @override
   Stream<List<MedicalAreaModel>> watchAreas(String uid) => Stream.value([
-    MedicalAreaModel(id: 'a', name: 'Área de prueba', code: 'A', order: 1),
+    MedicalAreaModel(id: 'a', name: 'Test Area', code: 'A', order: 1),
   ]);
   @override
   Stream<List<TopicModel>> watchTopics(String uid, String areaId) =>
@@ -42,7 +42,7 @@ class WidgetProgressRepository extends Fake
         const TopicModel(
           id: 't',
           areaId: 'a',
-          title: 'Tema de prueba',
+          title: 'Test Topic',
           order: 1,
         ),
       ]);
@@ -88,7 +88,7 @@ QuizTopicProgressModel recordedProgress({int stars = 1, bool history = false}) {
 Widget screen(
   WidgetProgressRepository repo,
   FakeConnectivity connection, {
-  void Function(User)? ranking,
+  void Function(AppUser)? ranking,
   TextScaler? textScaler,
 }) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -102,7 +102,7 @@ Widget screen(
     connectivity: connection,
     rankingBuilder: (user) {
       ranking?.call(user);
-      return const Scaffold(body: Text('Ranking conservado'));
+      return const Scaffold(body: Text('Ranking preserved'));
     },
   ),
 );

@@ -1,8 +1,7 @@
-// Bloque: Modelo inmutable de usuario en el Leaderboard / Ranking
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Block: Immutable user model for the leaderboard
 
 class LeaderboardUserModel {
-  // Bloque: Atributos inmutables de rendimiento y posición
+  // Block: Immutable performance and rank attributes
   final String userId;
   final String displayName;
   final String? photoUrl;
@@ -16,13 +15,20 @@ class LeaderboardUserModel {
   final int? rank;
 
   const LeaderboardUserModel({
-    required this.userId, required this.displayName, this.photoUrl,
-    required this.career, required this.gender, required this.totalStars,
-    required this.totalQuizTimeSeconds, required this.completedQuizzesCount,
-    required this.averageTimeSeconds, this.lastActiveAt, this.rank,
+    required this.userId,
+    required this.displayName,
+    this.photoUrl,
+    required this.career,
+    required this.gender,
+    required this.totalStars,
+    required this.totalQuizTimeSeconds,
+    required this.completedQuizzesCount,
+    required this.averageTimeSeconds,
+    this.lastActiveAt,
+    this.rank,
   });
 
-  // Bloque: Helpers de presentación
+  // Block: Presentation helpers
   String get formattedTime {
     final m = totalQuizTimeSeconds ~/ 60;
     final s = totalQuizTimeSeconds % 60;
@@ -36,18 +42,27 @@ class LeaderboardUserModel {
     return rank != null ? '#$rank' : '-';
   }
 
-  // Bloque: Deserializador seguro desde Map
-  factory LeaderboardUserModel.fromMap(Map<String, dynamic> map, {String? docId, int? rank}) {
-    DateTime? parseDate(dynamic val) => val is Timestamp ? val.toDate() : (val is String ? DateTime.tryParse(val) : (val is DateTime ? val : null));
-    int parseInt(dynamic val) => val is num ? val.toInt() : (int.tryParse(val?.toString() ?? '') ?? 0);
-    double parseDouble(dynamic val) => val is num ? val.toDouble() : (double.tryParse(val?.toString() ?? '') ?? 0.0);
+  // Block: Safe deserializer from Map
+  factory LeaderboardUserModel.fromMap(
+    Map<String, dynamic> map, {
+    String? docId,
+    int? rank,
+  }) {
+    DateTime? parseDate(dynamic val) => (val is String
+        ? DateTime.tryParse(val)
+        : (val is DateTime ? val : null));
+    int parseInt(dynamic val) =>
+        val is num ? val.toInt() : (int.tryParse(val?.toString() ?? '') ?? 0);
+    double parseDouble(dynamic val) => val is num
+        ? val.toDouble()
+        : (double.tryParse(val?.toString() ?? '') ?? 0.0);
 
     return LeaderboardUserModel(
       userId: map['userId']?.toString() ?? docId ?? '',
-      displayName: map['displayName']?.toString() ?? 'Estudiante',
+      displayName: map['displayName']?.toString() ?? 'Student',
       photoUrl: map['photoUrl']?.toString(),
-      career: map['career']?.toString() ?? 'Medicina Humana',
-      gender: map['gender']?.toString() ?? 'Hombre',
+      career: map['career']?.toString() ?? 'Human Medicine',
+      gender: map['gender']?.toString() ?? 'Male',
       totalStars: parseInt(map['totalStars']),
       totalQuizTimeSeconds: parseInt(map['totalQuizTimeSeconds']),
       completedQuizzesCount: parseInt(map['completedQuizzesCount']),
@@ -57,28 +72,45 @@ class LeaderboardUserModel {
     );
   }
 
-  // Bloque: Serializador a Map compatible con Firestore
+  // Block: Map serializer for leaderboard data
   Map<String, dynamic> toMap() => {
-    'userId': userId, 'displayName': displayName, 'photoUrl': photoUrl,
-    'career': career, 'gender': gender, 'totalStars': totalStars,
-    'totalQuizTimeSeconds': totalQuizTimeSeconds, 'completedQuizzesCount': completedQuizzesCount,
-    'averageTimeSeconds': averageTimeSeconds, 'lastActiveAt': lastActiveAt?.toIso8601String(),
+    'userId': userId,
+    'displayName': displayName,
+    'photoUrl': photoUrl,
+    'career': career,
+    'gender': gender,
+    'totalStars': totalStars,
+    'totalQuizTimeSeconds': totalQuizTimeSeconds,
+    'completedQuizzesCount': completedQuizzesCount,
+    'averageTimeSeconds': averageTimeSeconds,
+    'lastActiveAt': lastActiveAt?.toIso8601String(),
     if (rank != null) 'rank': rank,
   };
 
-  // Bloque: Clonación inmutable con copyWith
+  // Block: Immutable clone using copyWith
   LeaderboardUserModel copyWith({
-    String? userId, String? displayName, String? photoUrl, String? career,
-    String? gender, int? totalStars, int? totalQuizTimeSeconds,
-    int? completedQuizzesCount, double? averageTimeSeconds,
-    DateTime? lastActiveAt, int? rank,
+    String? userId,
+    String? displayName,
+    String? photoUrl,
+    String? career,
+    String? gender,
+    int? totalStars,
+    int? totalQuizTimeSeconds,
+    int? completedQuizzesCount,
+    double? averageTimeSeconds,
+    DateTime? lastActiveAt,
+    int? rank,
   }) => LeaderboardUserModel(
-    userId: userId ?? this.userId, displayName: displayName ?? this.displayName,
-    photoUrl: photoUrl ?? this.photoUrl, career: career ?? this.career,
-    gender: gender ?? this.gender, totalStars: totalStars ?? this.totalStars,
+    userId: userId ?? this.userId,
+    displayName: displayName ?? this.displayName,
+    photoUrl: photoUrl ?? this.photoUrl,
+    career: career ?? this.career,
+    gender: gender ?? this.gender,
+    totalStars: totalStars ?? this.totalStars,
     totalQuizTimeSeconds: totalQuizTimeSeconds ?? this.totalQuizTimeSeconds,
     completedQuizzesCount: completedQuizzesCount ?? this.completedQuizzesCount,
     averageTimeSeconds: averageTimeSeconds ?? this.averageTimeSeconds,
-    lastActiveAt: lastActiveAt ?? this.lastActiveAt, rank: rank ?? this.rank,
+    lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+    rank: rank ?? this.rank,
   );
 }

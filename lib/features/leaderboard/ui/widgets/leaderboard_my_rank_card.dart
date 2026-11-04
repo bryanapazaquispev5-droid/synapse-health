@@ -1,41 +1,41 @@
-// Bloque: Tarjeta de posición y progreso del usuario actual en el Leaderboard
+// Current user leaderboard rank and progress card
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../../core/auth/app_auth.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../model/leaderboard_user_model.dart';
 import '../../utils/time_formatter_helper.dart';
 
-// Bloque: Tarjeta destacada con el rango del usuario autenticado
+// Featured card with the authenticated user's rank
 class LeaderboardMyRankCard extends StatelessWidget {
   final LeaderboardUserModel? currentUser;
-  final User? fallbackUser;
+  final AppUser? fallbackUser;
 
-  const LeaderboardMyRankCard({
-    super.key,
-    this.currentUser,
-    this.fallbackUser,
-  });
+  const LeaderboardMyRankCard({super.key, this.currentUser, this.fallbackUser});
 
   @override
   Widget build(BuildContext context) {
     final rank = currentUser?.rank;
-    final hasRank = rank != null && (currentUser?.completedQuizzesCount ?? 0) > 0;
+    final hasRank =
+        rank != null && (currentUser?.completedQuizzesCount ?? 0) > 0;
 
     final String motivation;
     if (!hasRank) {
-      motivation = '¡Completa quizzes! ⚡';
+      motivation = 'Complete quizzes! ⚡';
     } else if (rank <= 3) {
-      motivation = '¡En el Podio! 🏆';
+      motivation = 'You are on the podium! 🏆';
     } else if (rank <= 10) {
-      motivation = '¡En el Top 10! 🔥';
+      motivation = 'You are in the Top 10! 🔥';
     } else {
-      motivation = '¡A por el podio! 🚀';
+      motivation = 'Aim for the podium! 🚀';
     }
 
     final stars = currentUser?.totalStars ?? 0;
-    final pace = TimeFormatterHelper.formatPace(currentUser?.averageTimeSeconds ?? 0);
-    final rankText = hasRank ? '#$rank' : 'Sin clasificar';
+    final pace = TimeFormatterHelper.formatPace(
+      currentUser?.averageTimeSeconds ?? 0,
+    );
+    final rankText = hasRank ? '#$rank' : 'Unranked';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -43,7 +43,10 @@ class LeaderboardMyRankCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3), width: 1.2),
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.3),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.accent.withValues(alpha: 0.08),
@@ -59,23 +62,60 @@ class LeaderboardMyRankCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.12), shape: BoxShape.circle),
-                child: const Icon(CupertinoIcons.rosette, color: AppColors.accent, size: 20),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  CupertinoIcons.rosette,
+                  color: AppColors.accent,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Tu Posición Global', style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w500)),
-                    Text(rankText, style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                    const Text(
+                      'Your Global Rank',
+                      style: TextStyle(
+                        fontFamily: '.SF Pro Text',
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      rankText,
+                      style: const TextStyle(
+                        fontFamily: '.SF Pro Text',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-                child: Text(motivation, style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accent)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  motivation,
+                  style: const TextStyle(
+                    fontFamily: '.SF Pro Text',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.accent,
+                  ),
+                ),
               ),
             ],
           ),
@@ -85,9 +125,17 @@ class LeaderboardMyRankCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildMetric(CupertinoIcons.star_fill, const Color(0xFFFFB800), '$stars Estrellas'),
+              _buildMetric(
+                CupertinoIcons.star_fill,
+                const Color(0xFFFFB800),
+                '$stars stars',
+              ),
               Container(width: 1, height: 14, color: AppColors.border),
-              _buildMetric(CupertinoIcons.stopwatch_fill, AppColors.systemTeal, pace),
+              _buildMetric(
+                CupertinoIcons.stopwatch_fill,
+                AppColors.systemTeal,
+                pace,
+              ),
             ],
           ),
         ],
@@ -101,7 +149,15 @@ class LeaderboardMyRankCard extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: color),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: '.SF Pro Text',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppColors.primary,
+          ),
+        ),
       ],
     );
   }

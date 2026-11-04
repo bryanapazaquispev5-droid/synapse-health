@@ -1,17 +1,17 @@
-// Bloque: Pruebas unitarias de modelos y helpers del Leaderboard
+// Section: Unit tests for leaderboard models and helpers
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/features/leaderboard/model/leaderboard_user_model.dart';
 import 'package:synapse_health/features/leaderboard/utils/time_formatter_helper.dart';
 
 void main() {
   group('LeaderboardUserModel Tests', () {
-    test('Serialización y deserialización correcta toMap / fromMap', () {
+    test('Correct toMap / fromMap serialization and deserialization', () {
       final now = DateTime.now();
       final user = LeaderboardUserModel(
         userId: 'u123',
         displayName: 'Dra. Bryan',
         photoUrl: 'https://example.com/photo.png',
-        career: 'Medicina Humana',
+        career: 'Human Medicine',
         gender: 'Hombre',
         totalStars: 45,
         totalQuizTimeSeconds: 150,
@@ -35,7 +35,7 @@ void main() {
       expect(fromMap.formattedTime, '2m 30s');
     });
 
-    test('rankBadge genera emojis y números correctamente', () {
+    test('rankBadge generates emojis and numbers correctly', () {
       const u1 = LeaderboardUserModel(
         userId: '1', displayName: 'A', career: 'M', gender: 'H',
         totalStars: 10, totalQuizTimeSeconds: 10, completedQuizzesCount: 1,
@@ -59,7 +59,7 @@ void main() {
   });
 
   group('TimeFormatterHelper Tests', () {
-    test('formatSeconds formatea tiempos correctamente', () {
+    test('formatSeconds correctly formats times', () {
       expect(TimeFormatterHelper.formatSeconds(0), '0:00');
       expect(TimeFormatterHelper.formatSeconds(9), '0:09');
       expect(TimeFormatterHelper.formatSeconds(60), '1:00');
@@ -67,7 +67,7 @@ void main() {
       expect(TimeFormatterHelper.formatSeconds(125), '2:05');
     });
 
-    test('formatPace formatea ritmo de quizzes correctamente', () {
+    test('formatPace correctly formats quiz pace', () {
       expect(TimeFormatterHelper.formatPace(0.0), '0s / quiz');
       expect(TimeFormatterHelper.formatPace(45.0), '45s / quiz');
       expect(TimeFormatterHelper.formatPace(60.0), '1m / quiz');

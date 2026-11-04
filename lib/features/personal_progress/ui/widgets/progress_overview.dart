@@ -20,15 +20,15 @@ class ProgressOverview extends StatelessWidget {
               ? constraints.maxWidth
               : (constraints.maxWidth - 12) / 2;
           final metrics = <(String, String)>[
-            ('Estrellas actuales', '${summary.currentStars}'),
-            ('Quizzes únicos respondidos', '${summary.uniqueQuizzes}'),
+            ('Current stars', '${summary.currentStars}'),
+            ('Unique quizzes answered', '${summary.uniqueQuizzes}'),
             (
-              'Aciertos actuales',
+              'Current correct answers',
               summary.accuracy == null
-                  ? 'No disponible'
+                  ? 'Not available'
                   : '${summary.accuracy!.toStringAsFixed(1)} %',
             ),
-            ('Intentos conservados', '${summary.retainedAttempts}'),
+            ('Attempts conservados', '${summary.retainedAttempts}'),
           ];
           return Wrap(
             spacing: 12,
@@ -45,12 +45,12 @@ class ProgressOverview extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       Text(
-        '${summary.currentCorrect} respuestas correctas de ${summary.currentAnswers} respuestas actuales.',
+        '${summary.currentCorrect} correct answers out of ${summary.currentAnswers} answers in the current attempt.',
         style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
       ),
       const SizedBox(height: 8),
       const Text(
-        'Las estrellas y los aciertos corresponden al intento actual. Quizzes e intentos cuentan los registros conservados y pueden no incluir toda tu práctica anterior.',
+        'Stars and correct answers reflect the current attempt. Quiz and attempt totals count retained records and may not include all of your previous practice.',
         style: TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
       ),
     ],

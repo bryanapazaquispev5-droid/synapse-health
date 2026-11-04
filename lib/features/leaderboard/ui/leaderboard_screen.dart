@@ -1,7 +1,8 @@
-// Bloque: Pantalla ensambladora del Ranking Global / Leaderboard
+// Global leaderboard screen assembler
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../core/auth/app_auth.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/states/app_async_content.dart';
@@ -11,9 +12,9 @@ import 'widgets/leaderboard_my_rank_card.dart';
 import 'widgets/leaderboard_podium_widget.dart';
 import 'widgets/leaderboard_user_tile.dart';
 
-// Bloque: Vista principal del Leaderboard
+// Main leaderboard view
 class LeaderboardScreen extends StatefulWidget {
-  final User currentUser;
+  final AppUser currentUser;
 
   const LeaderboardScreen({super.key, required this.currentUser});
 
@@ -56,11 +57,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                 snapshot: snapshot,
                 isEmpty: users.isEmpty,
                 onRetry: retry,
-                emptyTitle: 'Aún no hay participantes en el ranking',
-                emptyMessage: 'Los resultados disponibles aparecerán aquí.',
+                emptyTitle: 'No participants in the leaderboard yet',
+                emptyMessage: 'Available results will appear here.',
                 emptyIcon: CupertinoIcons.chart_bar,
                 errorMessage:
-                    'No se pudo cargar el ranking. Inténtalo de nuevo.',
+                    'Could not load the leaderboard. Please try again.',
               );
             }
 
@@ -81,7 +82,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Ranking de Élite',
+                          'Elite Leaderboard',
                           style: TextStyle(
                             fontFamily: '.SF Pro Display',
                             fontSize: 26,
@@ -91,7 +92,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                         ),
                         SizedBox(height: 2),
                         Text(
-                          'Ordenado por estrellas y velocidad',
+                          'Ranked by stars and speed',
                           style: TextStyle(
                             fontFamily: '.SF Pro Text',
                             fontSize: 13,

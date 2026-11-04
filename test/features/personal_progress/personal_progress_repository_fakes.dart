@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synapse_health/core/auth/app_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/features/cheatsheets/api/medical_areas_service.dart';
 import 'package:synapse_health/features/cheatsheets/model/medical_area_model.dart';
@@ -8,16 +8,16 @@ import 'package:synapse_health/features/cheatsheets/model/topic_model.dart';
 import 'package:synapse_health/features/quizzes/api/quiz_progress_service.dart';
 import 'package:synapse_health/features/quizzes/model/quiz_topic_progress_model.dart';
 
-class FakeSession extends Fake implements FirebaseAuth {
-  User? user;
-  final sessions = StreamController<User?>.broadcast();
+class FakeSession extends Fake implements AppAuth {
+  AppUser? user;
+  final sessions = StreamController<AppUser?>.broadcast();
   @override
-  User? get currentUser => user;
+  AppUser? get currentUser => user;
   @override
-  Stream<User?> authStateChanges() => sessions.stream;
+  Stream<AppUser?> authStateChanges() => sessions.stream;
 }
 
-class FakeIdentity extends Fake implements User {
+class FakeIdentity extends Fake implements AppUser {
   FakeIdentity(this.uid);
   @override
   final String uid;
@@ -26,13 +26,13 @@ class FakeIdentity extends Fake implements User {
 class FakeProgressSource extends Fake implements QuizProgressService {
   int calls = 0;
   int cancellations = 0;
-  late final source = StreamController<Map<String, QuizTopicProgressModel>>(
+  late final events = StreamController<Map<String, QuizTopicProgressModel>>(
     onCancel: () => cancellations++,
   );
   @override
   Stream<Map<String, QuizTopicProgressModel>> getAllTopicsProgressStream() {
     calls++;
-    return source.stream;
+    return events.stream;
   }
 }
 

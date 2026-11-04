@@ -1,5 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synapse_health/core/api/aws_api_client.dart';
+import 'package:synapse_health/core/auth/app_auth.dart';
 import 'package:synapse_health/features/personal_progress/api/personal_progress_repository.dart';
 import 'package:synapse_health/features/quizzes/model/quiz_topic_progress_model.dart';
 
@@ -10,7 +11,7 @@ void main() {
   late FakeProgressSource progress;
   late FakeCatalogSource catalog;
   late PersonalProgressRepository repository;
-  final unauthorized = isA<FirebaseAuthException>().having(
+  final unauthorized = isA<AppAuthException>().having(
     (error) => error.code,
     'code',
     'unauthenticated',
@@ -32,7 +33,7 @@ void main() {
       'topic': QuizTopicProgressModel.empty(topicId: 'topic', areaId: 'area'),
     };
     final received = repository.watchProgress('alice').first;
-    progress.source.add(value);
+    progress.events.add(value);
     expect(await received, same(value));
     expect(progress.calls, 1);
   });
@@ -69,23 +70,25 @@ void main() {
         emitsInOrder([emitsError(unauthorized), emitsDone]),
       );
       auth.user = FakeIdentity('bob');
-      progress.source.add({
+      progress.events.add({
         'alice-only': QuizTopicProgressModel.empty(topicId: 't', areaId: 'a'),
       });
-      await progress.source.close();
+      await progress.events.close();
       await expectation;
       expect(progress.calls, 1);
     },
   );
 
-  for (final code in ['permission-denied', 'unavailable']) {
-    test('$code propagates instead of a silent empty result', () async {
-      final failure = FirebaseException(plugin: 'cloud_firestore', code: code);
+  for (final failure in [
+    const AwsApiException(ApiFailure.forbidden),
+    const AwsApiException(ApiFailure.unavailable),
+  ]) {
+    test('${failure.failure} propagates instead of a silent empty result', () async {
       final expectation = expectLater(
         repository.watchProgress('alice'),
         emitsError(same(failure)),
       );
-      progress.source.addError(failure);
+      progress.events.addError(failure);
       await expectation;
     });
   }
@@ -96,7 +99,7 @@ void main() {
       final subscription = repository.watchProgress('alice').listen((_) {});
       await subscription.cancel();
       expect(progress.cancellations, 1);
-      expect(progress.source.hasListener, isFalse);
+      expect(progress.events.hasListener, isFalse);
     },
   );
 

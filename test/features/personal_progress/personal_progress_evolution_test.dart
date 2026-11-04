@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synapse_health/core/api/aws_api_client.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
 import 'package:synapse_health/core/widgets/states/app_async_content.dart';
 import 'package:synapse_health/features/cheatsheets/model/topic_model.dart';
@@ -14,7 +14,7 @@ import 'personal_progress_widget_fixture.dart';
 Widget evolution(List<TopicEvolution> series, Stream<List<TopicModel>> Function(String) topics,
     FakeConnectivity connection) => MaterialApp(theme: AppTheme.lightTheme,
   home: Scaffold(body: SingleChildScrollView(child: Padding(padding: const EdgeInsets.all(18),
-    child: ProgressEvolutionSection(series: series, areaNames: const {'a': 'Área de prueba'},
+    child: ProgressEvolutionSection(series: series, areaNames: const {'a': 'Test Area'},
       topicsStreamForArea: topics, connectivity: connection)))));
 
 void main() {
@@ -26,18 +26,18 @@ void main() {
     var reads = 0;
     await tester.pumpWidget(evolution([], (_) { reads++; return Stream.value([]); }, connection));
     await frames(tester);
-    expect(find.text('Todavía no hay evolución disponible'), findsOneWidget);
+    expect(find.text('No progress history is available yet'), findsOneWidget);
     expect(reads, 0);
   });
 
   testWidgets('two real attempts show their separate accuracy with topic name', (tester) async {
     final series = calculateProgress({'t': recordedProgress(history: true)}).evolution;
     await tester.pumpWidget(evolution(series, (_) => Stream.value([
-      const TopicModel(id: 't', areaId: 'a', title: 'Tema de prueba', order: 1)]), connection));
+      const TopicModel(id: 't', areaId: 'a', title: 'Test Topic', order: 1)]), connection));
     await frames(tester); await frames(tester);
-    expect(find.text('Tema de prueba'), findsOneWidget);
-    expect(find.text('Intento 1 · 0.0 %'), findsOneWidget);
-    expect(find.text('Intento 2 · 100.0 %'), findsOneWidget);
+    expect(find.text('Test Topic'), findsOneWidget);
+    expect(find.text('Attempt 1 · 0.0%'), findsOneWidget);
+    expect(find.text('Attempt 2 · 100.0%'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -54,16 +54,16 @@ void main() {
   testWidgets('removed topic uses availability message instead of an invented medical name', (tester) async {
     final series = calculateProgress({'t': recordedProgress(history: true)}).evolution;
     await tester.pumpWidget(evolution(series, (_) => Stream.value([]), connection)); await frames(tester);
-    expect(find.text('Tema no disponible'), findsOneWidget);
+    expect(find.text('Topic unavailable'), findsOneWidget);
   });
 
   testWidgets('metadata failures remain errors without hiding the absence as empty history', (tester) async {
     final series = calculateProgress({'t': recordedProgress(history: true)}).evolution;
-    await tester.pumpWidget(evolution(series, (_) => Stream.error(FirebaseException(
-      plugin: 'cloud_firestore', code: 'unavailable', message: 'internal query')), connection));
+    await tester.pumpWidget(evolution(series, (_) => Stream.error(const AwsApiException(
+      ApiFailure.unavailable)), connection));
     await frames(tester); await frames(tester);
     expect(find.byType(AppErrorState), findsOneWidget);
-    expect(find.text('Todavía no hay evolución disponible'), findsNothing);
+    expect(find.text('No progress history is available yet'), findsNothing);
     expect(find.textContaining('internal query'), findsNothing);
   });
 }
