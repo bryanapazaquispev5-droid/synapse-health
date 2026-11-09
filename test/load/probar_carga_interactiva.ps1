@@ -24,17 +24,17 @@ if (-not $secondsInput -or -not ($secondsInput -match '^\d+$') -or [int]$seconds
 $targetSeconds = [int]$secondsInput
 
 $targetRps = [Math]::Ceiling($totalAccounts / $targetSeconds)
-$vus = [Math]::Min(350, [Math]::Max(20, [int]($targetRps * 1.5)))
+$vus = [Math]::Min($totalAccounts, [Math]::Min(350, [Math]::Max(1, [int]($targetRps * 1.5))))
 $runId = "prueba-" + (Get-Date -Format "HHmmss")
 
 Write-Host ""
-Write-Host "[CONFIGURACIÓN]" -ForegroundColor Green
+Write-Host "[CONFIGURACION]" -ForegroundColor Green
 Write-Host "  - Total cuentas:  $totalAccounts"
 Write-Host "  - Tiempo meta:    $targetSeconds s (aprox. $targetRps req/s)"
 Write-Host "  - Hilos (VUs):    $vus"
 Write-Host "  - ID de prueba:   $runId"
 Write-Host ""
-Write-Host "Iniciando ráfaga k6 contra AWS..." -ForegroundColor Cyan
+Write-Host "Iniciando rafaga k6 contra AWS..." -ForegroundColor Cyan
 
 $k6Script = Join-Path $repoRoot 'test\load\dynamo_burst_signup.js'
 & k6 run -e ACCOUNTS=$totalAccounts -e EXECUTOR=shared-iterations -e VUS=$vus -e RUN_ID=$runId $k6Script
@@ -44,7 +44,7 @@ Write-Host "Consultando registros reales en AWS DynamoDB..." -ForegroundColor Ye
 & aws dynamodb scan --table-name synapse-health-backend-user-profiles --select COUNT --region us-east-2
 
 Write-Host ""
-$deleteChoice = Read-Host "¿Deseas eliminar estas $totalAccounts cuentas de AWS ahora? (S/N) [por defecto: S]"
+$deleteChoice = Read-Host "Deseas eliminar estas $totalAccounts cuentas de AWS ahora? (S/N) [por defecto: S]"
 if ($deleteChoice -eq '' -or $deleteChoice -match '^[sSyY]') {
     Write-Host "Eliminando cuentas creadas ($runId)..." -ForegroundColor Yellow
     Push-Location (Join-Path $repoRoot 'backend')
@@ -62,4 +62,4 @@ if ($deleteChoice -eq '' -or $deleteChoice -match '^[sSyY]') {
 }
 
 Write-Host ""
-Write-Host "Prueba finalizada con éxito." -ForegroundColor Green
+Write-Host "Prueba finalizada con exito." -ForegroundColor Green
