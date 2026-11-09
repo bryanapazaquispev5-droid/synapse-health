@@ -5,6 +5,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../model/trial_mode_session.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../api/auth_lockout_manager.dart';
 import '../api/remembered_email_store.dart';
@@ -226,6 +228,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     isLockoutActive: isLockoutActive,
                     lockoutSeconds: _lockoutManager.lockoutSeconds,
                     onSubmitEmailAuth: _handleSubmitEmailAuth,
+                    onGuestSignIn: TrialModeSession.start,
                   ),
                 ],
               ),

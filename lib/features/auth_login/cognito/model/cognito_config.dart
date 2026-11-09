@@ -12,11 +12,11 @@ class CognitoConfig {
     ),
     userPoolId: String.fromEnvironment(
       'SYNAPSE_COGNITO_USER_POOL_ID',
-      defaultValue: 'us-east-2_p48zTpxun',
+      defaultValue: 'us-east-2_E0h8t6hhE',
     ),
     clientId: String.fromEnvironment(
       'SYNAPSE_COGNITO_CLIENT_ID',
-      defaultValue: '7uag8qk06emq2j4ld1o0rsj034',
+      defaultValue: '5jl0g7fb5hhec0qgjo03fnsv12',
     ),
   );
   final String region;

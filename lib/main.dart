@@ -4,6 +4,7 @@
 // ============================================================================
 
 import 'package:flutter/material.dart';
+
 import 'core/auth/app_auth.dart';
 
 import 'core/notifications/handlers/notification_router.dart';
@@ -12,6 +13,8 @@ import 'core/services/app_settings_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth_login/ui/auth_screen.dart';
 import 'features/auth_login/auth_session_gate.dart';
+import 'features/auth_login/model/trial_mode_session.dart';
+import 'features/trial_mode/ui/trial_mode_screen.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -40,24 +43,26 @@ class SynapseHealthApp extends StatelessWidget {
       locale: const Locale('en'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: StreamBuilder<AppUser?>(
-        stream: AppAuth.instance.authStateChanges(),
-        builder: (context, authSnapshot) {
-          if (authSnapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              backgroundColor: AppColors.background,
-              body: Center(
-                child: CircularProgressIndicator(color: AppColors.accent),
-              ),
-            );
-          }
-          final user = authSnapshot.data;
-          if (user == null) {
-            return const AuthScreen();
-          }
-
-          // Cognito session identity is verified independently by the AWS API.
-          return AuthSessionGate(key: ValueKey(user.uid), user: user);
+      home: ValueListenableBuilder<bool>(
+        valueListenable: TrialModeSession.active,
+        builder: (context, trialActive, _) {
+          if (trialActive) return const TrialModeScreen();
+          return StreamBuilder<AppUser?>(
+            stream: AppAuth.instance.authStateChanges(),
+            builder: (context, authSnapshot) {
+              if (authSnapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  backgroundColor: AppColors.background,
+                  body: Center(
+                    child: CircularProgressIndicator(color: AppColors.accent),
+                  ),
+                );
+              }
+              final user = authSnapshot.data;
+              if (user == null) return const AuthScreen();
+              return AuthSessionGate(key: ValueKey(user.uid), user: user);
+            },
+          );
         },
       ),
     );

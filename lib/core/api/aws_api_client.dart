@@ -16,7 +16,7 @@ class AwsApiClient {
     // Permite cambiar la URL al compilar con --dart-define-from-file=.env.
     String baseUrl = const String.fromEnvironment(
       'SYNAPSE_API_BASE_URL',
-      defaultValue: 'https://3ltqcw0kr3.execute-api.us-east-2.amazonaws.com',
+      defaultValue: 'https://tcpq1i1oxl.execute-api.us-east-2.amazonaws.com',
     ),
     ApiTokenSupplier? tokenSupplier,
     ApiTransport? transport,

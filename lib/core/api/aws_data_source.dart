@@ -23,7 +23,16 @@ class AwsDataSource {
         if (AppAuth.instance.currentUser?.uid != uid) {
           throw const AppAuthException('unauthenticated', 'Sign in.');
         }
-        final data = await _readAll(path);
+        final data = await _readAll(
+          path,
+          onPartial: (partial) {
+            if (!watcher.controller.isClosed &&
+                AppAuth.instance.currentUser?.uid == uid) {
+              watcher.lastData = partial;
+              watcher.controller.add(partial);
+            }
+          },
+        );
         if (!watcher.controller.isClosed &&
             AppAuth.instance.currentUser?.uid == uid) {
           watcher.lastData = data;
@@ -44,7 +53,9 @@ class AwsDataSource {
           if (user?.uid != uid && !watcher.controller.isClosed) {
             watcher.lastData = null;
             watcher.timer?.cancel();
-            watcher.controller.addError(const AppAuthException('unauthenticated', 'Sign in.'));
+            watcher.controller.addError(
+              const AppAuthException('unauthenticated', 'Sign in.'),
+            );
           }
         });
         unawaited(refresh());
@@ -80,19 +91,37 @@ class AwsDataSource {
         sink.onCancel = subscription.cancel;
       });
 
-  Future<Map<String, dynamic>> _readAll(String path) async {
-    final first = await api.requestData('GET', path);
+  Future<Map<String, dynamic>> _readAll(
+    String path, {
+    void Function(Map<String, dynamic>)? onPartial,
+  }) async {
+    const pageSize = '50';
+    final supportsPagination = path == 'api/v1/areas' ||
+        path.startsWith('api/v1/areas/') ||
+        path == 'api/v1/progress/me' ||
+        path == 'api/v1/leaderboard';
+    final first = await api.requestData(
+      'GET',
+      path,
+      query: supportsPagination ? {'limit': pageSize} : null,
+    );
     if (first['items'] is! List) return first;
     final all = [...items(first)];
     final cursors = <String>{};
     var cursor = first['nextCursor'];
+    onPartial?.call({...first, 'items': List.of(all)});
     while (cursor != null) {
       if (cursor is! String || cursor.isEmpty || !cursors.add(cursor)) {
         throw const AwsApiException(ApiFailure.invalidResponse);
       }
-      final next = await api.requestData('GET', path, query: {'cursor': cursor});
+      final next = await api.requestData(
+        'GET',
+        path,
+        query: {'limit': pageSize, 'cursor': cursor},
+      );
       all.addAll(items(next));
       cursor = next['nextCursor'];
+      onPartial?.call({...first, 'items': List.of(all), 'nextCursor': cursor});
     }
     return {...first, 'items': all, 'nextCursor': null};
   }
