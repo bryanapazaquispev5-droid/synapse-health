@@ -21,7 +21,12 @@ async function findLoadUsers() {
     for (const item of res.Items || []) {
       const pk = item.PK?.S || '';
       const sk = item.SK?.S || '';
-      if (pk.startsWith('USER#EMAIL#load-') && sk === 'ACCOUNT') {
+      const isTestEmail = pk.startsWith('USER#EMAIL#load-') ||
+                          pk.startsWith('USER#EMAIL#prueba-') ||
+                          pk.startsWith('USER#EMAIL#ondemand_') ||
+                          pk.startsWith('USER#EMAIL#dbg_') ||
+                          pk.startsWith('USER#EMAIL#testlive_');
+      if (isTestEmail && sk === 'ACCOUNT') {
         const email = item.email?.S || pk.replace('USER#EMAIL#', '');
         const sub = item.sub?.S || '';
         if (!targetRunId || email.includes(targetRunId)) {
