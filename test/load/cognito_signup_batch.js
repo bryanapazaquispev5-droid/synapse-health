@@ -7,12 +7,17 @@ const userCount = Number(__ENV.VUS || 200);
 const batchSize = Number(__ENV.BATCH_SIZE || 2);
 const intervalSeconds = Number(__ENV.INTERVAL_SECONDS || 150);
 const region = __ENV.AWS_REGION || 'us-east-2';
-const clientId = __ENV.COGNITO_CLIENT_ID || '7uag8qk06emq2j4ld1o0rsj034';
+const clientId = __ENV.COGNITO_CLIENT_ID || '5jl0g7fb5hhec0qgjo03fnsv12';
 const runId = __ENV.RUN_ID || '20261027-001';
 const endpoint = __ENV.COGNITO_ENDPOINT || `https://cognito-idp.${region}.amazonaws.com/`;
 const accountPrefix = `synapse-load-${runId}-`;
 const batchCount = Math.ceil(userCount / batchSize);
-const maxDurationSeconds = Math.max(60, batchCount * intervalSeconds + 60);
+const workers = Math.min(batchSize, userCount);
+const iterationsPerWorker = Math.ceil(userCount / workers);
+const maxDurationSeconds = Math.max(
+  60,
+  iterationsPerWorker * (intervalSeconds + 30) + 30,
+);
 
 http.setResponseCallback(http.expectedStatuses(200));
 const createdAccounts = new Counter('created_cognito_accounts');
@@ -22,8 +27,8 @@ export const options = {
   scenarios: {
     signup_batches: {
       executor: 'per-vu-iterations',
-      vus: userCount,
-      iterations: 1,
+      vus: workers,
+      iterations: iterationsPerWorker,
       maxDuration: `${maxDurationSeconds}s`,
     },
   },
@@ -38,8 +43,11 @@ export function setup() {
   if (!Number.isSafeInteger(userCount) || userCount < 1) {
     throw new Error('VUS must be a positive safe integer.');
   }
-  if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > userCount) {
-    throw new Error('BATCH_SIZE must be between 1 and VUS.');
+  if (userCount > 10000) {
+    throw new Error('VUS cannot exceed 10000 real Cognito accounts.');
+  }
+  if (!Number.isSafeInteger(batchSize) || batchSize < 1 || batchSize > userCount) {
+    throw new Error('BATCH_SIZE must be an integer between 1 and the requested account count.');
   }
   if (!Number.isFinite(intervalSeconds) || intervalSeconds < 0) {
     throw new Error('INTERVAL_SECONDS must be a non-negative number of seconds.');
@@ -51,17 +59,20 @@ export function setup() {
     throw new Error('COGNITO_ENDPOINT must use HTTPS, except for a local mock.');
   }
   console.log(
-    `Cognito signup test: ${userCount} accounts; ${batchSize} per group; `
+    `Cognito signup test: ${userCount} real accounts; ${batchSize} per group; `
       + `${intervalSeconds}s between groups; run ID ${runId}.`,
   );
+  console.log(`k6 workers: ${workers}; iterations per worker: ${iterationsPerWorker}.`);
+  if (batchSize > 50) console.warn(`Large batch selected: up to ${batchSize} simultaneous Cognito sign-up requests.`);
   console.log('Created Cognito accounts remain in the user pool; this test never deletes them.');
 }
 
 export default function () {
-  const groupNumber = Math.floor((__VU - 1) / batchSize);
-  if (groupNumber > 0 && intervalSeconds > 0) sleep(groupNumber * intervalSeconds);
+  const sequenceNumber = ((__ITER * workers) + __VU);
+  if (sequenceNumber > userCount) return;
+  if (__ITER > 0 && intervalSeconds > 0) sleep(intervalSeconds);
 
-  const sequence = String(__VU).padStart(4, '0');
+  const sequence = String(sequenceNumber).padStart(5, '0');
   const email = `${accountPrefix}${sequence}@example.invalid`;
   const password = `Synapse!Load${runId}${sequence}a7`;
   const response = http.post(
