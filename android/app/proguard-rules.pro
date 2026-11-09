@@ -14,3 +14,5 @@
 
 # Preserve synthetic accessor methods for optimal compression
 -dontwarn javax.annotation.**
+
+-dontwarn com.google.android.play.core.**

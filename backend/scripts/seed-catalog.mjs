@@ -1,7 +1,7 @@
 import {DynamoDBClient} from '@aws-sdk/client-dynamodb';
 import {DynamoDBDocumentClient, PutCommand} from '@aws-sdk/lib-dynamodb';
 
-const tableName = process.env.SYNAPSE_TABLE_NAME || 'synapse-health-backend-AppTable-1GTPC1EHUU9N5';
+const tableName = process.env.SYNAPSE_TABLE_NAME || 'synapse-health-backend-AppTable-LKANJ8VSG090';
 const region = process.env.AWS_REGION || 'us-east-2';
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({region}));

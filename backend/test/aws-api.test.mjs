@@ -14,14 +14,19 @@ test('protected API rejects missing/invalid identity and exposes no token', asyn
   const invalid = await handler(request('/v1/me/profile', 'GET', undefined, 'private-invalid-token'));
   assert.equal(invalid.statusCode, 401); assert.ok(!invalid.body.includes('private-invalid-token'));
 });
+test('former administrator catalog routes are not part of the student API', async () => {
+  const {handler} = fixture();
+  const response = await handler(request('/api/v1/admin/areas', 'POST', {name: 'No write route'}));
+  assert.equal(response.statusCode, 404);
+});
 test('profile starts empty, stores English enum values and isolates owners', async () => {
   const {handler, store} = fixture();
   assert.deepEqual(payload(await handler(request('/v1/me/profile'))).data, {});
   const created = await handler(request('/v1/me/profile', 'PUT', {name: 'Synthetic owner', career: 'Medicina Humana', gender: 'Mujer'}));
   assert.equal(created.statusCode, 200); assert.equal(payload(created).data.uid, 'owner-a');
   assert.equal(payload(created).data.email, 'owner-a@example.invalid');
-  assert.equal(payload(created).data.gender, 'Mujer');
-  assert.equal(payload(created).data.career, 'Medicina Humana');
+  assert.equal(payload(created).data.gender, 'Female');
+  assert.equal(payload(created).data.career, 'General Medicine');
   assert.equal((await store.get('USER#owner-a', 'PROFILE')).data.gender, 'Female');
   assert.equal((await store.get('USER#owner-a', 'PROFILE')).data.career, 'General Medicine');
   assert.deepEqual(payload(await handler(request('/v1/me/profile', 'GET', undefined, 'owner-b'))).data, {});

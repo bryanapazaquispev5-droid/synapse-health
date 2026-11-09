@@ -26,8 +26,8 @@ export function createStore(options = {}) {
   }
   const store = {
     // Busca un registro por sus claves de partición y ordenamiento.
-    async get(PK, SK) {
-      return expandItem((await db().send(new GetCommand({TableName: table, Key: {PK, SK}, ConsistentRead: true}))).Item);
+    async get(PK, SK, {consistentRead = true} = {}) {
+      return expandItem((await db().send(new GetCommand({TableName: table, Key: {PK, SK}, ConsistentRead: consistentRead}))).Item);
     },
     // Inserta o actualiza con control de versión para evitar sobrescribir cambios recientes.
     async put(item, expectedVersion = null, related = []) {
@@ -46,14 +46,22 @@ export function createStore(options = {}) {
       }
       return {...item, version: (expectedVersion ?? 0) + 1};
     },
-    async list(PK, prefix, {limit = 100, cursor = null} = {}) {
+    async list(PK, prefix, {limit = 100, cursor = null, consistentRead = true} = {}) {
       const output = await db().send(new QueryCommand({TableName: table,
         KeyConditionExpression: 'PK = :pk AND begins_with(SK, :prefix)',
         ExpressionAttributeValues: {':pk': PK, ':prefix': prefix},
-        ExclusiveStartKey: cursorKey(cursor, PK, prefix), Limit: limit, ConsistentRead: true}));
+        ExclusiveStartKey: cursorKey(cursor, PK, prefix), Limit: limit, ConsistentRead: consistentRead}));
       return {items: (output.Items ?? []).map(expandItem), nextCursor: encodeCursor(output.LastEvaluatedKey)};
     },
-    async remove(PK, SK) { await db().send(new DeleteCommand({TableName: table, Key: {PK, SK}})); },
+    async remove(PK, SK, expectedVersion = null) {
+      try {
+        await db().send(new DeleteCommand({TableName: table, Key: {PK, SK},
+          ...(expectedVersion === null ? {} : {ConditionExpression: '#v = :v', ExpressionAttributeNames: {'#v': 'version'}, ExpressionAttributeValues: {':v': expectedVersion}})}));
+      } catch (error) {
+        if (error.name === 'ConditionalCheckFailedException') throw new ApiError(409, 'conflict', 'The record changed. Reload and retry.');
+        throw error;
+      }
+    },
     async consume(subject, now = Date.now()) {
       const window = Math.floor(now / 60000);
       try {

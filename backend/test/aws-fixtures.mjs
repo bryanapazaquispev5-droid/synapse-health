@@ -43,7 +43,8 @@ export function fixture() {
   const progress = createProgress(store, catalog, now, {profilesStore: store, leaderboardStore: store});
   const identity = {async verifyCognitoToken(token) {
     if (!['owner-a', 'owner-b'].includes(token)) throw new ApiError(401, 'unauthenticated', 'Sign in.');
-    return {sub: token, email: `${token}@example.invalid`, name: 'Synthetic tester', provider: 'password'};
+    return {sub: token, email: `${token}@example.invalid`, name: 'Synthetic tester', provider: 'password',
+      groups: ['student']};
   }};
   const logs = [];
   const handler = createAwsHandler({identity, store, catalog, profiles, progress,

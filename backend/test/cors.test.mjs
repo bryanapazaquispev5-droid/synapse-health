@@ -19,6 +19,10 @@ test('native clients without Origin remain supported', async () => {
   assert.equal(result.statusCode, 200);
   assert.equal(result.headers['Access-Control-Allow-Origin'], undefined);
 });
+test('an empty allowlist denies browser origins but permits native clients', async () => {
+  assert.equal((await withCors(ok, '')({headers: {Origin: 'https://unconfigured.example'}})).statusCode, 403);
+  assert.equal((await withCors(ok, '')({headers: {}})).statusCode, 200);
+});
 test('wildcard and non-HTTPS CORS configurations rejected', () => {
   for (const origin of ['*', 'http://app.example', 'https://app.example/path']) {
     assert.throws(() => withCors(ok, origin));

@@ -8,16 +8,21 @@ catalog importer reads only approved education content and never reads user prof
 - Cognito User Pool Lite: new email/password accounts and email confirmation/recovery.
 - Public mobile client: authorization code with PKCE; no client secret; rotating refresh tokens.
 - Cognito access-token signature/issuer/client/token_use/expiry verification with aws-jwt-verify.
+- Cognito pre-token trigger assigns only the `student` group to registered accounts. The app's preview mode is local, does not create an identity, and cannot access AWS catalog or user data.
 - Online GetUser check rejects revoked sessions and disabled users; identity comes only from verified claims.
 - API Gateway HTTP API and Node.js 22 Lambda; no identity-provider admin SDK in the AWS runtime.
 - Nine purpose-specific DynamoDB tables with flat English attributes, encryption and TTL for rate counters. The legacy table remains retained and is not read by the new runtime.
 - CloudWatch Lambda/API logs retain seven days; no authorization headers, tokens, bodies or health data logged.
+- DynamoDB point-in-time recovery is enabled in the infrastructure template for every retained application table.
+- A daily AWS Backup plan with seven-day retention is defined for all ten DynamoDB tables. It is opt-in via `EnableScheduledBackups=true` and remains disabled by default because snapshots add storage charges; DynamoDB PITR remains enabled independently.
+- To inspect recovery points, open AWS Backup in `us-east-2` and choose **Backup vaults** → `<stack-name>-dynamodb-backups`. A restore creates a new DynamoDB table; review its data and switch the application only after validating it. Do not restore over or delete the existing tables as part of routine recovery.
+- Optional private VPC mode uses two private subnets, a free DynamoDB gateway endpoint and a billed Cognito interface endpoint. It is disabled by default and must not be enabled unless its ongoing cost is approved.
 - Optional S3 private encrypted/versioned bucket is disabled: the app has no file upload flow to migrate.
 - AWS runtime dependencies contain no mobile push SDK or identity-provider admin SDK.
 
 Lambda IAM is scoped to four catalog tables and the exact user, progress, ranking, device and rate-limit tables.
 Owner writes use `USER#<verified-sub>` keys; the API cannot scan tables, create resources, administer Cognito,
-or access a customer-managed KMS key.
+or access a customer-managed KMS key. Catalog tables are read-only from the app runtime.
 The API derives the owner from the verified subject and rejects client owner/role fields.
 
 ## API contracts
@@ -90,7 +95,7 @@ many-to-many junction tables. Stable IDs remain identifiers for app compatibilit
 arbitrary user-entered profile text are not translated. The old `AppTable` remains retained and untouched as a
 rollback copy; no existing user or progress records are copied into the new tables.
 
-## Local verification and artifact
+## Local verification, load test and artifact
 
 ```powershell
 npm ci
@@ -115,13 +120,26 @@ Tests cover real RSA/JWKS verification with synthetic keys, service failures, ow
 empty catalogs, scoring, CAS transactions, replay/FIFO, ranking, cursor isolation and IaC constraints.
 Local tests do not prove deployed IAM, Cognito email delivery or push delivery.
 
+The mobile data source requests catalog/progress in 50-row cursor pages and emits each accumulated page while
+later pages load. History keeps its explicit load-more flow. The API continues to return its cursor contract.
+
+For a controlled server load test on Windows, run `powershell -ExecutionPolicy Bypass -File ..\test\load\run_aws_api_capacity.ps1`.
+Enter the deployed API URL, an existing test user's short-lived Cognito access token, and 1000–5000 VUs. The
+script validates the token with one preflight request, then sends one authenticated `/api/v1/auth/session`
+request per VU using that same identity. It prints completed/accepted/throttled counts and latency metrics
+without saving a report or creating users. Expected HTTP 429 throttling is counted as an accepted protective
+response; 5xx, unexpected responses and network errors fail the thresholds. This is real AWS traffic and
+should only be run when account limits and remaining credits have been rechecked.
+
 ## Deployment gates and costs
 
 DeploymentApproved=false creates no resources. Before changing it, recheck account identity,
 FREE account plan, remaining credits/expiry, regional prices and final security review. No paid-plan
 upgrade, NAT gateway, WAF, provisioned Lambda concurrency, SMS MFA or paid Cognito tier is configured.
-The eight active tables use a combined 15 RCU/15 WCU; including the retained 5/5 legacy table, this is
-20 RCU/20 WCU in `us-east-2`, below DynamoDB's 25/25 always-free allowance. Lambda, API requests,
+Scheduled AWS Backup is additionally gated by `EnableScheduledBackups=false`; enabling it requires an explicit reviewed deployment. All ten current tables contain about 2.96 MB. At the published DynamoDB on-demand-backup rate of $0.10/GB-month, a conservative estimate assuming seven full copies is about $0.002/month for current data; actual billing changes with table growth, incremental backup data and retention. This estimate excludes restores and is not a guarantee or a spending cap. The existing PITR charges are separate and already configured.
+The eight purpose tables use a combined 15 RCU/15 WCU; including the retained 5/5 legacy table and
+the retained 1/1 `user-devices` table, this is 21 RCU/21 WCU in `us-east-2`, below DynamoDB's
+25/25 always-free allowance. Lambda, API requests,
 log ingestion/storage, data storage/transfer and artifact storage still need account-level monitoring.
 HTTP throttling 5 requests/second with burst 10 and per-user quota 120/minute reduce accidental usage;
 these are not monetary spending caps. Credits expire and do not protect against every charge category.

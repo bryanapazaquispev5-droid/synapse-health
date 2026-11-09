@@ -13,24 +13,26 @@ function partition(path) {
 }
 
 export function createCatalog({areas, topics, quizzes: quizStore, studyNotes}) {
+  // El contenido educativo cambia poco; lecturas eventualmente consistentes reducen costo y contención.
+  const catalogRead = options => ({...options, consistentRead: false});
   async function list(path, options, requestedTopic = null) {
     if (path === 'medical_areas') {
-      const result = await areas.list('AREAS', 'AREA#', options);
+      const result = await areas.list('AREAS', 'AREA#', catalogRead(options));
       return pageResult(result, 'AREA#');
     }
     const {areaId, topicId, collection} = partition(path);
     if (collection === null) {
-      const result = await topics.list(`AREA#${areaId}`, 'TOPIC#', options);
+      const result = await topics.list(`AREA#${areaId}`, 'TOPIC#', catalogRead(options));
       return pageResult(result, 'TOPIC#');
     }
     if (collection === 'study-notes') {
       const prefix = `TOPIC#${topicId}#STUDY_NOTE#`;
-      return pageResult(await studyNotes.list(`AREA#${areaId}`, prefix, options), prefix);
+      return pageResult(await studyNotes.list(`AREA#${areaId}`, prefix, catalogRead(options)), prefix);
     }
     if (collection === 'quizzes') {
       const selectedTopic = requestedTopic ?? topicId;
       const prefix = selectedTopic ? `TOPIC#${identifier(selectedTopic)}#QUIZ#` : 'TOPIC#';
-      return quizResult(await quizStore.list(`AREA#${areaId}`, prefix, options));
+      return quizResult(await quizStore.list(`AREA#${areaId}`, prefix, catalogRead(options)));
     }
     throw new ApiError(404, 'not_found', 'Catalog collection is unavailable.');
   }
@@ -41,7 +43,7 @@ export function createCatalog({areas, topics, quizzes: quizStore, studyNotes}) {
     const items = [];
     let cursor = null;
     do {
-      const result = await quizStore.list(`AREA#${areaId}`, prefix, {limit: 100, cursor});
+      const result = await quizStore.list(`AREA#${areaId}`, prefix, catalogRead({limit: 100, cursor}));
       items.push(...result.items.map(item => ({...item.data, id: item.SK.slice(prefix.length)})));
       cursor = result.nextCursor;
     } while (cursor);
@@ -51,7 +53,7 @@ export function createCatalog({areas, topics, quizzes: quizStore, studyNotes}) {
   return {list, quizzes: quizzesForTopic, async quiz(areaId, topicId, quizId) {
     identifier(areaId); identifier(topicId); identifier(quizId);
     const prefix = `TOPIC#${topicId}#QUIZ#`;
-    const item = await quizStore.get(`AREA#${areaId}`, `${prefix}${quizId}`);
+    const item = await quizStore.get(`AREA#${areaId}`, `${prefix}${quizId}`, {consistentRead: false});
     if (!item) throw new ApiError(404, 'not_found', 'Question is unavailable.');
     return {...item.data, id: quizId};
   }};

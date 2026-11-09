@@ -8,6 +8,7 @@ Aplicación móvil Flutter para estudiar contenidos de ciencias de la salud medi
 - Los datos de catálogo y usuario se consultan mediante una API en Amazon API Gateway y AWS Lambda.
 - Amazon DynamoDB almacena las áreas, temas, quizzes, notas de estudio, perfiles, progreso, ranking y límites de solicitudes.
 - La autenticación social con Google y las notificaciones push remotas no forman parte de la app actual. Las notificaciones locales se generan en el dispositivo.
+- Cognito firma y expira los tokens; la API valida la sesión y asigna el rol estándar `student`. El modo de prueba no crea una cuenta: muestra contenido local y no consulta ni modifica catálogo o progreso en AWS.
 - `AppTable` y `user-devices` son recursos antiguos retenidos en AWS. El runtime actual no los usa ni elimina sus datos.
 - La app y los recursos AWS no se despliegan al ejecutar los comandos locales de este README.
 
@@ -18,6 +19,7 @@ Aplicación móvil Flutter para estudiar contenidos de ciencias de la salud medi
 - Evaluaciones de opción múltiple, emparejamiento y ordenamiento cuando esos tipos están presentes en el contenido.
 - Guardado de respuestas y progreso, historial académico, perfil, ranking y preferencias locales.
 - Selección de carrera desde las opciones disponibles en el formulario.
+- Modo de prueba local con un tema de anatomía, dos notas y un nivel de quiz; sus respuestas no se guardan.
 
 ## Arquitectura
 
@@ -52,7 +54,6 @@ Las rutas de salud son públicas. Las demás rutas requieren un token de acceso 
 | `POST` | `/api/v1/progress/{topicId}/retry` | Reiniciar un intento |
 | `GET` | `/api/v1/history`, `/api/v1/history/{id}` | Consultar historial propio |
 | `GET` | `/api/v1/leaderboard` | Consultar ranking |
-
 Los métodos, validaciones y formatos de las respuestas están documentados en [`backend/AWS.md`](backend/AWS.md).
 
 ## Tablas DynamoDB
@@ -114,7 +115,8 @@ npm start
 
 - Flutter: `flutter test` ejecuta la suite móvil.
 - Backend: `npm test` ejecuta la compilación de verificación y las pruebas Node.js.
-- Pruebas de carga: los scripts de `test/load/` usan k6. La prueba de login envía solicitudes a Cognito con credenciales ficticias; la de registro crea cuentas persistentes y no las elimina. Revisa sus variables y el impacto antes de confirmar una ejecución real.
+- Prueba de carga de API: `test/load/run_aws_api_capacity.ps1` solicita una carga de 1000–5000 usuarios virtuales y un token existente; requiere confirmación antes de enviar tráfico real. Rechazos `429` son esperados por los límites configurados. La prueba no crea usuarios ni guarda el informe.
+- Backend: ejecuta `npm test` desde `backend`; móvil: ejecuta `flutter test` desde la raíz.
 
 Las pruebas locales no demuestran por sí solas el estado de una implementación AWS ni reemplazan una prueba controlada contra el entorno desplegado.
 

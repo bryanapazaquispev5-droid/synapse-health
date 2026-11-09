@@ -68,3 +68,6 @@ backend/dist/
 
 backend/admin/
 backend/test/admin-center.test.mjs
+
+# Local Cognito load-test run identifier; passwords are derived in memory and never stored.
+/test/load/cognito_load_run_id.txt

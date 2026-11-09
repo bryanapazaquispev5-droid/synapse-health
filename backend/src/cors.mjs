@@ -1,13 +1,15 @@
 import {header, response} from './http.mjs';
 
 export function withCors(handler, allowedOrigin) {
-  const url = new URL(allowedOrigin);
-  if (url.protocol !== 'https:' || url.origin !== allowedOrigin || url.username || url.password) {
-    throw new Error('CORS requires one HTTPS origin');
+  if (allowedOrigin) {
+    const url = new URL(allowedOrigin);
+    if (url.protocol !== 'https:' || url.origin !== allowedOrigin || url.username || url.password) {
+      throw new Error('CORS requires one HTTPS origin');
+    }
   }
   return async event => {
     const origin = header(event.headers, 'origin');
-    if (origin != null && origin !== allowedOrigin) {
+    if (origin != null && (!allowedOrigin || origin !== allowedOrigin)) {
       return response(403, {error: {code: 'origin_forbidden', message: 'Origin is not allowed.'},
         requestId: event.requestContext?.requestId ?? 'unavailable'});
     }
