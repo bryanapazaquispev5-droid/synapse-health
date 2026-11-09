@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Synapse Health · Centro de control</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Synapse Health centro de control">
+        <span class="brand-mark">S</span>
+        <span>Synapse <strong>Health</strong></span>
+      </a>
+      <nav class="top-navigation" aria-label="Vistas del centro de control">
+        <a href="/" aria-current="page">Panel</a>
+        <a href="/database">Diagrama de BD</a>
+      </nav>
+      <span class="environment"><span class="status-dot"></span> AWS · us-east-2</span>
+    </header>
+    <main class="page">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">CENTRO DE CONTROL</p>
+          <h1>Datos de tu aplicación</h1>
+          <p class="subheading">Consulta DynamoDB (Autenticación nativa y Catálogo) en modo de solo lectura.</p>
+        </div>
+        <button id="refresh-all" class="button button-secondary" type="button">Actualizar</button>
+      </section>
+      <p id="connection-status" class="connection-status" role="status">Conectando con AWS…</p>
+      <section class="summary-grid" aria-label="Resumen">
+        <article class="summary-card"><span>Tablas de DynamoDB</span><strong id="table-count">—</strong></article>
+        <article class="summary-card"><span>Usuarios Registrados</span><strong id="user-count">—</strong></article>
+        <article class="summary-card"><span>Actualizado</span><strong id="last-updated">—</strong></article>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">ALMACENAMIENTO</p><h2>Tablas DynamoDB</h2></div>
+          <button id="table-menu-toggle" class="button button-secondary table-menu-toggle" type="button" aria-expanded="false" aria-controls="tables">Tablas <span aria-hidden="true">⌄</span></button>
+        </div>
+        <div id="tables" class="table-list" hidden><p class="muted">Cargando tablas…</p></div>
+        <p class="help">Elige una tabla para leer sus filas. «Actualizar» vuelve a cargar la tabla seleccionada y la lista de usuarios.</p>
+        <div class="selected-table-heading">
+          <span class="eyebrow">TABLA SELECCIONADA</span>
+          <h3 id="selected-table-name">Selecciona una tabla</h3>
+          <p id="selected-table-id" class="muted"></p>
+        </div>
+        <div id="items" class="items-list" aria-live="polite"></div>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">IDENTIDADES</p><h2>Usuarios (DynamoDB Auth)</h2></div>
+          <span class="live-badge"><span class="status-dot"></span> Se actualiza cada 30 s</span>
+        </div>
+        <p class="help">La lista muestra correo, nombre, carrera, proveedor y fecha de registro. Las credenciales seguras (hash scrypt) y perfiles se administran directamente en DynamoDB.</p>
+        <div id="users" class="user-list"><p class="muted">Cargando usuarios…</p></div>
+        <p id="user-pagination-note" class="muted"></p>
+      </section>
+      <footer>Solo lectura · AWS SDK usa la sesión local de tu PC · Los datos se consultan directamente en AWS</footer>
+    </main>
+  </body>
+</html>
