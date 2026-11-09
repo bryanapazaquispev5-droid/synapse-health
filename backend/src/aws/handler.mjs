@@ -8,7 +8,7 @@ function safeErrorType(error) {
     ? error.name : 'UnknownError';
 }
 
-export function createAwsHandler({identity, store, profiles, catalog, progress, history, leaderboard, logger = console}) {
+export function createAwsHandler({identity, store, profiles, catalog, progress, history, leaderboard, authRepo, logger = console}) {
   return async rawEvent => {
     const event = {...rawEvent, path: rawEvent.path ?? rawEvent.rawPath,
       httpMethod: rawEvent.httpMethod ?? rawEvent.requestContext?.http?.method};
@@ -25,13 +25,31 @@ export function createAwsHandler({identity, store, profiles, catalog, progress, 
         if (method !== 'GET') throw new ApiError(405, 'method_not_allowed', 'Use GET.', {Allow: 'GET'});
         return response(200, {data: {status: 'ok', provider: 'aws'}, requestId});
       }
+      // Public high-throughput registration and login with DynamoDB and native JWT.
+      if (path === '/api/v1/auth/register') {
+        if (method !== 'POST') throw new ApiError(405, 'method_not_allowed', 'Use POST.', {Allow: 'POST'});
+        if (!authRepo) throw new ApiError(503, 'unavailable', 'Auth repository not configured.');
+        const result = await authRepo.register(body(event, ['email', 'password', 'name', 'career', 'gender'], ['email', 'password']));
+        return response(200, {data: result, requestId});
+      }
+      if (path === '/api/v1/auth/login') {
+        if (method !== 'POST') throw new ApiError(405, 'method_not_allowed', 'Use POST.', {Allow: 'POST'});
+        if (!authRepo) throw new ApiError(503, 'unavailable', 'Auth repository not configured.');
+        const result = await authRepo.login(body(event, ['email', 'password'], ['email', 'password']));
+        return response(200, {data: result, requestId});
+      }
       if (method === 'GET' && event.body != null && event.body !== '') throw invalid();
       // API Gateway forwards through $default; authenticate all application routes in Lambda.
       const auth = header(event.headers, 'authorization');
       const bearer = typeof auth === 'string' && /^Bearer\s+([^\s]+)$/i.exec(auth);
       if (!bearer) throw new ApiError(401, 'unauthenticated', 'Authentication is required.');
       stage = 'identity';
-      const user = await identity.verifyCognitoToken(bearer[1]);
+      let user;
+      try {
+        user = authRepo ? authRepo.verifyToken(bearer[1]) : await identity.verifyCognitoToken(bearer[1]);
+      } catch (err) {
+        user = await identity.verifyCognitoToken(bearer[1]);
+      }
       if (typeof user.sub !== 'string' || !user.sub.trim()) throw new ApiError(401, 'unauthenticated', 'Authentication is required.');
       stage = 'rate_limit';
       await store.consume(user.sub);
@@ -50,8 +68,9 @@ export function createAwsHandler({identity, store, profiles, catalog, progress, 
       if (path === '/api/v1/auth/session') { // GET /api/v1/auth/session
         stage = 'session';
         requireMethod(['GET']);
-        const {groups, ...publicIdentity} = user;
-        data = publicIdentity;
+        const publicIdentity = {...user};
+        delete publicIdentity.groups;
+        data = {...publicIdentity, role: 'student'};
       } else if (path === '/v1/me/profile') { // GET consulta; PUT/PATCH crean o actualizan el perfil.
         stage = 'profile';
         requireMethod(['GET', 'PUT', 'PATCH']);

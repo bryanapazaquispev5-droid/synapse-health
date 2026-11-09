@@ -5,6 +5,7 @@ import {createProfiles} from './profiles.mjs';
 import {createProgress} from './progress.mjs';
 import {createAwsHistory} from './history.mjs';
 import {createLeaderboard} from './leaderboard.mjs';
+import {createAuthRepository} from './auth-repository.mjs';
 export function createAwsRuntime({env = process.env, client} = {}) {
   // Lambda inyecta los nombres de tablas desde CloudFormation; el backend los usa para crear cada acceso.
   const table = name => createStore({env, client, tableName: env[name]});
@@ -17,7 +18,8 @@ export function createAwsRuntime({env = process.env, client} = {}) {
   const leaderboardStore = table('LEADERBOARD_TABLE_NAME');
   const rateLimits = table('RATE_LIMITS_TABLE_NAME');
   const catalog = createCatalog({areas, topics, quizzes, studyNotes});
-  return {identity: createCognitoRuntime({env}), store: rateLimits, catalog,
+  const authRepo = createAuthRepository({profilesStore, secret: env.JWT_SECRET});
+  return {identity: createCognitoRuntime({env}), store: rateLimits, catalog, authRepo,
     profiles: createProfiles(profilesStore), progress: createProgress(progressStore, catalog, undefined, {profilesStore, leaderboardStore}),
     history: createAwsHistory(progressStore),
     leaderboard: createLeaderboard(leaderboardStore)};
