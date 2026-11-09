@@ -9,7 +9,7 @@ const table = (name, read, write, ttl = false) => ({Type: 'AWS::DynamoDB::Table'
     KeySchema: [{AttributeName: 'PK', KeyType: 'HASH'}, {AttributeName: 'SK', KeyType: 'RANGE'}],
     SSESpecification: {SSEEnabled: true, SSEType: 'KMS'},
     ...(ttl ? {TimeToLiveSpecification: {AttributeName: 'expiresAt', Enabled: true}} : {}),
-    PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: false},
+    PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: true},
     Tags: [{Key: 'Application', Value: 'SynapseHealth'}, {Key: 'DataOrigin', Value: 'SynapseHealthApplication'}]}});
 const logicalTables = {
   MedicalAreasTable: ['medical-areas', 1, 1], TopicsTable: ['topics', 2, 1],
@@ -29,8 +29,9 @@ export const dataResources = {
       KeySchema: [{AttributeName: 'PK', KeyType: 'HASH'}, {AttributeName: 'SK', KeyType: 'RANGE'}],
       SSESpecification: {SSEEnabled: true, SSEType: 'KMS'},
       TimeToLiveSpecification: {AttributeName: 'expiresAt', Enabled: true},
-      PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: false},
+      PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: true},
       Tags: [{Key: 'Application', Value: 'SynapseHealth'}, {Key: 'DataOrigin', Value: 'NewEmptyAwsAccountData'}]}},
+  UserDevicesTable: table('user-devices', 1, 1),
   ...splitTables,
   FilesBucket: {Type: 'AWS::S3::Bucket', Condition: 'FilesEnabled', DeletionPolicy: 'Retain', UpdateReplacePolicy: 'Retain',
     Metadata: context('Optional private files bucket; disabled because the current application has no file upload service.'),
@@ -47,6 +48,7 @@ export const dataResources = {
 };
 export const dataOutputs = {
   AppTableName: {Condition: 'Approved', Value: {Ref: 'AppTable'}},
+  UserDevicesTableName: {Condition: 'Approved', Value: {Ref: 'UserDevicesTable'}},
   ...Object.fromEntries(Object.keys(logicalTables).map(id => [`${id}Name`, {Condition: 'Approved', Value: {Ref: id}}])),
   FilesBucketName: {Condition: 'FilesEnabled', Value: {Ref: 'FilesBucket'}},
 };

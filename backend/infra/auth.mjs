@@ -5,7 +5,8 @@ export const authResources = {
   UserPool: {Type: 'AWS::Cognito::UserPool', Condition: 'Approved', DeletionPolicy: 'Retain', UpdateReplacePolicy: 'Retain',
     Metadata: context('Email and password authentication for the AWS application.'),
     Properties: {UserPoolTier: 'LITE', UsernameAttributes: ['email'],
-      LambdaConfig: {PreSignUp: sub('arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-api')},
+      LambdaConfig: {PreSignUp: sub('arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-api'),
+        PreTokenGeneration: sub('arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-api')},
       UsernameConfiguration: {CaseSensitive: false}, MfaConfiguration: 'OFF',
       AccountRecoverySetting: {RecoveryMechanisms: [{Name: 'verified_email', Priority: 1}]},
       Policies: {PasswordPolicy: {MinimumLength: 12, RequireLowercase: true, RequireUppercase: true,
@@ -25,6 +26,9 @@ export const authResources = {
   HostedDomain: {Type: 'AWS::Cognito::UserPoolDomain', Condition: 'Approved',
     Metadata: context('Use classic hosted login supported by Lite; no paid managed-login upgrade.'),
     Properties: {UserPoolId: ref('UserPool'), Domain: sub('${AWS::StackName}-${AWS::AccountId}'), ManagedLoginVersion: 1}},
+  StudentGroup: {Type: 'AWS::Cognito::UserPoolGroup', Condition: 'Approved',
+    Metadata: context('Newly confirmed email/password accounts receive the standard student role.'),
+    Properties: {GroupName: 'student', UserPoolId: ref('UserPool')}},
 };
 export const authOutputs = {
   CognitoUserPoolId: {Condition: 'Approved', Value: ref('UserPool')},
