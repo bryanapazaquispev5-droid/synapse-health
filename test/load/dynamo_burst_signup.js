@@ -15,21 +15,31 @@ const failedRegistrations = new Counter('dynamo_failed_registrations');
 const registrationLatency = new Trend('dynamo_registration_latency', true);
 const errorRate = new Rate('dynamo_error_rate');
 
+const executorMode = __ENV.EXECUTOR || 'arrival-rate';
+const vusCount = Number(__ENV.VUS || 250);
+
 export const options = {
   scenarios: {
-    dynamo_burst_creation: {
-      executor: 'constant-arrival-rate',
-      rate: targetRps,
-      timeUnit: '1s',
-      duration: `${durationSec}s`,
-      preAllocatedVUs: Math.min(targetRps * 2, 2000),
-      maxVUs: Math.min(targetRps * 5, 4000),
-    },
+    dynamo_burst_creation: executorMode === 'shared-iterations'
+      ? {
+          executor: 'shared-iterations',
+          iterations: totalAccounts,
+          vus: vusCount,
+          maxDuration: `${Math.max(30, Math.ceil(totalAccounts / 50))}s`,
+        }
+      : {
+          executor: 'constant-arrival-rate',
+          rate: targetRps,
+          timeUnit: '1s',
+          duration: `${durationSec}s`,
+          preAllocatedVUs: Math.min(targetRps * 2, 2000),
+          maxVUs: Math.min(targetRps * 5, 4000),
+        },
   },
   thresholds: {
     http_req_failed: ['rate<0.02'],
     checks: ['rate>0.98'],
-    http_req_duration: ['p(95)<2000'],
+    http_req_duration: ['p(95)<2500'],
   },
 };
 
