@@ -18,6 +18,13 @@ export function createProgress(store, catalog, now = () => new Date().toISOStrin
       const output = await store.list(`USER#${subject}`, 'TOPIC#', options);
       return {items: output.items.map(record => ({...record.data, id: record.SK.slice(6), version: record.version})), nextCursor: output.nextCursor};
     },
+    async clear(subject) {
+      const output = await store.list(`USER#${subject}`, 'TOPIC#');
+      for (const item of output.items) {
+        await store.remove(`USER#${subject}`, item.SK);
+      }
+      return {cleared: true, count: output.items.length};
+    },
     async answer(subject, topicId, input) {
       identifier(topicId);
       object(input, ['areaId', 'quizId', 'answer', 'expectedAttemptNumber', 'topicTotalMaxStars'], ['areaId', 'quizId', 'answer', 'expectedAttemptNumber']);

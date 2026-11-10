@@ -14,22 +14,14 @@ class DynamoAuthService implements AuthBackend {
     String? baseUrl,
     FlutterSecureStorage? storage,
     HttpClient Function()? clientFactory,
-  }) : baseUrl = Uri.parse(
-         baseUrl ??
-             const String.fromEnvironment(
-               'SYNAPSE_API_BASE_URL',
-               defaultValue:
-                   'https://tcpq1i1oxl.execute-api.us-east-2.amazonaws.com',
-             ),
+  }) : baseUrl = Uri.parse(baseUrl ?? const String.fromEnvironment(
+         'SYNAPSE_API_BASE_URL',
+         defaultValue: 'https://tcpq1i1oxl.execute-api.us-east-2.amazonaws.com',
+       )),
+       _storage = storage ?? const FlutterSecureStorage(
+         aOptions: AndroidOptions(resetOnError: true),
+         iOptions: IOSOptions(accessibility: KeychainAccessibility.unlocked_this_device),
        ),
-       _storage =
-           storage ??
-           const FlutterSecureStorage(
-             aOptions: AndroidOptions(resetOnError: true),
-             iOptions: IOSOptions(
-               accessibility: KeychainAccessibility.unlocked_this_device,
-             ),
-           ),
        _clientFactory = clientFactory ?? HttpClient.new;
 
   final Uri baseUrl;
@@ -137,6 +129,15 @@ class DynamoAuthService implements AuthBackend {
 
   @override
   Future<void> deleteAccount() async {
+    try {
+      if (_token != null) {
+        final client = _clientFactory();
+        final uri = baseUrl.resolve('/api/v1/auth/me');
+        final req = await client.deleteUrl(uri);
+        req.headers.set('Authorization', 'Bearer $_token');
+        await req.close();
+      }
+    } catch (_) {}
     await signOut();
   }
 
@@ -204,34 +205,21 @@ class DynamoAuthService implements AuthBackend {
     }
   }
 
-  Future<Map<String, dynamic>> _postJson(
-    String path,
-    Map<String, dynamic> body,
-  ) async {
+  Future<Map<String, dynamic>> _postJson(String path, Map<String, dynamic> body) async {
     final client = _clientFactory();
     client.connectionTimeout = const Duration(seconds: 15);
     try {
-      final uri = baseUrl.resolve(path);
-      final request = await client.postUrl(uri);
+      final request = await client.postUrl(baseUrl.resolve(path));
       request.headers.set('Content-Type', 'application/json');
       request.write(jsonEncode(body));
       final response = await request.close();
-      final bytes = await response.fold<List<int>>(
-        <int>[],
-        (buffer, chunk) => buffer..addAll(chunk),
-      );
+      final bytes = await response.fold<List<int>>([], (buf, chunk) => buf..addAll(chunk));
       final decoded = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return decoded;
-      }
-      final message = decoded['message'] as String? ?? 'Authentication request failed.';
-      if (response.statusCode == 409) {
-        throw CognitoAuthException('email_in_use', message);
-      }
-      if (response.statusCode == 401) {
-        throw CognitoAuthException('authentication_failed', message);
-      }
-      throw CognitoAuthException('service_unavailable', message);
+      if (response.statusCode >= 200 && response.statusCode < 300) return decoded;
+      final msg = decoded['message'] as String? ?? 'Authentication request failed.';
+      if (response.statusCode == 409) throw CognitoAuthException('email_in_use', msg);
+      if (response.statusCode == 401) throw CognitoAuthException('authentication_failed', msg);
+      throw CognitoAuthException('service_unavailable', msg);
     } on CognitoAuthException {
       rethrow;
     } on SocketException {

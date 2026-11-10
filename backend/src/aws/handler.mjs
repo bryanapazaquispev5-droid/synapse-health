@@ -81,9 +81,15 @@ export function createAwsHandler({identity, store, profiles, catalog, progress, 
         stage = 'catalog';
         requireMethod(['GET']);
         data = await catalog.list(catalogRequest.path, catalogRequest.options, catalogRequest.topicId);
-      } else if (path === '/api/v1/progress/me') { // Consulta el progreso guardado del usuario.
-        stage = 'progress_read';
-        requireMethod(['GET']); data = await progress.list(user.sub, page(query));
+      } else if (path === '/api/v1/progress/me') { // Consulta o reinicia el progreso guardado del usuario.
+        stage = method === 'DELETE' ? 'progress_clear' : 'progress_read';
+        requireMethod(['GET', 'DELETE']);
+        data = method === 'DELETE' ? await progress.clear(user.sub) : await progress.list(user.sub, page(query));
+      } else if (path === '/api/v1/auth/me' || path === '/v1/me/account') {
+        stage = 'auth_delete';
+        requireMethod(['DELETE']);
+        if (!authRepo) throw new ApiError(503, 'unavailable', 'Auth repository not configured.');
+        data = await authRepo.deleteUser(user.sub);
       } else if (answer) { // Guarda una respuesta o inicia un reintento del quiz.
         stage = answer[2] === 'answer' ? 'progress_answer' : 'progress_retry';
         requireMethod(['POST']);

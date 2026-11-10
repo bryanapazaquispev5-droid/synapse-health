@@ -106,4 +106,12 @@ class QuizProgressService {
       _attempts[topicId] = progress['currentAttemptNumber'] as int;
     }
   }
+
+  Future<void> resetAllProgress() async {
+    _attempts.clear();
+    try {
+      await source.mutate('DELETE', 'api/v1/progress/me', {});
+    } catch (_) {}
+    await source.refreshAll();
+  }
 }

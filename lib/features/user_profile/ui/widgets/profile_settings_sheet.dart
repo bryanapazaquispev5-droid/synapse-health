@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/auth/app_auth.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../quizzes/api/quiz_progress_service.dart';
 
 // Section: Static presenter for the settings modal sheet
 class ProfileSettingsSheet {
@@ -66,13 +67,27 @@ class _SettingsSheetContent extends StatelessWidget {
     );
     if (confirmed == true && context.mounted) {
       HapticFeedback.mediumImpact();
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Progreso académico reiniciado correctamente.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      try {
+        await QuizProgressService().resetAllProgress();
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Progreso académico reiniciado correctamente.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al reiniciar: $e'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
     }
   }
 

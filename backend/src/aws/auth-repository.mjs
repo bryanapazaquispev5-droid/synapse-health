@@ -103,6 +103,17 @@ export function createAuthRepository({profilesStore, secret, now = () => new Dat
 
     verifyToken(token) {
       return verifyJwt(token, jwtSecret);
+    },
+
+    async deleteUser(sub) {
+      const auth = await profilesStore.get(`USER#${sub}`, 'AUTH');
+      const email = auth?.data?.email ?? auth?.email;
+      if (email) {
+        await profilesStore.remove(`USER#EMAIL#${email}`, 'ACCOUNT');
+      }
+      await profilesStore.remove(`USER#${sub}`, 'AUTH');
+      await profilesStore.remove(`USER#${sub}`, 'PROFILE');
+      return {deleted: true};
     }
   };
 }

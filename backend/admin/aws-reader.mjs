@@ -70,7 +70,6 @@ export function createAwsReader({
             FilterExpression: 'SK = :sk',
             ExpressionAttributeValues: {':sk': 'PROFILE'},
             ExclusiveStartKey: lastEvaluatedKey,
-            Limit: 1000,
           }));
           for (const item of scan.Items ?? []) {
             if (users.length < displayedUserLimit) {
