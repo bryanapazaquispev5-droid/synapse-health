@@ -118,7 +118,7 @@ class AuthFlowHandler {
     final cleanEmail = email.trim().toLowerCase();
     RegistrationFlowStatus.isSavingProfile.value = true;
     try {
-      await authService.registerWithEmailAndPassword(
+      final registered = await authService.registerWithEmailAndPassword(
         name: name,
         email: cleanEmail,
         career: career,
@@ -126,16 +126,18 @@ class AuthFlowHandler {
         password: password,
       );
       if (!context.mounted) return null;
-      final credential = await authService.signInWithEmailAndPassword(
-        email: cleanEmail,
-        password: password,
-      );
-      await authService.profiles.save(
-        credential.user!.uid,
-        name: name,
-        career: career,
-        gender: gender,
-      );
+      if (registered == null) {
+        final credential = await authService.signInWithEmailAndPassword(
+          email: cleanEmail,
+          password: password,
+        );
+        await authService.profiles.save(
+          credential.user!.uid,
+          name: name,
+          career: career,
+          gender: gender,
+        );
+      }
       final prefs = await SharedPreferences.getInstance();
       final count = (prefs.getInt(AppConstants.PREF_CREATED_ACCOUNTS) ?? 0) + 1;
       await prefs.setInt(AppConstants.PREF_CREATED_ACCOUNTS, count);

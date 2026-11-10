@@ -2,7 +2,7 @@ import '../../../core/auth/app_auth.dart';
 import '../../../core/api/own_profile_repository.dart';
 import '../../../core/services/user_local_profile_service.dart';
 
-/// App-facing authentication backed exclusively by Cognito.
+/// App-facing authentication backed by DynamoDB Native Auth and AWS.
 class AuthService {
   AuthService({AppAuth? auth, OwnProfileRepository? profiles})
     : _auth = auth ?? AppAuth.instance,
@@ -38,17 +38,29 @@ class AuthService {
     return credential;
   }
 
-  Future<void> registerWithEmailAndPassword({
+  Future<AppUserCredential?> registerWithEmailAndPassword({
     required String name,
     required String email,
     required String career,
     required String gender,
     required String password,
-  }) => _auth.service.register(
-    email: email.trim().toLowerCase(),
-    password: password,
-    name: name,
-  );
+  }) async {
+    if (_auth.backend != null) {
+      return _auth.backend!.register(
+        name: name,
+        email: email.trim().toLowerCase(),
+        password: password,
+        career: career,
+        gender: gender,
+      );
+    }
+    await _auth.service.register(
+      email: email.trim().toLowerCase(),
+      password: password,
+      name: name,
+    );
+    return null;
+  }
 
   Future<void> confirmRegistration(String email, String code) =>
       _auth.service.confirmRegistration(email: email, code: code);
