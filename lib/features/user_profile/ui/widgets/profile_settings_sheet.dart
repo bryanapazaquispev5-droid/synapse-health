@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/auth/app_auth.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -41,7 +42,69 @@ class _SettingsSheetContent extends StatelessWidget {
     ),
   );
 
-  // Section: Build the widget tree with a design matching OpaqueActionSheet
+  Future<void> _confirmResetProgress(BuildContext context) async {
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Reiniciar progreso'),
+        content: const Text(
+          '¿Deseas reiniciar tu progreso de quizzes y estrellas para comenzar de nuevo?',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Reiniciar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      HapticFeedback.mediumImpact();
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Progreso académico reiniciado correctamente.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Eliminar cuenta'),
+        content: const Text(
+          '¿Estás seguro de que deseas eliminar permanentemente tu cuenta y datos en DynamoDB? Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar cuenta'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      HapticFeedback.heavyImpact();
+      Navigator.pop(context);
+      await AppAuth.instance.deleteAccount();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -72,7 +135,7 @@ class _SettingsSheetContent extends StatelessWidget {
                           child: Column(mainAxisSize: MainAxisSize.min, children: [
                             Text('System Settings', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
                             SizedBox(height: 4),
-                            Text('Customize animations and system behavior', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, color: AppColors.textMuted)),
+                            Text('Customize animations, progress and account data', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, color: AppColors.textMuted)),
                           ]),
                         ),
                         divider,
@@ -80,8 +143,26 @@ class _SettingsSheetContent extends StatelessWidget {
                           icon: CupertinoIcons.waveform_path,
                           iconColor: AppColors.accent,
                           title: 'Wave Transition',
-                          subtitle: 'Liquid effect between menus',
+                          subtitle: 'Efecto fluido entre menús',
                           trailing: _buildWaveSwitch(),
+                        ),
+                        divider,
+                        _buildRow(
+                          icon: CupertinoIcons.arrow_counterclockwise_circle_fill,
+                          iconColor: AppColors.systemOrange,
+                          title: 'Reiniciar Progreso',
+                          subtitle: 'Borrar historial y estrellas de quizzes',
+                          trailing: const Icon(CupertinoIcons.chevron_forward, size: 16, color: AppColors.textMuted),
+                          onTap: () => _confirmResetProgress(context),
+                        ),
+                        divider,
+                        _buildRow(
+                          icon: CupertinoIcons.trash_fill,
+                          iconColor: AppColors.systemRed,
+                          title: 'Eliminar Cuenta',
+                          subtitle: 'Borrar usuario y perfil en DynamoDB',
+                          trailing: const Icon(CupertinoIcons.chevron_forward, size: 16, color: AppColors.textMuted),
+                          onTap: () => _confirmDeleteAccount(context),
                         ),
                       ],
                     ),
@@ -114,7 +195,6 @@ class _SettingsSheetContent extends StatelessWidget {
     );
   }
 
-  // Section: Modular action row builder
   Widget _buildRow({
     required IconData icon,
     required Color iconColor,
