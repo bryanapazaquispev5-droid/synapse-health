@@ -144,7 +144,13 @@ class AuthFlowHandler {
       return count;
     } on AppAuthException catch (error) {
       if (context.mounted) {
-        AuthSnackbarHelper.show(context, error.message, isError: true);
+        final message = (error.code == 'email_in_use' ||
+                error.message.toLowerCase().contains('exists') ||
+                error.message.toLowerCase().contains('already') ||
+                error.message.toLowerCase().contains('email'))
+            ? 'Ya existe un usuario registrado con este correo electrónico.'
+            : error.message;
+        AuthSnackbarHelper.show(context, message, isError: true);
       }
       return null;
     } catch (_) {

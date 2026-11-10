@@ -14,12 +14,7 @@ class ProfileInfoSection extends StatelessWidget {
   final String career;
   final String gender;
   final String uid;
-  final bool isEmailVerified;
-  final bool isVerificationPending;
-  final bool isAnonymous;
   final VoidCallback onEditCareer;
-  final VoidCallback onEditGender;
-  final VoidCallback onResendEmail;
   final VoidCallback onOpenSettings;
   final ValueChanged<String> onShowFeedback;
 
@@ -28,12 +23,7 @@ class ProfileInfoSection extends StatelessWidget {
     required this.career,
     required this.gender,
     required this.uid,
-    required this.isEmailVerified,
-    this.isVerificationPending = false,
-    required this.isAnonymous,
     required this.onEditCareer,
-    required this.onEditGender,
-    required this.onResendEmail,
     required this.onOpenSettings,
     required this.onShowFeedback,
   });
@@ -143,7 +133,7 @@ class ProfileInfoSection extends StatelessWidget {
                   iconBgColor: AppColors.systemPink,
                   title: 'Gender',
                   value: gender,
-                  onTap: onEditGender,
+                  onTap: null, // Read-only: gender is immutable once chosen
                 ),
               ],
             ),
@@ -160,53 +150,6 @@ class ProfileInfoSection extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildAppleListTile(
-                  icon: CupertinoIcons.checkmark_seal_fill,
-                  iconBgColor: isEmailVerified
-                      ? AppColors.systemGreen
-                      : AppColors.textMuted,
-                  title: 'Medical Status',
-                  value: isEmailVerified ? 'Verified' : '',
-                  trailing: isEmailVerified
-                      ? const Icon(
-                          CupertinoIcons.checkmark_circle_fill,
-                          size: 18,
-                          color: AppColors.systemGreen,
-                        )
-                      : (!isAnonymous
-                            ? CupertinoButton(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                onPressed: isVerificationPending
-                                    ? null
-                                    : onResendEmail,
-                                child: isVerificationPending
-                                    ? const CupertinoActivityIndicator()
-                                    : Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Text(
-                                            'Not verified',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textMuted,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            CupertinoIcons.chevron_forward,
-                                            size: 12,
-                                            color: AppColors.textMuted,
-                                          ),
-                                        ],
-                                      ),
-                              )
-                            : null),
-                ),
-                const Divider(height: 0.5, indent: 54, color: AppColors.border),
                 _buildAppleListTile(
                   icon: CupertinoIcons.person_badge_plus_fill,
                   iconBgColor: AppColors.systemIndigo,
@@ -227,7 +170,7 @@ class ProfileInfoSection extends StatelessWidget {
                   icon: CupertinoIcons.lock_shield_fill,
                   iconBgColor: const Color(0xFF636366),
                   title: 'Proveedor',
-                  value: isAnonymous ? 'Guest' : 'Email',
+                  value: 'Email',
                 ),
                 const Divider(height: 0.5, indent: 54, color: AppColors.border),
                 _buildAppleListTile(

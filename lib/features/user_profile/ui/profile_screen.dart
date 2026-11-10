@@ -5,10 +5,8 @@ import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ios_top_banner.dart';
 import '../api/profile_api_service.dart';
-import 'profile_email_verification.dart';
 import 'widgets/profile_career_sheet.dart';
 import 'widgets/profile_edit_name_dialog.dart';
-import 'widgets/profile_gender_sheet.dart';
 import 'widgets/profile_header_card.dart';
 import 'widgets/profile_info_section.dart';
 import 'widgets/profile_settings_sheet.dart';
@@ -27,14 +25,10 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileApiService _profileApi = ProfileApiService();
   LocalUserProfile? _localProfile;
-  bool _emailVerified = false;
-  bool _isVerificationRequestActive = false;
+
   @override
   void initState() {
     super.initState();
-    ProfileEmailVerification.fetchStatus().then((verified) {
-      if (mounted) setState(() => _emailVerified = verified);
-    });
     _loadLocalProfile();
   }
 
@@ -52,23 +46,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     (isError ? IosTopBanner.error : IosTopBanner.success)(context, message);
   }
-
-  Future<void> _verifyEmail() => ProfileEmailVerification.verifyFromProfile(
-    context: context,
-    user: widget.user,
-    onRequestStateChanged: (isActive) {
-      if (mounted) setState(() => _isVerificationRequestActive = isActive);
-    },
-    onVerified: () {
-      if (!mounted) return;
-      setState(() => _emailVerified = true);
-      _showFeedback('Email verified.');
-    },
-    onError: (error) => _showFeedback(
-      'Could not verify email: ${ProfileEmailVerification.errorMessage(error)}',
-      isError: true,
-    ),
-  );
 
   Future<void> _handleSignOut() async {
     if (await ProfileSignOutDialog.show(context) != true) return;
@@ -194,9 +171,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     career: career,
                     gender: gender,
                     uid: widget.user.uid,
-                    isEmailVerified: _emailVerified,
-                    isVerificationPending: _isVerificationRequestActive,
-                    isAnonymous: widget.user.isAnonymous,
                     onEditCareer: () => ProfileCareerSheet.show(
                       context: context,
                       currentCareer: career,
@@ -214,24 +188,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                       },
                     ),
-                    onEditGender: () => ProfileGenderSheet.show(
-                      context: context,
-                      currentGender: gender,
-                      onSelectGender: (newGender) async {
-                        try {
-                          await _profileApi.updateGender(
-                            user: widget.user,
-                            newGender: newGender,
-                            localProfile: _localProfile,
-                          );
-                          _loadLocalProfile();
-                          _showFeedback('Gender updated!');
-                        } catch (e) {
-                          _showFeedback('Error: $e', isError: true);
-                        }
-                      },
-                    ),
-                    onResendEmail: _verifyEmail,
                     onOpenSettings: () =>
                         ProfileSettingsSheet.show(context: context),
                     onShowFeedback: (msg) => _showFeedback(msg),

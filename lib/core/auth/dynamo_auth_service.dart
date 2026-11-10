@@ -224,7 +224,7 @@ class DynamoAuthService implements AuthBackend {
       final decoded = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
       if (response.statusCode >= 200 && response.statusCode < 300) return decoded;
       final msg = decoded['message'] as String? ?? 'Authentication request failed.';
-      if (response.statusCode == 409) throw CognitoAuthException('email_in_use', msg);
+      if (response.statusCode == 409) throw const CognitoAuthException('email_in_use', 'Ya existe un usuario registrado con este correo electrónico.');
       if (response.statusCode == 401) throw CognitoAuthException('authentication_failed', msg);
       throw CognitoAuthException('service_unavailable', msg);
     } on CognitoAuthException {

@@ -18,6 +18,7 @@ class MedicalAreaModel {
   final int cheatsheetsCount;
   final int quizzesCount;
   final bool isAvailable;
+  final List<String> careers;
   final Uint8List? cachedBytes;
 
   MedicalAreaModel({
@@ -30,6 +31,7 @@ class MedicalAreaModel {
     this.cheatsheetsCount = 0,
     this.quizzesCount = 0,
     this.isAvailable = true,
+    this.careers = const [],
     Uint8List? cachedBytes,
   }) : cachedBytes = cachedBytes ?? _decodeBase64String(imageBase64);
 
@@ -106,6 +108,11 @@ class MedicalAreaModel {
             int.tryParse('${map['quizzescount']}') ??
             0;
 
+    final rawCareers = map['careers'];
+    final List<String> parsedCareers = (rawCareers is List)
+        ? rawCareers.map((e) => e.toString()).toList()
+        : const [];
+
     return MedicalAreaModel(
       id: documentId,
       name: rawName,
@@ -116,6 +123,7 @@ class MedicalAreaModel {
       cheatsheetsCount: parsedCheatsheets,
       quizzesCount: parsedQuizzes,
       isAvailable: map['isavailable'] ?? true,
+      careers: parsedCareers,
     );
   }
 
@@ -169,4 +177,21 @@ class MedicalAreaModel {
 
     return const SizedBox.shrink();
   }
+  bool isRecommendedFor(String? userCareer) {
+    if (userCareer == null || userCareer.trim().isEmpty) return true;
+    if (careers.isEmpty) return true;
+    final normalized = userCareer.toLowerCase().trim();
+    return careers.any((c) {
+      final item = c.toLowerCase().trim();
+      return item == normalized ||
+          (normalized.contains('medicine') && item.contains('medicine')) ||
+          (normalized.contains('dentist') && item.contains('dentist')) ||
+          (normalized.contains('nurs') && item.contains('nurs')) ||
+          (normalized.contains('pharm') && item.contains('pharm')) ||
+          (normalized.contains('nutri') && item.contains('nutri')) ||
+          (normalized.contains('obstet') && item.contains('obstet')) ||
+          (normalized.contains('physic') && item.contains('physic'));
+    });
+  }
+
 }
