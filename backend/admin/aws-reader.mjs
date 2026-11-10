@@ -60,7 +60,7 @@ export function createAwsReader({
 
   async function listUsers() {
     const users = [];
-    let hasMore = false;
+    let realTotalCount = 0;
     if (typeof dynamo?.send === 'function') {
       try {
         let lastEvaluatedKey;
@@ -73,25 +73,27 @@ export function createAwsReader({
             Limit: 1000,
           }));
           for (const item of scan.Items ?? []) {
-            users.push({
-              id: item.uid || item.sub || (typeof item.PK === 'string' ? item.PK.replace('USER#', '') : ''),
-              email: item.email || '',
-              name: item.name || '',
-              career: item.career || 'General Medicine',
-              gender: item.gender || 'Male',
-              status: 'ACTIVE',
-              createdAt: item.createdAt || null,
-              provider: 'DynamoDB',
-            });
-            if (users.length >= displayedUserLimit) break;
+            if (users.length < displayedUserLimit) {
+              users.push({
+                id: item.uid || item.sub || (typeof item.PK === 'string' ? item.PK.replace('USER#', '') : ''),
+                email: item.email || '',
+                name: item.name || '',
+                career: item.career || 'General Medicine',
+                gender: item.gender || 'Male',
+                status: 'ACTIVE',
+                createdAt: item.createdAt || null,
+                provider: 'DynamoDB',
+              });
+            }
           }
+          realTotalCount += (scan.Count ?? (scan.Items?.length ?? 0));
           lastEvaluatedKey = scan.LastEvaluatedKey;
-        } while (lastEvaluatedKey && users.length < displayedUserLimit);
-        hasMore = Boolean(lastEvaluatedKey);
+        } while (lastEvaluatedKey);
       } catch (_) {}
     }
     users.sort((a, b) => new Date(b.createdAt ?? 0) - new Date(a.createdAt ?? 0));
-    return {users, totalCount: users.length, hasMore};
+    const finalTotal = Math.max(realTotalCount, users.length);
+    return {users, totalCount: finalTotal, hasMore: finalTotal > users.length};
   }
 
   return {region, listTables, scanTable, listUsers};
