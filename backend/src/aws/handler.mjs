@@ -89,6 +89,7 @@ export function createAwsHandler({identity, store, profiles, catalog, progress, 
         stage = 'auth_delete';
         requireMethod(['DELETE']);
         if (!authRepo) throw new ApiError(503, 'unavailable', 'Auth repository not configured.');
+        try { await progress.clear(user.sub); } catch (_) {}
         data = await authRepo.deleteUser(user.sub);
       } else if (answer) { // Guarda una respuesta o inicia un reintento del quiz.
         stage = answer[2] === 'answer' ? 'progress_answer' : 'progress_retry';

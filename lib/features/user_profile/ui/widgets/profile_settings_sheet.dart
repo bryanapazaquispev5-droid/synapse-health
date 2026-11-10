@@ -115,8 +115,16 @@ class _SettingsSheetContent extends StatelessWidget {
     );
     if (confirmed == true && context.mounted) {
       HapticFeedback.heavyImpact();
-      Navigator.pop(context);
-      await AppAuth.instance.deleteAccount();
+      try {
+        await AppAuth.instance.deleteAccount();
+        if (context.mounted) Navigator.pop(context);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al eliminar cuenta: $e'), behavior: SnackBarBehavior.floating),
+          );
+        }
+      }
     }
   }
 
@@ -146,12 +154,8 @@ class _SettingsSheetContent extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          child: Column(mainAxisSize: MainAxisSize.min, children: [
-                            Text('System Settings', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
-                            SizedBox(height: 4),
-                            Text('Customize animations, progress and account data', textAlign: TextAlign.center, style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 13, color: AppColors.textMuted)),
-                          ]),
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Text('System Settings · Customize animations, progress and account data', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                         ),
                         divider,
                         _buildRow(

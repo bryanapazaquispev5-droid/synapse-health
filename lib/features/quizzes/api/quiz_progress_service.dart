@@ -109,9 +109,7 @@ class QuizProgressService {
 
   Future<void> resetAllProgress() async {
     _attempts.clear();
-    try {
-      await source.mutate('DELETE', 'api/v1/progress/me', {});
-    } catch (_) {}
+    await source.mutate('DELETE', 'api/v1/progress/me', {});
     await source.refreshAll();
   }
 }

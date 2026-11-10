@@ -129,15 +129,22 @@ class DynamoAuthService implements AuthBackend {
 
   @override
   Future<void> deleteAccount() async {
+    final client = _clientFactory();
+    client.connectionTimeout = const Duration(seconds: 15);
     try {
       if (_token != null) {
-        final client = _clientFactory();
-        final uri = baseUrl.resolve('/api/v1/auth/me');
-        final req = await client.deleteUrl(uri);
-        req.headers.set('Authorization', 'Bearer $_token');
-        await req.close();
+        final request = await client.deleteUrl(baseUrl.resolve('/api/v1/auth/me'));
+        request.headers.set('Authorization', 'Bearer $_token');
+        final response = await request.close();
+        final bytes = await response.fold<List<int>>([], (buf, chunk) => buf..addAll(chunk));
+        if (response.statusCode != 200 && response.statusCode != 204) {
+          final body = utf8.decode(bytes);
+          throw CognitoAuthException('delete_failed', 'Failed to delete account: $body');
+        }
       }
-    } catch (_) {}
+    } finally {
+      client.close(force: true);
+    }
     await signOut();
   }
 
