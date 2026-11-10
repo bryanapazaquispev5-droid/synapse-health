@@ -1,5 +1,5 @@
 # ==============================================================================
-# SYNAPSE HEALTH - PRUEBA DE CARGA INTERACTIVA
+# SYNAPSE HEALTH - PRUEBA DE CARGA INTERACTIVA DE MÁXIMA VELOCIDAD
 # ==============================================================================
 $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
@@ -7,44 +7,53 @@ Set-Location $repoRoot
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "   SYNAPSE HEALTH - PRUEBA DE CARGA INTERACTIVA DYNAMODB   " -ForegroundColor Yellow
+Write-Host "   SYNAPSE HEALTH - PRUEBA DE CARGA ULTRARRÁPIDA DYNAMODB " -ForegroundColor Yellow
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
-$accountsInput = Read-Host "1. Ingrese la cantidad de cuentas a crear (ej. 100, 1000, 5000)"
+$accountsInput = Read-Host "1. Ingrese la cantidad meta de cuentas (ej. 1000, 5000, 500000)"
 if (-not $accountsInput -or -not ($accountsInput -match '^\d+$')) {
-    $accountsInput = "500"
+    $accountsInput = "1000"
 }
-$totalAccounts = [int]$accountsInput
+$totalAccounts = [int64]$accountsInput
 
-$secondsInput = Read-Host "2. Ingrese el tiempo deseado en segundos (ej. 5, 10, 30)"
+$secondsInput = Read-Host "2. Ingrese el tiempo límite en segundos (ej. 5, 10, 20)"
 if (-not $secondsInput -or -not ($secondsInput -match '^\d+$') -or [int]$secondsInput -le 0) {
     $secondsInput = "10"
 }
 $targetSeconds = [int]$secondsInput
 
-$targetRps = [Math]::Ceiling($totalAccounts / $targetSeconds)
-$vus = [Math]::Min($totalAccounts, [Math]::Min(350, [Math]::Max(1, [int]($targetRps * 1.5))))
+# Optimización automática de hilos (VUs) para máxima velocidad
+if ($totalAccounts -le 50) {
+    $vus = [int]$totalAccounts
+} elseif ($totalAccounts -le 500) {
+    $vus = [Math]::Min([int]$totalAccounts, 250)
+} elseif ($totalAccounts -le 2000) {
+    $vus = 350
+} else {
+    $vus = 450
+}
+
 $runId = "prueba-" + (Get-Date -Format "HHmmss")
 
 Write-Host ""
-Write-Host "[CONFIGURACION]" -ForegroundColor Green
-Write-Host "  - Total cuentas:  $totalAccounts"
-Write-Host "  - Tiempo meta:    $targetSeconds s (aprox. $targetRps req/s)"
-Write-Host "  - Hilos (VUs):    $vus"
-Write-Host "  - ID de prueba:   $runId"
+Write-Host "[MODO MÁXIMA VELOCIDAD]" -ForegroundColor Green
+Write-Host "  - Cuentas meta:      $totalAccounts"
+Write-Host "  - Tiempo límite:     $targetSeconds s (se frena en exactamente $targetSeconds s si no acaba antes)"
+Write-Host "  - Hilos paralelos:   $vus VUs simultáneos a máxima potencia"
+Write-Host "  - ID de prueba:      $runId"
 Write-Host ""
-Write-Host "Iniciando rafaga k6 contra AWS..." -ForegroundColor Cyan
+Write-Host "Iniciando ráfaga k6 ultrarrápida contra AWS..." -ForegroundColor Cyan
 
 $k6Script = Join-Path $repoRoot 'test\load\dynamo_burst_signup.js'
-& k6 run -e ACCOUNTS=$totalAccounts -e EXECUTOR=shared-iterations -e VUS=$vus -e RUN_ID=$runId $k6Script
+& k6 run -e ACCOUNTS=$totalAccounts -e DURATION=$targetSeconds -e VUS=$vus -e RUN_ID=$runId $k6Script
 
 Write-Host ""
-Write-Host "Consultando registros reales en AWS DynamoDB..." -ForegroundColor Yellow
+Write-Host "Consultando registros totales reales en AWS DynamoDB..." -ForegroundColor Yellow
 & aws dynamodb scan --table-name synapse-health-backend-user-profiles --select COUNT --region us-east-2
 
 Write-Host ""
-$deleteChoice = Read-Host "Deseas eliminar estas $totalAccounts cuentas de AWS ahora? (S/N) [por defecto: S]"
+$deleteChoice = Read-Host "Deseas eliminar las cuentas creadas en esta prueba ($runId) de AWS? (S/N) [por defecto: S]"
 if ($deleteChoice -eq '' -or $deleteChoice -match '^[sSyY]') {
     Write-Host "Eliminando cuentas creadas ($runId)..." -ForegroundColor Yellow
     Push-Location (Join-Path $repoRoot 'backend')
@@ -62,4 +71,4 @@ if ($deleteChoice -eq '' -or $deleteChoice -match '^[sSyY]') {
 }
 
 Write-Host ""
-Write-Host "Prueba finalizada con exito." -ForegroundColor Green
+Write-Host "Prueba finalizada con éxito." -ForegroundColor Green
