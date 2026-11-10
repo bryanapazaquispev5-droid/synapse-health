@@ -2,7 +2,6 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {ListTablesCommand} from '@aws-sdk/client-dynamodb';
 import {ScanCommand} from '@aws-sdk/lib-dynamodb';
-import {ListUsersCommand} from '@aws-sdk/client-cognito-identity-provider';
 import {createAwsReader} from '../admin/aws-reader.mjs';
 import {createAdminServer} from '../admin/server.mjs';
 
@@ -40,26 +39,24 @@ test('scans one bounded page, returns a cursor, and rejects unknown tables', asy
   await assert.rejects(reader.scanTable('other-table'), error => error.statusCode === 404);
 });
 
-test('lists users across pages and returns only minimal account fields', async () => {
-  let page = 0;
-  const cognito = {async send(command) {
-    assert.ok(command instanceof ListUsersCommand);
-    assert.equal(command.input.Limit, 60);
-    page++;
-    if (page === 1) return {Users: [{Username: 'u1', UserStatus: 'CONFIRMED', Enabled: true,
-      UserCreateDate: new Date('2026-01-01'), Attributes: [
-        {Name: 'sub', Value: 'subject-1'}, {Name: 'email', Value: 'user@example.test'},
-        {Name: 'phone_number', Value: '+100000000'}, {Name: 'email_verified', Value: 'true'},
-      ]}], PaginationToken: 'next'};
-    return {Users: [{Username: 'u2', Attributes: [{Name: 'sub', Value: 'subject-2'}]}]};
+test('lists users from DynamoDB profiles and returns account fields', async () => {
+  const dynamo = {async send(command) {
+    assert.ok(command instanceof ScanCommand);
+    assert.equal(command.input.FilterExpression, 'SK = :sk');
+    assert.equal(command.input.ExpressionAttributeValues[':sk'], 'PROFILE');
+    return {
+      Items: [
+        {PK: 'USER#subject-1', SK: 'PROFILE', email: 'user@example.test', name: 'User One', career: 'General Medicine', createdAt: '2026-01-01'},
+        {PK: 'USER#subject-2', SK: 'PROFILE', email: 'user2@example.test', name: 'User Two', career: 'Dentistry', createdAt: '2026-01-02'}
+      ]
+    };
   }};
-  const reader = createAwsReader({dynamo: {}, cognito});
+  const reader = createAwsReader({dynamo});
   const result = await reader.listUsers();
-  assert.equal(page, 2);
   assert.equal(result.users.length, 2);
-  assert.equal(result.users[0].email, 'user@example.test');
-  assert.equal(result.users[0].emailVerified, true);
-  assert.equal(JSON.stringify(result).includes('phone_number'), false);
+  assert.equal(result.users[0].email, 'user2@example.test');
+  assert.equal(result.users[0].provider, 'DynamoDB');
+  assert.equal(result.users[1].email, 'user@example.test');
 });
 
 test('local server serves the panel read-only and rejects cross-origin access', async t => {

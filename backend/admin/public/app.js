@@ -146,17 +146,16 @@ async function appendItems(tableName, cursor, trigger) {
   }
 }
 
-function showTableMenu(isOpen) {
-  tableMenuToggle.setAttribute('aria-expanded', String(isOpen));
-  tablesElement.hidden = !isOpen;
+function showTableMenu(open) {
+  tablesElement.classList.toggle('open', open);
+  tableMenuToggle.setAttribute('aria-expanded', String(open));
 }
 
 async function loadTable(tableName) {
   selectedTableName = tableName;
   const loadId = ++tableLoadId;
   element('selected-table-name').textContent = tableLabel(tableName);
-  element('selected-table-id').textContent = tableName;
-  itemsElement.textContent = 'Leyendo filas de DynamoDB…';
+  itemsElement.textContent = 'Leyendo tabla…';
   for (const item of tablesElement.children) {
     item.classList.toggle('selected', item.querySelector('.table-physical-name')?.textContent === tableName);
   }
@@ -211,11 +210,9 @@ function renderUsers(result) {
     'Correo': user.email || '—',
     'Nombre': user.name || '—',
     'Carrera': user.career || 'General Medicine',
-    'Proveedor': (user.provider === 'password' || user.provider === 'dynamodb') ? 'DynamoDB (Nativo)' : 'Cognito',
+    'Proveedor': user.provider || 'DynamoDB',
     'ID de usuario': user.id || '—',
-    'Fecha de registro': user.createdAt
-      ? new Date(user.createdAt).toLocaleString('es-PE')
-      : 'No disponible',
+    'Fecha de registro': user.createdAt ? new Date(user.createdAt).toLocaleString('es-PE') : 'No disponible',
   }));
   usersElement.append(createDataTable(
     ['Correo', 'Nombre', 'Carrera', 'Proveedor', 'ID de usuario', 'Fecha de registro'],
@@ -229,7 +226,7 @@ async function refreshUsers() {
     renderUsers(result);
     element('last-updated').textContent = new Date().toLocaleTimeString('es-PE');
     status.dataset.error = 'false';
-    status.textContent = 'Conectado a AWS. La lista de usuarios se refresca cada 30 segundos.';
+    status.textContent = 'Conectado a AWS DynamoDB. Actualización en tiempo real cada 30 segundos.';
   } catch (error) {
     showError(usersElement, error);
     status.dataset.error = 'true';

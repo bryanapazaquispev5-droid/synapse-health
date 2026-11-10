@@ -1,11 +1,9 @@
-import {CognitoIdentityProviderClient, ListUsersCommand} from '@aws-sdk/client-cognito-identity-provider';
 import {DynamoDBClient, ListTablesCommand} from '@aws-sdk/client-dynamodb';
 import {DynamoDBDocumentClient, ScanCommand} from '@aws-sdk/lib-dynamodb';
 
 const tablePageSize = 100;
 const itemPageSize = 25;
-const userPageSize = 60;
-const displayedUserLimit = 600;
+const displayedUserLimit = 2000;
 
 function decodeCursor(cursor) {
   if (!cursor) return undefined;
@@ -23,10 +21,8 @@ function encodeCursor(key) {
 
 export function createAwsReader({
   region = process.env.AWS_REGION || 'us-east-2',
-  userPoolId = process.env.SYNAPSE_COGNITO_USER_POOL_ID || 'us-east-2_E0h8t6hhE',
   userProfilesTableName = process.env.USER_PROFILES_TABLE_NAME || 'synapse-health-backend-user-profiles',
   dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({region})),
-  cognito = new CognitoIdentityProviderClient({region}),
 } = {}) {
   async function listTables() {
     const tableNames = [];
@@ -63,71 +59,39 @@ export function createAwsReader({
   }
 
   async function listUsers() {
-    const dynamoUsers = [];
-    try {
-      if (typeof dynamo?.send === 'function') {
-        const scan = await dynamo.send(new ScanCommand({
-          TableName: userProfilesTableName,
-          FilterExpression: 'SK = :sk',
-          ExpressionAttributeValues: {':sk': 'PROFILE'},
-          Limit: displayedUserLimit,
-        }));
-        for (const item of scan.Items ?? []) {
-          dynamoUsers.push({
-            id: item.uid || item.sub || (typeof item.PK === 'string' ? item.PK.replace('USER#', '') : ''),
-            email: item.email || '',
-            name: item.name || '',
-            career: item.career || 'General Medicine',
-            gender: item.gender || 'Male',
-            emailVerified: true,
-            status: 'CONFIRMED',
-            enabled: true,
-            createdAt: item.createdAt || null,
-            provider: item.authProvider || 'dynamodb',
-          });
-        }
-      }
-    } catch (_) {}
-
-    const cognitoUsers = [];
-    if (/^us-east-\d_[A-Za-z0-9]+$/.test(userPoolId) && typeof cognito?.send === 'function') {
+    const users = [];
+    let hasMore = false;
+    if (typeof dynamo?.send === 'function') {
       try {
-        let paginationToken;
+        let lastEvaluatedKey;
         do {
-          const page = await cognito.send(new ListUsersCommand({
-            UserPoolId: userPoolId,
-            Limit: userPageSize,
-            PaginationToken: paginationToken,
+          const scan = await dynamo.send(new ScanCommand({
+            TableName: userProfilesTableName,
+            FilterExpression: 'SK = :sk',
+            ExpressionAttributeValues: {':sk': 'PROFILE'},
+            ExclusiveStartKey: lastEvaluatedKey,
+            Limit: 1000,
           }));
-          for (const user of page.Users ?? []) {
-            const attrs = Object.fromEntries((user.Attributes ?? []).map(({Name, Value}) => [Name, Value]));
-            cognitoUsers.push({
-              id: attrs.sub ?? user.Username ?? '',
-              email: attrs.email ?? '',
-              name: attrs.name ?? '',
-              emailVerified: attrs.email_verified === 'true',
-              status: user.UserStatus ?? 'CONFIRMED',
-              enabled: user.Enabled ?? true,
-              createdAt: user.UserCreateDate ?? null,
-              provider: 'cognito',
+          for (const item of scan.Items ?? []) {
+            users.push({
+              id: item.uid || item.sub || (typeof item.PK === 'string' ? item.PK.replace('USER#', '') : ''),
+              email: item.email || '',
+              name: item.name || '',
+              career: item.career || 'General Medicine',
+              gender: item.gender || 'Male',
+              status: 'ACTIVE',
+              createdAt: item.createdAt || null,
+              provider: 'DynamoDB',
             });
+            if (users.length >= displayedUserLimit) break;
           }
-          paginationToken = page.PaginationToken;
-        } while (paginationToken && cognitoUsers.length < displayedUserLimit);
+          lastEvaluatedKey = scan.LastEvaluatedKey;
+        } while (lastEvaluatedKey && users.length < displayedUserLimit);
+        hasMore = Boolean(lastEvaluatedKey);
       } catch (_) {}
     }
-
-    const seen = new Set();
-    const combined = [];
-    for (const u of [...dynamoUsers, ...cognitoUsers]) {
-      const key = u.email || u.id;
-      if (key && !seen.has(key)) {
-        seen.add(key);
-        combined.push(u);
-      }
-    }
-    combined.sort((a, b) => new Date(b.createdAt ?? 0) - new Date(a.createdAt ?? 0));
-    return {users: combined, totalCount: combined.length, hasMore: false, userPoolId};
+    users.sort((a, b) => new Date(b.createdAt ?? 0) - new Date(a.createdAt ?? 0));
+    return {users, totalCount: users.length, hasMore};
   }
 
   return {region, listTables, scanTable, listUsers};
