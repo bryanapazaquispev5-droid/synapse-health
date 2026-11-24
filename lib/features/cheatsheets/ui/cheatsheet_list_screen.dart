@@ -14,7 +14,9 @@ import 'widgets/medical_area_card.dart';
 
 // Pantalla de interfaz de usuario [CheatsheetListScreen]
 class CheatsheetListScreen extends StatefulWidget {
-  const CheatsheetListScreen({super.key});
+  const CheatsheetListScreen({super.key, this.leaderboardPreview});
+
+  final Widget? leaderboardPreview;
 
   @override
   State<CheatsheetListScreen> createState() => _CheatsheetListScreenState();
@@ -151,6 +153,11 @@ class _CheatsheetListScreenState extends State<CheatsheetListScreen>
                     ),
                   ),
                 ),
+                if (widget.leaderboardPreview case final preview?)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
+                    sliver: SliverToBoxAdapter(child: preview),
+                  ),
                 if (snapshot.hasData &&
                     allAreas.isNotEmpty &&
                     !snapshot.isAccessFailure)

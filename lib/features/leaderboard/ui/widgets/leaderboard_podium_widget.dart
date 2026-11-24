@@ -1,155 +1,237 @@
-// Bloque: Podio olímpico para los 3 mejores estudiantes del Leaderboard
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../model/leaderboard_user_model.dart';
 import '../../utils/time_formatter_helper.dart';
+import 'leaderboard_entrance.dart';
+import 'leaderboard_user_tile.dart';
 
-// Bloque: Componente principal de Podio Olímpico
 class LeaderboardPodiumWidget extends StatelessWidget {
-  final List<LeaderboardUserModel> topUsers;
+  const LeaderboardPodiumWidget({
+    super.key,
+    required this.topUsers,
+    this.currentUserId,
+  });
 
-  const LeaderboardPodiumWidget({super.key, required this.topUsers});
+  final List<LeaderboardUserModel> topUsers;
+  final String? currentUserId;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final compact =
+          constraints.maxWidth < 275 ||
+          MediaQuery.textScalerOf(context).scale(13) > 17;
+      if (topUsers.length < 3 || compact) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Column(
+            children: [
+              for (var index = 0; index < topUsers.length; index++)
+                LeaderboardEntrance(
+                  key: ValueKey(topUsers[index].userId),
+                  order: index,
+                  child: LeaderboardUserTile(
+                    user: topUsers[index],
+                    isCurrentUser: topUsers[index].userId == currentUserId,
+                    podiumPosition: index + 1,
+                    showDivider: index < topUsers.length - 1,
+                  ),
+                ),
+            ],
+          ),
+        );
+      }
+
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFECF3FC),
+          border: Border.all(color: const Color(0xFFD9E6F7)),
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(9, 13, 9, 9),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (final index in [1, 0, 2])
+                Expanded(
+                  child: LeaderboardEntrance(
+                    key: ValueKey(topUsers[index].userId),
+                    order: index,
+                    child: _PodiumPlace(
+                      user: topUsers[index],
+                      position: index + 1,
+                      isCurrentUser: topUsers[index].userId == currentUserId,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _PodiumPlace extends StatelessWidget {
+  const _PodiumPlace({
+    required this.user,
+    required this.position,
+    required this.isCurrentUser,
+  });
+
+  final LeaderboardUserModel user;
+  final int position;
+  final bool isCurrentUser;
 
   @override
   Widget build(BuildContext context) {
-    final first = topUsers.isNotEmpty ? topUsers[0] : null;
-    final second = topUsers.length > 1 ? topUsers[1] : null;
-    final third = topUsers.length > 2 ? topUsers[2] : null;
+    final (ink, fill, height) = switch (position) {
+      1 => (const Color(0xFF6C4900), const Color(0xFFFFE5A5), 51.0),
+      2 => (const Color(0xFF344D6B), const Color(0xFFDCE7F5), 40.0),
+      _ => (const Color(0xFF77482E), const Color(0xFFF5DFD0), 32.0),
+    };
+    final first = position == 1;
+    final pace = TimeFormatterHelper.formatPace(user.averageTimeSeconds);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Expanded(child: _buildPodiumStep(user: second, rank: 2, height: 85, color: const Color(0xFFC0C0C0), badge: '🥈')),
-          const SizedBox(width: 8),
-          Expanded(child: _buildPodiumStep(user: first, rank: 1, height: 115, color: const Color(0xFFFFD700), badge: '🥇', isCenter: true)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildPodiumStep(user: third, rank: 3, height: 65, color: const Color(0xFFCD7F32), badge: '🥉')),
-        ],
+    return Tooltip(
+      triggerMode: TooltipTriggerMode.tap,
+      message: '${user.displayName}\n${user.career} · $pace',
+      verticalOffset: 34,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (first) ...[
+              CustomPaint(
+                size: const Size(22, 15),
+                painter: _CrownPainter(ink),
+              ),
+              const SizedBox(height: 4),
+            ],
+            DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.surface,
+                border: Border.all(
+                  color: isCurrentUser
+                      ? AppColors.accent
+                      : ink.withValues(alpha: .28),
+                  width: isCurrentUser ? 2 : 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: LeaderboardAvatar(user: user, radius: first ? 24 : 19),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              user.displayName,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                height: 1.13,
+                fontSize: first ? 13 : 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            if (isCurrentUser)
+              const Text(
+                'Tú',
+                style: TextStyle(
+                  color: Color(0xFF0056B3),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            const SizedBox(height: 4),
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 3,
+              children: [
+                Icon(CupertinoIcons.star_fill, size: 11, color: ink),
+                Text(
+                  '${user.totalStars}',
+                  semanticsLabel: '${user.totalStars} estrellas',
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 7),
+            Container(
+              constraints: BoxConstraints(minHeight: height),
+              width: double.infinity,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+              decoration: BoxDecoration(
+                color: fill,
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                border: Border.all(color: ink.withValues(alpha: .12)),
+              ),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 3,
+                children: [
+                  Icon(
+                    CupertinoIcons.rosette,
+                    color: ink,
+                    size: first ? 15 : 13,
+                  ),
+                  Text(
+                    '$position',
+                    semanticsLabel: 'Position $position',
+                    style: TextStyle(
+                      color: ink,
+                      fontSize: first ? 20 : 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  // Bloque: Renderizado de columna individual del podio
-  Widget _buildPodiumStep({
-    required LeaderboardUserModel? user,
-    required int rank,
-    required double height,
-    required Color color,
-    required String badge,
-    bool isCenter = false,
-  }) {
-    final avatarRadius = isCenter ? 32.0 : 25.0;
+class _CrownPainter extends CustomPainter {
+  const _CrownPainter(this.color);
+  final Color color;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (isCenter)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 2),
-            child: Icon(CupertinoIcons.sparkles, color: Color(0xFFFFD700), size: 16),
-          ),
-        Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(2.5),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: color, width: isCenter ? 2.5 : 2.0),
-              ),
-              child: CircleAvatar(
-                radius: avatarRadius,
-                backgroundColor: AppColors.secondaryBackground,
-                backgroundImage: _avatarProvider(user),
-              ),
-            ),
-            Positioned(
-              bottom: -4,
-              right: -4,
-              child: Text(badge, style: TextStyle(fontSize: isCenter ? 16 : 13)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(
-          user?.displayName ?? 'Disponible',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: '.SF Pro Text',
-            fontSize: isCenter ? 13 : 11,
-            fontWeight: FontWeight.w700,
-            color: user != null ? AppColors.primary : AppColors.textMuted,
-          ),
-        ),
-        const SizedBox(height: 1),
-        Text(
-          user?.career ?? '-',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 10, color: AppColors.textMuted),
-        ),
-        const SizedBox(height: 3),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFB800), size: 11),
-            const SizedBox(width: 2),
-            Text(
-              '${user?.totalStars ?? 0}',
-              style: TextStyle(
-                fontFamily: '.SF Pro Text',
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: user != null ? AppColors.primary : AppColors.textMuted,
-              ),
-            ),
-          ],
-        ),
-        Text(
-          TimeFormatterHelper.formatPace(user?.averageTimeSeconds ?? 0),
-          style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 9, color: AppColors.textMuted),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          height: height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [color.withValues(alpha: 0.28), color.withValues(alpha: 0.06)],
-            ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '$rank',
-            style: TextStyle(
-              fontFamily: '.SF Pro Display',
-              fontSize: isCenter ? 32 : 24,
-              fontWeight: FontWeight.w900,
-              color: color,
-            ),
-          ),
-        ),
-      ],
-    );
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.round
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.6;
+    final crown = Path()
+      ..moveTo(2, 4)
+      ..lineTo(7, 8)
+      ..lineTo(11, 2)
+      ..lineTo(15, 8)
+      ..lineTo(20, 4)
+      ..lineTo(18, 13)
+      ..lineTo(4, 13)
+      ..close();
+    canvas.drawPath(crown, paint);
   }
 
-  // Bloque: Proveedor de imagen para avatar con fallback por género
-  ImageProvider _avatarProvider(LeaderboardUserModel? user) {
-    if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
-      return NetworkImage(user.photoUrl!);
-    }
-    final isGirl = (user?.gender ?? '').toLowerCase() == 'mujer';
-    return AssetImage(isGirl ? 'assets/images/user_girl.gif' : 'assets/images/user_boy.gif');
-  }
+  @override
+  bool shouldRepaint(covariant _CrownPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

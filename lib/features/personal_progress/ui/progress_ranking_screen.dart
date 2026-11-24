@@ -7,16 +7,19 @@ import '../../leaderboard/ui/leaderboard_screen.dart';
 
 /// Preserves the existing ranking screen and gives its pushed route a back action.
 class ProgressRankingScreen extends StatelessWidget {
-  const ProgressRankingScreen({super.key, required this.user, this.child});
+  const ProgressRankingScreen({
+    super.key,
+    required this.user,
+    this.child,
+    this.previousPageTitle = 'Progreso',
+  });
+  final String previousPageTitle;
   final User user;
   final Widget? child;
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: AppColors.background,
-    appBar: const CupertinoNavigationBar(
-      middle: Text('Ranking global'),
-      previousPageTitle: 'Progreso',
-    ),
+    appBar: CupertinoNavigationBar(previousPageTitle: previousPageTitle),
     body: child ?? LeaderboardScreen(currentUser: user),
   );
 }

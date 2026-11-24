@@ -12,6 +12,7 @@ import '../../../core/services/user_local_profile_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/bottom_floating_pill.dart';
 import '../../cheatsheets/ui/cheatsheet_list_screen.dart';
+import '../../leaderboard/ui/widgets/leaderboard_preview.dart';
 import '../../personal_progress/ui/personal_progress_screen.dart';
 import '../../quizzes/ui/quiz_areas_screen.dart';
 import '../../user_profile/ui/profile_screen.dart';
@@ -71,7 +72,12 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
           LiquidWaveTransition(
             currentIndex: _currentIndex,
             children: [
-              const CheatsheetListScreen(),
+              CheatsheetListScreen(
+                leaderboardPreview: LeaderboardPreview(
+                  key: ValueKey(widget.user.uid),
+                  user: widget.user,
+                ),
+              ),
               const QuizAreasScreen(),
               const PersonalProgressScreen(),
               ProfileScreen(user: widget.user),

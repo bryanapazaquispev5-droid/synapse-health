@@ -1,108 +1,112 @@
-// Bloque: Tarjeta de posición y progreso del usuario actual en el Leaderboard
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../../../core/theme/app_theme.dart';
 import '../../model/leaderboard_user_model.dart';
 import '../../utils/time_formatter_helper.dart';
 
-// Bloque: Tarjeta destacada con el rango del usuario autenticado
 class LeaderboardMyRankCard extends StatelessWidget {
-  final LeaderboardUserModel? currentUser;
-  final User? fallbackUser;
+  const LeaderboardMyRankCard({super.key, this.currentUser});
 
-  const LeaderboardMyRankCard({
-    super.key,
-    this.currentUser,
-    this.fallbackUser,
-  });
+  final LeaderboardUserModel? currentUser;
+
+  static String rankLabel(LeaderboardUserModel? user) {
+    final rank = user?.rank;
+    return rank != null && (user?.completedQuizzesCount ?? 0) > 0
+        ? '#$rank'
+        : 'Sin clasificar';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final rank = currentUser?.rank;
-    final hasRank = rank != null && (currentUser?.completedQuizzesCount ?? 0) > 0;
-
-    final String motivation;
-    if (!hasRank) {
-      motivation = '¡Completa quizzes! ⚡';
-    } else if (rank <= 3) {
-      motivation = '¡En el Podio! 🏆';
-    } else if (rank <= 10) {
-      motivation = '¡En el Top 10! 🔥';
-    } else {
-      motivation = '¡A por el podio! 🚀';
-    }
-
-    final stars = currentUser?.totalStars ?? 0;
-    final pace = TimeFormatterHelper.formatPace(currentUser?.averageTimeSeconds ?? 0);
-    final rankText = hasRank ? '#$rank' : 'Sin clasificar';
-
+    final rank = rankLabel(currentUser);
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: const Color(0xFFDDEBFE),
+        border: Border.all(color: const Color(0xFFCEDFF7)),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Wrap(
+        spacing: 13,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.12), shape: BoxShape.circle),
-                child: const Icon(CupertinoIcons.rosette, color: AppColors.accent, size: 20),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFF0F6FF),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Icon(
+                CupertinoIcons.rosette,
+                color: Color(0xFF0056B3),
+                size: 19,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Tu Posición Global', style: TextStyle(fontFamily: '.SF Pro Text', fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w500)),
-                    Text(rankText, style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
-                  ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Tu posición global',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                rank,
+                style: const TextStyle(
+                  fontSize: 30,
+                  height: 1.15,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0056B3),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-                child: Text(motivation, style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accent)),
-              ),
             ],
           ),
-          const SizedBox(height: 8),
-          const Divider(height: 0.5, thickness: 0.5, color: AppColors.border),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildMetric(CupertinoIcons.star_fill, const Color(0xFFFFB800), '$stars Estrellas'),
-              Container(width: 1, height: 14, color: AppColors.border),
-              _buildMetric(CupertinoIcons.stopwatch_fill, AppColors.systemTeal, pace),
-            ],
-          ),
+          if (currentUser case final user? when rank != 'Sin clasificar')
+            Wrap(
+              spacing: 12,
+              runSpacing: 5,
+              children: [
+                _RankMetric(
+                  icon: CupertinoIcons.star_fill,
+                  label: '${user.totalStars} estrellas',
+                ),
+                _RankMetric(
+                  icon: CupertinoIcons.stopwatch,
+                  label: TimeFormatterHelper.formatPace(
+                    user.averageTimeSeconds,
+                  ),
+                ),
+              ],
+            )
+          else
+            const Text(
+              'Completa quizzes para obtener una posición.',
+              style: TextStyle(fontSize: 12, color: AppColors.primaryDark),
+            ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildMetric(IconData icon, Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontFamily: '.SF Pro Text', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
-      ],
-    );
-  }
+class _RankMetric extends StatelessWidget {
+  const _RankMetric({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    crossAxisAlignment: WrapCrossAlignment.center,
+    spacing: 5,
+    children: [
+      Icon(icon, size: 14, color: const Color(0xFF0056B3)),
+      Text(
+        label,
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+      ),
+    ],
+  );
 }
