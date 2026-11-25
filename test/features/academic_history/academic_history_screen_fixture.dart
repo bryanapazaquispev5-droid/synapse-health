@@ -32,6 +32,7 @@ class HistoryScreenRepository extends Fake
   List<AcademicHistoryEntry> nextEntries = [];
   Completer<void>? pageGate;
   String areaName = 'Área de prueba';
+  Map<String, String> extraAreaNames = {};
   Object? catalogError;
   @override
   User? get currentUser => user;
@@ -65,7 +66,16 @@ class HistoryScreenRepository extends Fake
     if (catalogError != null) return Stream.error(catalogError!);
     return Stream.value(
       hasCatalog
-          ? [MedicalAreaModel(id: 'a', name: areaName, code: 'A', order: 1)]
+          ? [
+              MedicalAreaModel(id: 'a', name: areaName, code: 'A', order: 1),
+              for (final area in extraAreaNames.entries)
+                MedicalAreaModel(
+                  id: area.key,
+                  name: area.value,
+                  code: area.key,
+                  order: 2,
+                ),
+            ]
           : [],
     );
   }
@@ -129,15 +139,17 @@ AcademicHistoryEntry entry({
   String id = 'private-record',
   DateTime? date,
   bool dated = true,
+  bool isCorrect = true,
+  String areaId = 'a',
 }) => AcademicHistoryEntry(
   id: id,
-  areaId: 'a',
+  areaId: areaId,
   topicId: 't',
   quizId: 'q',
   attemptNumber: 2,
   answeredAt: dated ? date ?? DateTime(2026, 10, 11, 12, 30) : null,
-  isCorrect: true,
-  earnedStars: 2,
+  isCorrect: isCorrect,
+  earnedStars: isCorrect ? 2 : 0,
   maxStars: 2,
   selectedOptionIndex: 0,
 );

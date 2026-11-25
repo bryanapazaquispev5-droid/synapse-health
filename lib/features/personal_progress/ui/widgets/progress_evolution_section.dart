@@ -1,10 +1,12 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/widgets/states/app_async_content.dart';
 import '../../../cheatsheets/model/topic_model.dart';
 import '../../model/progress_summary.dart';
+import 'progress_appearance.dart';
+import 'progress_meter.dart';
 
 class ProgressEvolutionSection extends StatelessWidget {
   const ProgressEvolutionSection({
@@ -28,9 +30,25 @@ class ProgressEvolutionSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Evolución por tema',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        const Row(
+          children: [
+            Icon(
+              CupertinoIcons.chart_bar,
+              size: 18,
+              color: ProgressAppearance.accent,
+            ),
+            SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Evolución por tema',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: ProgressAppearance.ink,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         if (series.isEmpty)
@@ -135,23 +153,25 @@ class _TopicEvolutionCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: double.infinity,
     margin: const EdgeInsets.only(bottom: 12),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: AppColors.border),
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    decoration: const BoxDecoration(
+      border: Border(top: BorderSide(color: ProgressAppearance.rule)),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           topicName,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: ProgressAppearance.ink,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           areaName,
-          style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+          style: const TextStyle(fontSize: 13, color: ProgressAppearance.muted),
         ),
         const SizedBox(height: 12),
         for (final point in series.points)
@@ -168,34 +188,16 @@ class _TopicEvolutionCard extends StatelessWidget {
                       'Intento ${point.attemptNumber} · ${point.accuracy.toStringAsFixed(1)} %',
                     ),
                     const SizedBox(height: 6),
-                    LayoutBuilder(
-                      builder: (context, constraints) => Container(
-                        width: constraints.maxWidth,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          width:
-                              constraints.maxWidth *
-                              point.accuracy.clamp(0, 100) /
-                              100,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: AppColors.accent,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                      ),
+                    ProgressMeter(
+                      percentage: point.accuracy,
+                      color: ProgressAppearance.accent,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Última respuesta: ${_date(point.lastAnsweredAt)}',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: ProgressAppearance.muted,
                       ),
                     ),
                   ],

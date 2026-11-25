@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/widgets/states/app_async_content.dart';
+import 'package:synapse_health/features/personal_progress/ui/widgets/progress_meter.dart';
 
 import '../../core/widgets/fixtures/async_content_fixture.dart';
 import 'personal_progress_widget_fixture.dart';
@@ -41,7 +42,15 @@ void main() {
     await frames(tester);
     expect(find.text('7'), findsOneWidget);
     expect(find.text('100.0 %'), findsOneWidget);
-    await tester.ensureVisible(find.text('Área de prueba'));
+    final scrollable = find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.byType(Scrollable),
+    ).first;
+    await tester.scrollUntilVisible(
+      find.text('Área de prueba'),
+      200,
+      scrollable: scrollable,
+    );
     await frames(tester);
     expect(find.text('Área de prueba'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -82,7 +91,7 @@ void main() {
         await frames(tester);
         expect(
           find.byType(online ? AppErrorState : AppOfflineState),
-          findsOneWidget,
+          findsWidgets,
         );
         expect(find.text('Tu progreso empieza aquí'), findsNothing);
         expect(find.textContaining('internal detail'), findsNothing);
@@ -145,5 +154,34 @@ void main() {
     repo.sources['alice']!.add({'t': recordedProgress(stars: 7)});
     await frames(tester);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('progress meter animates and respects reduced motion', (
+    tester,
+  ) async {
+    Widget meter(bool reduceMotion) => MediaQuery(
+      data: MediaQueryData(disableAnimations: reduceMotion),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: const Center(
+          child: SizedBox(width: 200, child: ProgressMeter(percentage: 75)),
+        ),
+      ),
+    );
+
+    double fillWidth() => tester
+        .widget<FractionallySizedBox>(find.byType(FractionallySizedBox))
+        .widthFactor!;
+
+    await tester.pumpWidget(meter(false));
+    expect(fillWidth(), 0);
+    await tester.pump(const Duration(milliseconds: 120));
+    expect(fillWidth(), inExclusiveRange(0, .75));
+    await tester.pumpAndSettle();
+    expect(fillWidth(), .75);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(meter(true));
+    expect(fillWidth(), .75);
   });
 }

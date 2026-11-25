@@ -33,11 +33,13 @@ class HistoryCatalog extends StatefulWidget {
     required this.repository,
     required this.builder,
     this.connectivity,
+    this.expand = true,
   });
   final String uid;
   final List<AcademicHistoryEntry> entries;
   final AcademicHistoryRepository repository;
   final ConnectivityService? connectivity;
+  final bool expand;
   final Widget Function(HistoryLabels) builder;
   @override
   State<HistoryCatalog> createState() => _HistoryCatalogState();
@@ -178,7 +180,10 @@ class _HistoryCatalogState extends State<HistoryCatalog> {
             ],
           ),
         ),
-      Expanded(child: widget.builder(_labels)),
+      if (widget.expand)
+        Expanded(child: widget.builder(_labels))
+      else
+        widget.builder(_labels),
     ],
   );
 }

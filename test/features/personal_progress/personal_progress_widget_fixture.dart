@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
+import 'package:synapse_health/features/academic_history/api/academic_history_repository.dart';
+import 'package:synapse_health/features/academic_history/model/academic_history_entry.dart';
 import 'package:synapse_health/features/cheatsheets/model/medical_area_model.dart';
 import 'package:synapse_health/features/cheatsheets/model/topic_model.dart';
 import 'package:synapse_health/features/personal_progress/api/personal_progress_repository.dart';
@@ -14,6 +16,13 @@ import 'package:synapse_health/features/quizzes/model/quiz_topic_progress_model.
 
 import '../../core/widgets/fixtures/async_content_fixture.dart';
 import 'personal_progress_repository_fakes.dart';
+
+class _EmptyHistoryRepository extends Fake
+    implements AcademicHistoryRepository {
+  @override
+  Stream<List<AcademicHistoryEntry>> watchHistory(String uid) =>
+      Stream.value(const <AcademicHistoryEntry>[]);
+}
 
 class WidgetProgressRepository extends Fake
     implements PersonalProgressRepository {
@@ -90,6 +99,7 @@ Widget screen(
   FakeConnectivity connection, {
   void Function(User)? ranking,
   TextScaler? textScaler,
+  AcademicHistoryRepository? historyRepository,
 }) => MaterialApp(
   theme: AppTheme.lightTheme,
   builder: (context, child) => MediaQuery(
@@ -99,6 +109,7 @@ Widget screen(
   ),
   home: PersonalProgressScreen(
     repository: repo,
+    historyRepository: historyRepository ?? _EmptyHistoryRepository(),
     connectivity: connection,
     rankingBuilder: (user) {
       ranking?.call(user);

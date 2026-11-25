@@ -1,36 +1,60 @@
 import 'package:flutter/cupertino.dart';
 
-import '../../../../core/theme/app_theme.dart';
+import 'progress_appearance.dart';
 
 class ProgressHeader extends StatelessWidget {
-  const ProgressHeader({super.key, required this.onRanking, this.onHistory});
+  const ProgressHeader({super.key, required this.onRanking});
   final VoidCallback onRanking;
-  final VoidCallback? onHistory;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Progreso personal',
-        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-      ),
-      const SizedBox(height: 8),
-      const Text(
-        'Tu práctica, a partir de las respuestas guardadas.',
-        style: TextStyle(fontSize: 15, color: AppColors.textMuted),
-      ),
-      if (onHistory != null)
-        CupertinoButton(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          onPressed: onHistory,
-          child: const Text('Mi historial'),
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 12,
+      runSpacing: 2,
+      children: [
+        Semantics(
+          header: true,
+          child: const Text(
+            'Progreso personal',
+            style: TextStyle(
+              fontSize: 25,
+              height: 1.1,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -.65,
+              color: ProgressAppearance.ink,
+            ),
+          ),
         ),
-      CupertinoButton(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        onPressed: onRanking,
-        child: const Text('Ranking global'),
-      ),
-    ],
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: onRanking,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 6,
+              children: [
+                Icon(
+                  CupertinoIcons.rosette,
+                  size: 16,
+                  color: ProgressAppearance.accent,
+                ),
+                Text(
+                  'Ranking global',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: ProgressAppearance.accent,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
   );
 }

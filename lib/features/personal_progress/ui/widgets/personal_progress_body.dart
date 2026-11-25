@@ -15,11 +15,13 @@ class PersonalProgressBody extends StatefulWidget {
     required this.uid,
     required this.repository,
     required this.header,
+    required this.history,
     this.connectivity,
   });
   final String uid;
   final PersonalProgressRepository repository;
   final Widget header;
+  final Widget history;
   final ConnectivityService? connectivity;
   @override
   State<PersonalProgressBody> createState() => _PersonalProgressBodyState();
@@ -36,23 +38,27 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      AppAsyncStreamBuilder<Map<String, QuizTopicProgressModel>>(
-        stream: _progress,
-        connectivity: widget.connectivity,
-        onRetryStream: () => widget.repository.watchProgress(widget.uid),
-        builder: (context, snapshot, retry) {
-          if (snapshot.hasData && !identical(_lastData, snapshot.data)) {
-            _lastData = snapshot.data;
-            _summary = calculateProgress(snapshot.data!);
-          }
-          final summary = _summary;
-          final unavailable =
-              !snapshot.hasData ||
-              snapshot.isAccessFailure ||
-              summary == null ||
-              !summary.hasActivity;
-          return CustomScrollView(
+  Widget build(
+    BuildContext context,
+  ) => AppAsyncStreamBuilder<Map<String, QuizTopicProgressModel>>(
+    stream: _progress,
+    connectivity: widget.connectivity,
+    onRetryStream: () => widget.repository.watchProgress(widget.uid),
+    builder: (context, snapshot, retry) {
+      if (snapshot.hasData && !identical(_lastData, snapshot.data)) {
+        _lastData = snapshot.data;
+        _summary = calculateProgress(snapshot.data!);
+      }
+      final summary = _summary;
+      final unavailable =
+          !snapshot.hasData ||
+          snapshot.isAccessFailure ||
+          summary == null ||
+          !summary.hasActivity;
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
@@ -65,8 +71,7 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
                   child: AppAsyncNotice(snapshot: snapshot, onRetry: retry),
                 ),
               if (unavailable)
-                SliverFillRemaining(
-                  hasScrollBody: false,
+                SliverToBoxAdapter(
                   child: AppAsyncStatus(
                     snapshot: snapshot,
                     isEmpty: summary == null || !summary.hasActivity,
@@ -77,13 +82,21 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
                         'No se pudo cargar tu progreso. Inténtalo de nuevo.',
                   ),
                 )
-              else ...[
+              else
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                     child: ProgressOverview(summary: summary),
                   ),
                 ),
+              SliverToBoxAdapter(
+                key: const ValueKey('progress-history'),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                  child: widget.history,
+                ),
+              ),
+              if (!unavailable)
                 SliverToBoxAdapter(
                   child: ProgressCatalogSections(
                     key: ValueKey(widget.uid),
@@ -93,10 +106,11 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
                     connectivity: widget.connectivity,
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 110)),
-              ],
+              const SliverToBoxAdapter(child: SizedBox(height: 110)),
             ],
-          );
-        },
+          ),
+        ),
       );
+    },
+  );
 }
