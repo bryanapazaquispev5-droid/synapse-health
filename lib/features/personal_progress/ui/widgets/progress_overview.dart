@@ -11,21 +11,38 @@ class ProgressOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ProgressAccuracyCard(
-          accuracy: summary.accuracy,
-          correct: summary.currentCorrect,
-          answers: summary.currentAnswers,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFCFE6F1)),
+        gradient: const LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [Color(0xFFDEF2FA), Color(0xFFFBFDFE)],
         ),
-        const SizedBox(height: 18),
-        const _MetricRule(),
-        const SizedBox(height: 12),
-        _OverviewMetrics(summary: summary),
-        const SizedBox(height: 12),
-        const _MetricRule(),
-      ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ProgressAccuracyCard(
+              accuracy: summary.accuracy,
+              correct: summary.currentCorrect,
+              answers: summary.currentAnswers,
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: SizedBox(
+                width: double.infinity,
+                height: 1,
+                child: ColoredBox(color: ProgressAppearance.rule),
+              ),
+            ),
+            _OverviewMetrics(summary: summary),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -37,7 +54,7 @@ class _OverviewMetrics extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final columnWidth = MediaQuery.textScalerOf(context).scale(95);
+      final columnWidth = MediaQuery.textScalerOf(context).scale(82);
       final columns = (constraints.maxWidth ~/ columnWidth).clamp(1, 3);
       final width = (constraints.maxWidth - (columns - 1) * 8) / columns;
       return Wrap(
@@ -48,6 +65,8 @@ class _OverviewMetrics extends StatelessWidget {
             width: width,
             child: _ProgressMetric(
               icon: CupertinoIcons.star,
+              tint: const Color(0xFFFCECCB),
+              color: const Color(0xFF855409),
               label: 'Estrellas actuales',
               value: summary.currentStars,
             ),
@@ -55,7 +74,9 @@ class _OverviewMetrics extends StatelessWidget {
           SizedBox(
             width: width,
             child: _ProgressMetric(
-              icon: CupertinoIcons.checkmark_circle,
+              icon: CupertinoIcons.doc_text,
+              tint: const Color(0xFFDDF2E9),
+              color: const Color(0xFF1B7059),
               label: 'Quizzes únicos',
               value: summary.uniqueQuizzes,
             ),
@@ -64,6 +85,8 @@ class _OverviewMetrics extends StatelessWidget {
             width: width,
             child: _ProgressMetric(
               icon: CupertinoIcons.clock,
+              tint: const Color(0xFFE8EAFB),
+              color: const Color(0xFF4B4D93),
               label: 'Intentos guardados',
               value: summary.retainedAttempts,
             ),
@@ -77,10 +100,14 @@ class _OverviewMetrics extends StatelessWidget {
 class _ProgressMetric extends StatelessWidget {
   const _ProgressMetric({
     required this.icon,
+    required this.tint,
+    required this.color,
     required this.label,
     required this.value,
   });
   final IconData icon;
+  final Color tint;
+  final Color color;
   final String label;
   final int value;
 
@@ -90,9 +117,18 @@ class _ProgressMetric extends StatelessWidget {
     children: [
       Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 5,
+        spacing: 6,
         children: [
-          Icon(icon, size: 16, color: ProgressAppearance.accent),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: tint,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Icon(icon, size: 16, color: color),
+            ),
+          ),
           Text(
             '$value',
             style: const TextStyle(
@@ -108,22 +144,11 @@ class _ProgressMetric extends StatelessWidget {
       Text(
         label,
         style: const TextStyle(
-          fontSize: 12,
+          fontSize: 13,
           height: 1.15,
           color: ProgressAppearance.muted,
         ),
       ),
     ],
-  );
-}
-
-class _MetricRule extends StatelessWidget {
-  const _MetricRule();
-
-  @override
-  Widget build(BuildContext context) => const SizedBox(
-    width: double.infinity,
-    height: 1,
-    child: ColoredBox(color: ProgressAppearance.rule),
   );
 }

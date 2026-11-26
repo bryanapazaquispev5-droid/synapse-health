@@ -62,7 +62,7 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(18, 12, 18, 5),
                   child: widget.header,
                 ),
               ),
@@ -85,14 +85,14 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
               else
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                    padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
                     child: ProgressOverview(summary: summary),
                   ),
                 ),
               SliverToBoxAdapter(
                 key: const ValueKey('progress-history'),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                  padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
                   child: widget.history,
                 ),
               ),

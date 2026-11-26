@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'progress_appearance.dart';
 
@@ -31,12 +31,18 @@ class ProgressAccuracyCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Icon(
+                CupertinoIcons.scope,
+                color: ProgressAppearance.accent,
+                size: 22,
+              ),
+              const SizedBox(height: 7),
               const Text(
                 'Aciertos actuales',
                 style: TextStyle(
-                  color: ProgressAppearance.muted,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  color: ProgressAppearance.ink,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               if (!showDonut) ...[
@@ -87,8 +93,8 @@ class _AccuracyDonut extends StatelessWidget {
     builder: (context, fraction, child) =>
         CustomPaint(painter: _DonutPainter(fraction), child: child),
     child: SizedBox(
-      width: 146,
-      height: 115,
+      width: 132,
+      height: 104,
       child: Align(
         alignment: const Alignment(0, .08),
         child: SizedBox(
@@ -114,10 +120,9 @@ class _DonutPainter extends CustomPainter {
   const _DonutPainter(this.fraction);
 
   static const _start = -math.pi / 2;
-  static const _blue = Color(0xFF2194B5);
   static const _blueWall = Color(0xFF176782);
-  static const _rest = Color(0xFFE4E9E8);
-  static const _restWall = Color(0xFFA6B1B1);
+  static const _rest = Color(0xFFD5E5ED);
+  static const _restWall = Color(0xFF92AFBF);
 
   final double fraction;
 
@@ -143,15 +148,21 @@ class _DonutPainter extends CustomPainter {
       ..addOval(outer)
       ..addOval(inner);
     canvas.drawPath(ring, Paint()..color = _rest);
+    final blue = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [Color(0xFF32AFC7), Color(0xFF137CA5)],
+      ).createShader(outer);
     if (fraction == 1) {
-      canvas.drawPath(ring, Paint()..color = _blue);
+      canvas.drawPath(ring, blue);
     } else if (fraction > 0) {
       final sweep = end - _start;
       final sector = Path()
         ..arcTo(outer, _start, sweep, true)
         ..arcTo(inner, end, -sweep, false)
         ..close();
-      canvas.drawPath(sector, Paint()..color = _blue);
+      canvas.drawPath(sector, blue);
     }
   }
 

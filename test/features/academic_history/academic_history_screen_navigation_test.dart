@@ -31,7 +31,7 @@ void main() {
     ];
     history.histories['alice']!.add(answers);
     await tester.pumpAndSettle();
-
+    await tapProgressHistoryControl(tester, find.text('Recientes'));
     final oldDate = find.text('10 oct 2026');
     final newDate = find.text('12 oct 2026');
     final undated = find.text('Fecha no disponible');
@@ -85,6 +85,7 @@ void main() {
     final answer = entry();
     history.histories['alice']!.add([answer]);
     await tester.pumpAndSettle();
+    await tapProgressHistoryControl(tester, find.text('Recientes'));
     final row = find.text('Pregunta de prueba');
     await tester.ensureVisible(row);
     await tester.tap(row);
@@ -140,19 +141,17 @@ void main() {
         entry(id: 'row-$index', date: DateTime(2026, 10, 11 - index)),
     ]);
     await tester.pumpAndSettle();
-
+    await tapProgressHistoryControl(tester, find.text('Recientes'));
     final showMore = find.text('Mostrar más');
     final lastDate = find.text('6 oct 2026');
     expect(lastDate, findsNothing);
-    final scrollable = find.descendant(
-      of: find.byType(CustomScrollView),
-      matching: find.byType(Scrollable),
-    ).first;
-    await tester.scrollUntilVisible(
-      showMore,
-      270,
-      scrollable: scrollable,
-    );
+    final scrollable = find
+        .descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(showMore, 270, scrollable: scrollable);
     await Scrollable.ensureVisible(tester.element(showMore), alignment: .5);
     await tester.pumpAndSettle();
     await tester.tap(showMore);

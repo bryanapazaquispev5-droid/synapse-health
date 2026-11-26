@@ -33,6 +33,7 @@ class HistoryScreenRepository extends Fake
   Completer<void>? pageGate;
   String areaName = 'Área de prueba';
   Map<String, String> extraAreaNames = {};
+  Map<(String, String), String> extraTopicNames = {};
   Object? catalogError;
   @override
   User? get currentUser => user;
@@ -92,6 +93,14 @@ class HistoryScreenRepository extends Fake
                 title: 'Tema de prueba',
                 order: 1,
               ),
+              for (final topic in extraTopicNames.entries)
+                if (topic.key.$1 == areaId)
+                  TopicModel(
+                    id: topic.key.$2,
+                    areaId: areaId,
+                    title: topic.value,
+                    order: 2,
+                  ),
             ]
           : [],
     );
@@ -141,10 +150,11 @@ AcademicHistoryEntry entry({
   bool dated = true,
   bool isCorrect = true,
   String areaId = 'a',
+  String topicId = 't',
 }) => AcademicHistoryEntry(
   id: id,
   areaId: areaId,
-  topicId: 't',
+  topicId: topicId,
   quizId: 'q',
   attemptNumber: 2,
   answeredAt: dated ? date ?? DateTime(2026, 10, 11, 12, 30) : null,
@@ -153,6 +163,26 @@ AcademicHistoryEntry entry({
   maxStars: 2,
   selectedOptionIndex: 0,
 );
+
+Future<void> tapProgressHistoryControl(
+  WidgetTester tester,
+  Finder target,
+) async {
+  if (target.evaluate().isEmpty) {
+    final scrollable = find
+        .descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(target, 220, scrollable: scrollable);
+  }
+  await Scrollable.ensureVisible(tester.element(target), alignment: .5);
+  await tester.pumpAndSettle();
+  await tester.tap(target);
+  await tester.pumpAndSettle();
+}
+
 Widget historyScreen(
   HistoryScreenRepository repo,
   FakeConnectivity connection, {

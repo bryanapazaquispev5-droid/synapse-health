@@ -10,6 +10,8 @@ import '../../api/academic_history_repository.dart';
 import '../../model/academic_history_entry.dart';
 import '../academic_history_screen.dart';
 import 'history_catalog.dart';
+import 'progress_history_controls.dart';
+import 'progress_history_groups.dart';
 import 'progress_history_filters.dart';
 import 'progress_history_rows.dart';
 
@@ -33,7 +35,9 @@ class ProgressHistoryTimeline extends StatefulWidget {
 class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
   static const _pageSize = 5;
   late Stream<List<AcademicHistoryEntry>> _history;
+  HistoryView _view = HistoryView.byArea;
   HistoryOutcome _outcome = HistoryOutcome.all;
+  final _openedTopics = <(String, String)>{};
   String? _areaId;
   int _visibleCount = _pageSize;
   bool _isLoadingMore = false;
@@ -51,6 +55,8 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
     if (widget.uid != oldWidget.uid ||
         widget.repository != oldWidget.repository) {
       _requestGeneration++;
+      _view = HistoryView.byArea;
+      _openedTopics.clear();
       _outcome = HistoryOutcome.all;
       _areaId = null;
       _visibleCount = _pageSize;
@@ -64,18 +70,18 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
 
   Future<void> _showMore(int matchedCount) async {
     if (_isLoadingMore) return;
-    if (_visibleCount < matchedCount) {
+    if (_view == HistoryView.recent && _visibleCount < matchedCount) {
       setState(() => _visibleCount += _pageSize);
       return;
     }
     final generation = _requestGeneration;
-    final filters = (_areaId, _outcome);
+    final filters = (_view, _areaId, _outcome);
     setState(() => _isLoadingMore = true);
     try {
       await widget.repository.loadMore(widget.uid);
       if (mounted &&
           generation == _requestGeneration &&
-          filters == (_areaId, _outcome)) {
+          filters == (_view, _areaId, _outcome)) {
         setState(() => _visibleCount += _pageSize);
       }
     } catch (error, stack) {
@@ -89,6 +95,18 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
       if (mounted && generation == _requestGeneration) {
         setState(() => _isLoadingMore = false);
       }
+    }
+  }
+
+  void _resetFilters() => setState(() {
+    _outcome = HistoryOutcome.all;
+    _areaId = null;
+    _visibleCount = _pageSize;
+  });
+
+  void _openTopic((String, String) topic) {
+    if (!_openedTopics.contains(topic)) {
+      setState(() => _openedTopics.add(topic));
     }
   }
 
@@ -134,15 +152,20 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
             );
           }
 
-          final areaIds = entries.map((entry) => entry.areaId).toSet();
+          final isGrouped = _view == HistoryView.byArea;
+          final areaIds = isGrouped
+              ? const <String>{}
+              : entries.map((entry) => entry.areaId).toSet();
           final activeArea = areaIds.contains(_areaId) ? _areaId : null;
           final matching = entries.where((entry) {
             return (activeArea == null || entry.areaId == activeArea) &&
                 _outcome.matches(entry);
           }).toList()..sort(compareHistoryDates);
-          final visible = matching.take(_visibleCount).toList();
+          final visible = isGrouped
+              ? matching
+              : matching.take(_visibleCount).toList();
           final hasMore =
-              matching.length > _visibleCount ||
+              (!isGrouped && matching.length > _visibleCount) ||
               widget.repository.hasMore(widget.uid);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,9 +178,20 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
                 repository: widget.repository,
                 connectivity: widget.connectivity,
                 expand: false,
+                quizScope: isGrouped ? _openedTopics : null,
                 builder: (labels) => Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    ProgressHistoryViewPicker(
+                      view: _view,
+                      onChanged: (view) {
+                        if (_view == view) return;
+                        setState(() {
+                          _view = view;
+                          _visibleCount = _pageSize;
+                        });
+                      },
+                    ),
                     ProgressHistoryFilters(
                       areaIds: areaIds,
                       areaLabels: labels.areas,
@@ -180,6 +214,15 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
                             ? 'Puedes cargar más actividad o cambiar los filtros.'
                             : 'Prueba con otro filtro.',
                         icon: CupertinoIcons.line_horizontal_3_decrease,
+                        actionLabel: 'Ver todas',
+                        onAction: _resetFilters,
+                      )
+                    else if (isGrouped)
+                      ProgressHistoryGroups(
+                        entries: visible,
+                        labels: labels,
+                        onOpen: _open,
+                        onTopicOpened: _openTopic,
                       )
                     else
                       ProgressHistoryRows(
@@ -188,31 +231,9 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
                         onOpen: _open,
                       ),
                     if (hasMore)
-                      Align(
-                        alignment: Alignment.center,
-                        child: TextButton.icon(
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF1D7256),
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                          ),
-                          onPressed: _isLoadingMore
-                              ? null
-                              : () => _showMore(matching.length),
-                          icon: _isLoadingMore
-                              ? const SizedBox.square(
-                                  dimension: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(
-                                  CupertinoIcons.chevron_down,
-                                  size: 16,
-                                ),
-                          label: Text(
-                            _isLoadingMore ? 'Cargando…' : 'Mostrar más',
-                          ),
-                        ),
+                      ProgressHistoryMore(
+                        isLoading: _isLoadingMore,
+                        onPressed: () => _showMore(matching.length),
                       ),
                   ],
                 ),
@@ -223,15 +244,4 @@ class _ProgressHistoryTimelineState extends State<ProgressHistoryTimeline> {
       ),
     ],
   );
-}
-
-int compareHistoryDates(AcademicHistoryEntry left, AcademicHistoryEntry right) {
-  final leftDate = left.answeredAt;
-  final rightDate = right.answeredAt;
-  if (leftDate == null) {
-    return rightDate == null ? left.id.compareTo(right.id) : 1;
-  }
-  if (rightDate == null) return -1;
-  final byDate = rightDate.compareTo(leftDate);
-  return byDate == 0 ? left.id.compareTo(right.id) : byDate;
 }
