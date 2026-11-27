@@ -26,7 +26,7 @@ void main() {
     var reads = 0;
     await tester.pumpWidget(evolution([], (_) { reads++; return Stream.value([]); }, connection));
     await frames(tester);
-    expect(find.text('No progress history is available yet'), findsOneWidget);
+    expect(find.text('Todavía no hay evolución disponible'), findsOneWidget);
     expect(reads, 0);
   });
 
@@ -36,8 +36,8 @@ void main() {
       const TopicModel(id: 't', areaId: 'a', title: 'Test Topic', order: 1)]), connection));
     await frames(tester); await frames(tester);
     expect(find.text('Test Topic'), findsOneWidget);
-    expect(find.text('Attempt 1 · 0.0%'), findsOneWidget);
-    expect(find.text('Attempt 2 · 100.0%'), findsOneWidget);
+    expect(find.text('Intento 1 · 0.0 %'), findsOneWidget);
+    expect(find.text('Intento 2 · 100.0 %'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -54,7 +54,7 @@ void main() {
   testWidgets('removed topic uses availability message instead of an invented medical name', (tester) async {
     final series = calculateProgress({'t': recordedProgress(history: true)}).evolution;
     await tester.pumpWidget(evolution(series, (_) => Stream.value([]), connection)); await frames(tester);
-    expect(find.text('Topic unavailable'), findsOneWidget);
+    expect(find.text('Tema no disponible'), findsOneWidget);
   });
 
   testWidgets('metadata failures remain errors without hiding the absence as empty history', (tester) async {
@@ -63,7 +63,7 @@ void main() {
       ApiFailure.unavailable)), connection));
     await frames(tester); await frames(tester);
     expect(find.byType(AppErrorState), findsOneWidget);
-    expect(find.text('No progress history is available yet'), findsNothing);
+    expect(find.text('Todavía no hay evolución disponible'), findsNothing);
     expect(find.textContaining('internal query'), findsNothing);
   });
 }

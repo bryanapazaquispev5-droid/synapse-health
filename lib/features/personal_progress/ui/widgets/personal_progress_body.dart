@@ -4,6 +4,7 @@ import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/widgets/states/app_async_content.dart';
 import '../../../quizzes/model/quiz_topic_progress_model.dart';
 import '../../api/personal_progress_repository.dart';
+import '../../model/progress_summary.dart';
 import '../../utils/progress_statistics.dart';
 import 'progress_catalog_sections.dart';
 import 'progress_overview.dart';
@@ -14,11 +15,13 @@ class PersonalProgressBody extends StatefulWidget {
     required this.uid,
     required this.repository,
     required this.header,
+    required this.history,
     this.connectivity,
   });
   final String uid;
   final PersonalProgressRepository repository;
   final Widget header;
+  final Widget history;
   final ConnectivityService? connectivity;
   @override
   State<PersonalProgressBody> createState() => _PersonalProgressBodyState();
@@ -26,7 +29,8 @@ class PersonalProgressBody extends StatefulWidget {
 
 class _PersonalProgressBodyState extends State<PersonalProgressBody> {
   late final Stream<Map<String, QuizTopicProgressModel>> _progress;
-
+  Map<String, QuizTopicProgressModel>? _lastData;
+  ProgressSummary? _summary;
   @override
   void initState() {
     super.initState();
@@ -34,24 +38,31 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      AppAsyncStreamBuilder<Map<String, QuizTopicProgressModel>>(
-        stream: _progress,
-        connectivity: widget.connectivity,
-        onRetryStream: () => widget.repository.watchProgress(widget.uid),
-        builder: (context, snapshot, retry) {
-          final summary =
-              snapshot.hasData ? calculateProgress(snapshot.data!) : null;
-          final unavailable =
-              !snapshot.hasData ||
-              snapshot.isAccessFailure ||
-              summary == null ||
-              !summary.hasActivity;
-          return CustomScrollView(
+  Widget build(
+    BuildContext context,
+  ) => AppAsyncStreamBuilder<Map<String, QuizTopicProgressModel>>(
+    stream: _progress,
+    connectivity: widget.connectivity,
+    onRetryStream: () => widget.repository.watchProgress(widget.uid),
+    builder: (context, snapshot, retry) {
+      if (snapshot.hasData && !identical(_lastData, snapshot.data)) {
+        _lastData = snapshot.data;
+        _summary = calculateProgress(snapshot.data!);
+      }
+      final summary = _summary;
+      final unavailable =
+          !snapshot.hasData ||
+          snapshot.isAccessFailure ||
+          summary == null ||
+          !summary.hasActivity;
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(18, 12, 18, 5),
                   child: widget.header,
                 ),
               ),
@@ -60,25 +71,32 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
                   child: AppAsyncNotice(snapshot: snapshot, onRetry: retry),
                 ),
               if (unavailable)
-                SliverFillRemaining(
-                  hasScrollBody: false,
+                SliverToBoxAdapter(
                   child: AppAsyncStatus(
                     snapshot: snapshot,
                     isEmpty: summary == null || !summary.hasActivity,
                     onRetry: retry,
-                    emptyTitle: 'Your progress starts here',
-                    emptyMessage: 'Answer quizzes to review your practice results.',
+                    emptyTitle: 'Tu progreso empieza aquí',
+                    emptyMessage: 'Responde quizzes para consultar tus resultados de práctica.',
                     errorMessage:
-                        'Could not load your progress. Please try again.',
+                        'No se pudo cargar tu progreso. Inténtalo de nuevo.',
                   ),
                 )
-              else ...[
+              else
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+                    padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
                     child: ProgressOverview(summary: summary),
                   ),
                 ),
+              SliverToBoxAdapter(
+                key: const ValueKey('progress-history'),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
+                  child: widget.history,
+                ),
+              ),
+              if (!unavailable)
                 SliverToBoxAdapter(
                   child: ProgressCatalogSections(
                     key: ValueKey(widget.uid),
@@ -88,10 +106,11 @@ class _PersonalProgressBodyState extends State<PersonalProgressBody> {
                     connectivity: widget.connectivity,
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 110)),
-              ],
+              const SliverToBoxAdapter(child: SizedBox(height: 110)),
             ],
-          );
-        },
+          ),
+        ),
       );
+    },
+  );
 }

@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:synapse_health/core/auth/app_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synapse_health/core/auth/app_auth.dart';
 import 'package:synapse_health/core/theme/app_theme.dart';
 import 'package:synapse_health/features/academic_history/api/academic_history_repository.dart';
 import 'package:synapse_health/features/academic_history/model/academic_history_entry.dart';
@@ -31,7 +31,9 @@ class HistoryScreenRepository extends Fake
   int pageLoads = 0;
   List<AcademicHistoryEntry> nextEntries = [];
   Completer<void>? pageGate;
-  String areaName = 'Test Area';
+  String areaName = 'Área de prueba';
+  Map<String, String> extraAreaNames = {};
+  Map<(String, String), String> extraTopicNames = {};
   Object? catalogError;
   @override
   AppUser? get currentUser => user;
@@ -65,7 +67,16 @@ class HistoryScreenRepository extends Fake
     if (catalogError != null) return Stream.error(catalogError!);
     return Stream.value(
       hasCatalog
-          ? [MedicalAreaModel(id: 'a', name: areaName, code: 'A', order: 1)]
+          ? [
+              MedicalAreaModel(id: 'a', name: areaName, code: 'A', order: 1),
+              for (final area in extraAreaNames.entries)
+                MedicalAreaModel(
+                  id: area.key,
+                  name: area.value,
+                  code: area.key,
+                  order: 2,
+                ),
+            ]
           : [],
     );
   }
@@ -79,9 +90,17 @@ class HistoryScreenRepository extends Fake
               const TopicModel(
                 id: 't',
                 areaId: 'a',
-                title: 'Test Topic',
+                title: 'Tema de prueba',
                 order: 1,
               ),
+              for (final topic in extraTopicNames.entries)
+                if (topic.key.$1 == areaId)
+                  TopicModel(
+                    id: topic.key.$2,
+                    areaId: areaId,
+                    title: topic.value,
+                    order: 2,
+                  ),
             ]
           : [],
     );
@@ -101,8 +120,8 @@ class HistoryScreenRepository extends Fake
                 id: 'q',
                 areaId: 'a',
                 topicId: 't',
-                question: 'Test Question',
-                options: ['Test Option'],
+                question: 'Pregunta de prueba',
+                options: ['Opción de prueba'],
                 correctIndex: 0,
                 rationale: '',
                 sourceBook: '',
@@ -129,18 +148,41 @@ AcademicHistoryEntry entry({
   String id = 'private-record',
   DateTime? date,
   bool dated = true,
+  bool isCorrect = true,
+  String areaId = 'a',
+  String topicId = 't',
 }) => AcademicHistoryEntry(
   id: id,
-  areaId: 'a',
-  topicId: 't',
+  areaId: areaId,
+  topicId: topicId,
   quizId: 'q',
   attemptNumber: 2,
   answeredAt: dated ? date ?? DateTime(2026, 10, 11, 12, 30) : null,
-  isCorrect: true,
-  earnedStars: 2,
+  isCorrect: isCorrect,
+  earnedStars: isCorrect ? 2 : 0,
   maxStars: 2,
   selectedOptionIndex: 0,
 );
+
+Future<void> tapProgressHistoryControl(
+  WidgetTester tester,
+  Finder target,
+) async {
+  if (target.evaluate().isEmpty) {
+    final scrollable = find
+        .descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(target, 220, scrollable: scrollable);
+  }
+  await Scrollable.ensureVisible(tester.element(target), alignment: .5);
+  await tester.pumpAndSettle();
+  await tester.tap(target);
+  await tester.pumpAndSettle();
+}
+
 Widget historyScreen(
   HistoryScreenRepository repo,
   FakeConnectivity connection, {

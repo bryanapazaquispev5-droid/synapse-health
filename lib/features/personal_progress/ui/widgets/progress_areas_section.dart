@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/theme/app_theme.dart';
 import '../../model/progress_summary.dart';
+import 'progress_appearance.dart';
+import 'progress_meter.dart';
 
 class ProgressAreasSection extends StatelessWidget {
   const ProgressAreasSection({
@@ -16,50 +18,114 @@ class ProgressAreasSection extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'By area',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-      ),
-      const SizedBox(height: 12),
-      for (final area in areas)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  areaNames[area.areaId] ?? 'Area unavailable',
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text('${area.uniqueQuizzes} unique quizzes answered'),
-                const SizedBox(height: 4),
-                Text('${area.currentStars} current stars'),
-                const SizedBox(height: 4),
-                Text(
-                  area.accuracy == null
-                      ? 'Current correct answers: unavailable'
-                      : 'Current correct answers: ${area.accuracy!.toStringAsFixed(1)}%',
-                ),
-              ],
-            ),
+      Semantics(
+        header: true,
+        child: const Text(
+          'Por área',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: ProgressAppearance.ink,
           ),
         ),
+      ),
+      const SizedBox(height: 9),
+      if (areas.isNotEmpty) ...[
+        for (final area in areas) ...[
+          const SizedBox(
+            width: double.infinity,
+            height: 1,
+            child: ColoredBox(color: ProgressAppearance.rule),
+          ),
+          _AreaProgress(
+            stats: area,
+            name: areaNames[area.areaId] ?? 'Área no disponible',
+          ),
+        ],
+        const SizedBox(height: 8),
+      ],
       const Text(
-        'Overall progress and average time are unavailable for these records.',
-        style: TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
+        'Avance total y tiempo promedio sin datos.',
+        style: TextStyle(
+          fontSize: 12,
+          color: ProgressAppearance.muted,
+          height: 1.35,
+        ),
       ),
     ],
   );
+}
+
+class _AreaProgress extends StatelessWidget {
+  const _AreaProgress({required this.stats, required this.name});
+
+  final ProgressAreaStats stats;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final accuracy = stats.accuracy;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.square_stack,
+                size: 16,
+                color: ProgressAppearance.accent,
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Wrap(
+            spacing: 12,
+            runSpacing: 3,
+            children: [
+              Text(
+                '${stats.uniqueQuizzes} quizzes únicos respondidos',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: ProgressAppearance.muted,
+                ),
+              ),
+              Text(
+                '${stats.currentStars} estrellas actuales',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: ProgressAppearance.muted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Text(
+            accuracy == null
+                ? 'Aciertos actuales: no disponibles'
+                : 'Aciertos actuales: ${accuracy.toStringAsFixed(1)} %',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+          if (accuracy != null) ...[
+            const SizedBox(height: 6),
+            ProgressMeter(
+              percentage: accuracy,
+              color: ProgressAppearance.accent,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }

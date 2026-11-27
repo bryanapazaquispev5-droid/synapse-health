@@ -1,10 +1,12 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/widgets/states/app_async_content.dart';
 import '../../../cheatsheets/model/topic_model.dart';
 import '../../model/progress_summary.dart';
-import 'topic_evolution_card.dart';
+import 'progress_appearance.dart';
+import 'progress_meter.dart';
 
 class ProgressEvolutionSection extends StatelessWidget {
   const ProgressEvolutionSection({
@@ -28,21 +30,37 @@ class ProgressEvolutionSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Progress by topic',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        const Row(
+          children: [
+            Icon(
+              CupertinoIcons.chart_bar,
+              size: 18,
+              color: ProgressAppearance.accent,
+            ),
+            SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Evolución por tema',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: ProgressAppearance.ink,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         if (series.isEmpty)
           const AppEmptyState(
-            title: 'No progress history is available yet',
-            message: 'Answer questions in multiple attempts for the same topic to compare your results.',
+            title: 'Todavía no hay evolución disponible',
+            message: 'Completa respuestas en más de un intento del mismo tema para comparar tus resultados.',
           ),
         for (final entry in grouped.entries)
           _AreaEvolution(
             key: ValueKey(entry.key),
             areaId: entry.key,
-            areaName: areaNames[entry.key] ?? 'Area unavailable',
+            areaName: areaNames[entry.key] ?? 'Área no disponible',
             series: entry.value,
             topicsStreamForArea: topicsStreamForArea,
             connectivity: connectivity,
@@ -91,8 +109,8 @@ class _AreaEvolutionState extends State<_AreaEvolution> {
           snapshot: snapshot,
           isEmpty: false,
           onRetry: retry,
-          emptyTitle: 'Topics unavailable',
-          emptyMessage: 'No information is available for these topics.',
+          emptyTitle: 'Temas no disponibles',
+          emptyMessage: 'No hay información de estos temas.',
         );
       }
       final titles = {
@@ -103,12 +121,12 @@ class _AreaEvolutionState extends State<_AreaEvolution> {
         children: [
           AppAsyncNotice(snapshot: snapshot, onRetry: retry),
           for (final series in widget.series)
-            TopicEvolutionCard(
+            _TopicEvolutionCard(
               series: series,
               areaName: widget.areaName,
               topicName: titles[series.topicId]?.trim().isNotEmpty == true
                   ? titles[series.topicId]!
-                  : 'Topic unavailable',
+                  : 'Tema no disponible',
             ),
         ],
       );
@@ -116,3 +134,78 @@ class _AreaEvolutionState extends State<_AreaEvolution> {
   );
 }
 
+class _TopicEvolutionCard extends StatelessWidget {
+  const _TopicEvolutionCard({
+    required this.series,
+    required this.areaName,
+    required this.topicName,
+  });
+  final TopicEvolution series;
+  final String areaName;
+  final String topicName;
+
+  String _date(DateTime date) {
+    final local = date.toLocal();
+    return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}/${local.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    decoration: const BoxDecoration(
+      border: Border(top: BorderSide(color: ProgressAppearance.rule)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          topicName,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: ProgressAppearance.ink,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          areaName,
+          style: const TextStyle(fontSize: 13, color: ProgressAppearance.muted),
+        ),
+        const SizedBox(height: 12),
+        for (final point in series.points)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Semantics(
+              label:
+                  'Intento ${point.attemptNumber}, ${point.accuracy.toStringAsFixed(1)} por ciento de aciertos, ${point.correct} respuestas correctas de ${point.answered}. Última respuesta ${_date(point.lastAnsweredAt)}.',
+              child: ExcludeSemantics(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Intento ${point.attemptNumber} · ${point.accuracy.toStringAsFixed(1)} %',
+                    ),
+                    const SizedBox(height: 6),
+                    ProgressMeter(
+                      percentage: point.accuracy,
+                      color: ProgressAppearance.accent,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Última respuesta: ${_date(point.lastAnsweredAt)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: ProgressAppearance.muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+}

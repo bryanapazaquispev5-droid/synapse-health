@@ -32,8 +32,9 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    expect(find.text('Test Question'), findsOneWidget);
-    expect(find.text('Test Area · Test Topic'), findsOneWidget);
+    expect(find.text('Pregunta de prueba'), findsOneWidget);
+    expect(find.text('Area unavailable · Tema de prueba'), findsNothing);
+    expect(find.text('Área de prueba · Tema de prueba'), findsOneWidget);
     expect(find.text('Attempt 2'), findsOneWidget);
     expect(find.text('2 / 2 stars'), findsOneWidget);
     expect(find.text('11/10/2026 12:30'), findsOneWidget);
@@ -45,7 +46,7 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    await tester.tap(find.text('Test Question'));
+    await tester.tap(find.text('Pregunta de prueba'));
     await tester.pump(const Duration(milliseconds: 500));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
@@ -62,11 +63,11 @@ void main() {
     );
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    expect(find.text('Test Question'), findsOneWidget);
+    expect(find.text('Pregunta de prueba'), findsOneWidget);
     repo.histories['alice']!.add([]);
     await historyFrames(tester);
     expect(find.text('Result unavailable'), findsOneWidget);
-    expect(find.text('Test Question'), findsNothing);
+    expect(find.text('Pregunta de prueba'), findsNothing);
   });
   testWidgets('server error is not rendered as empty and retry starts read', (
     tester,
@@ -105,7 +106,7 @@ void main() {
       find.text('You do not have permission to view this content.'),
       findsOneWidget,
     );
-    expect(find.text('Test Question'), findsNothing);
+    expect(find.text('Pregunta de prueba'), findsNothing);
   });
   testWidgets('different session clears history and owner scoped detail', (
     tester,
@@ -122,7 +123,7 @@ void main() {
     await historyFrames(tester);
     repo.changeUser('bob');
     await historyFrames(tester);
-    expect(find.text('Test Question'), findsNothing);
+    expect(find.text('Pregunta de prueba'), findsNothing);
     expect(
       find.text('Sign in to access this history.'),
       findsOneWidget,
@@ -161,7 +162,7 @@ void main() {
     await tester.pumpWidget(historyScreen(repo, connection));
     repo.histories['alice']!.add([entry()]);
     await historyFrames(tester);
-    expect(find.text('Area unavailable · Test Topic'), findsOneWidget);
+    expect(find.text('Area unavailable · Tema de prueba'), findsOneWidget);
     expect(find.text('a · Test Topic'), findsNothing);
   });
   testWidgets(
@@ -193,7 +194,7 @@ void main() {
       await tester.tap(find.text('Retry'));
       await historyFrames(tester);
       expect(repo.areaReads, 2);
-      expect(find.text('Test Area · Test Topic'), findsOneWidget);
+      expect(find.text('Área de prueba · Tema de prueba'), findsOneWidget);
     },
   );
   testWidgets('narrow viewport with large text has no overflow', (

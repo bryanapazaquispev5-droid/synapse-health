@@ -13,6 +13,8 @@ class HistoryLabels {
   final areas = <String, String>{};
   final topics = <(String, String), String>{};
   final quizzes = <(String, String, String), String>{};
+  final areaOrder = <String, int>{};
+  final topicOrder = <(String, String), int>{};
   String area(AcademicHistoryEntry entry) =>
       areas[entry.areaId] ?? 'Area unavailable';
   String topic(AcademicHistoryEntry entry) =>
@@ -33,11 +35,15 @@ class HistoryCatalog extends StatefulWidget {
     required this.repository,
     required this.builder,
     this.connectivity,
+    this.expand = true,
+    this.quizScope,
   });
   final String uid;
   final List<AcademicHistoryEntry> entries;
   final AcademicHistoryRepository repository;
   final ConnectivityService? connectivity;
+  final bool expand;
+  final Set<(String, String)>? quizScope;
   final Widget Function(HistoryLabels) builder;
   @override
   State<HistoryCatalog> createState() => _HistoryCatalogState();
@@ -93,7 +99,9 @@ class _HistoryCatalogState extends State<HistoryCatalog> {
     if (_subscriptions.isEmpty) {
       _listen(widget.repository.watchAreas(widget.uid), (areas) {
         _labels.areas.clear();
-        for (final area in areas) {
+        _labels.areaOrder.clear();
+        for (final (index, area) in areas.indexed) {
+          _labels.areaOrder[area.id] = index;
           if (area.name.trim().isNotEmpty && area.name != area.id) {
             _labels.areas[area.id] = area.name;
           }
@@ -106,14 +114,18 @@ class _HistoryCatalogState extends State<HistoryCatalog> {
           topics,
         ) {
           _labels.topics.removeWhere((key, _) => key.$1 == entry.areaId);
-          for (final topic in topics) {
+          _labels.topicOrder.removeWhere((key, _) => key.$1 == entry.areaId);
+          for (final (index, topic) in topics.indexed) {
+            _labels.topicOrder[(entry.areaId, topic.id)] = index;
             if (topic.title.trim().isNotEmpty) {
               _labels.topics[(entry.areaId, topic.id)] = topic.title;
             }
           }
         });
       }
-      if (_topicsRequested.add((entry.areaId, entry.topicId))) {
+      final topicKey = (entry.areaId, entry.topicId);
+      if ((widget.quizScope?.contains(topicKey) ?? true) &&
+          _topicsRequested.add(topicKey)) {
         _listen(
           widget.repository.watchQuizzes(
             widget.uid,
@@ -178,7 +190,10 @@ class _HistoryCatalogState extends State<HistoryCatalog> {
             ],
           ),
         ),
-      Expanded(child: widget.builder(_labels)),
+      if (widget.expand)
+        Expanded(child: widget.builder(_labels))
+      else
+        widget.builder(_labels),
     ],
   );
 }
